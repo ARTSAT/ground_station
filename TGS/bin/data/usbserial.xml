@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device>
+    <rotator>
+        <port></port>
+        <baud>9600</baud>
+    </rotator>
+    <civ>
+        <port></port>
+        <baud>19200</baud>
+    </civ>
+    <tnc>
+        <port>tty.usbserial</port>
+        <baud>9600</baud>
+    </tnc>
+</device>

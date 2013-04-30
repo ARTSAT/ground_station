@@ -1,0 +1,17 @@
+TGS package information
+
+o common
+  This is a directory containing main TGS library.
+
+o TGS_OF
+  This is a test project to test compilability of TGS library on the openFrameworks.
+
+o TGS_POSIX
+  This is a test project to test compilability of TGS library on the POSIX C++.
+
+o TGS
+  This is a working project.
+
+
+HORIGUCHI Junshi
+2013/04/20
