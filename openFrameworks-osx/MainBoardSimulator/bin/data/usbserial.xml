@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device>
+    <mainboard>
+        <port>tty.usbserial-A900XS1Q</port>
+        <baud>19200</baud>
+    </mainboard>
+</device>

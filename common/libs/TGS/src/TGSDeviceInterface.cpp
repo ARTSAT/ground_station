@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6 (LLVM compiler 4.2)
+**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
 **
 **      TGSDeviceInterface.cpp
 **
@@ -61,6 +61,11 @@ namespace tgs {
     close();
 }
 
+/*public virtual */bool TGSDeviceInterface::isValid(void) const
+{
+    return _state;
+}
+
 /*public virtual */TGSError TGSDeviceInterface::open(std::string const& port, int baud, bool verbose)
 {
     return open(port, baud, false, verbose);
@@ -73,9 +78,14 @@ namespace tgs {
     return;
 }
 
-/*public virtual */void TGSDeviceInterface::update(void)
+/*public virtual */TGSError TGSDeviceInterface::update(void)
 {
-    return;
+    TGSError error(TGSERROR_OK);
+    
+    if (!_state) {
+        error = TGSERROR_INVALID_STATE;
+    }
+    return error;
 }
 
 /*protected */bool TGSDeviceInterface::available(void)

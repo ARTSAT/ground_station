@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6 (LLVM compiler 4.2)
+**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
 **
 **      TGSTransceiverCIV.cpp
 **
@@ -145,6 +145,20 @@ namespace tgs {
     return error;
 }
 
+/*public */TGSError TGSTransceiverCIV::setSubBandMode(unsigned char id, bool param)
+{
+    static std::string const request("\x16\x59", 2);
+    
+    return setParamBool(id, request, param);
+}
+
+/*public */TGSError TGSTransceiverCIV::getSubBandMode(unsigned char id, bool* result)
+{
+    static std::string const request("\x16\x59", 2);
+    
+    return getParamBool(id, request, result);
+}
+
 /*public */TGSError TGSTransceiverCIV::setSatelliteMode(unsigned char id, bool param)
 {
     static std::string const request("\x16\x5A", 2);
@@ -261,7 +275,7 @@ namespace tgs {
     return;
 }
 
-/*public virtual */void TGSTransceiverCIV::update(void)
+/*public virtual */TGSError TGSTransceiverCIV::update(void)
 {
     static std::string const request_frequency("\x00", 1);
     static std::string const request_mode("\x01", 1);
@@ -269,23 +283,25 @@ namespace tgs {
     int frequency;
     OperationModeEnum mode;
     FilterEnum filter;
+    TGSError error(TGSERROR_OK);
     
-    super::update();
-    transceive();
-    for (it = _queue.begin(); it != _queue.end(); ++it) {
-        if (test(request_frequency, it->second, &it->second) == TGSERROR_OK) {
-            if (parseOperationFrequency(it->second, &frequency) == TGSERROR_OK) {
-                notifyOperationFrequency(it->first, frequency);
+    if ((error = super::update()) == TGSERROR_OK) {
+        transceive();
+        for (it = _queue.begin(); it != _queue.end(); ++it) {
+            if (test(request_frequency, it->second, &it->second) == TGSERROR_OK) {
+                if (parseOperationFrequency(it->second, &frequency) == TGSERROR_OK) {
+                    notifyOperationFrequency(it->first, frequency);
+                }
+            }
+            else if (test(request_mode, it->second, &it->second) == TGSERROR_OK) {
+                if (parseOperationMode(it->second, &mode, &filter) == TGSERROR_OK) {
+                    notifyOperationMode(it->first, mode, filter);
+                }
             }
         }
-        else if (test(request_mode, it->second, &it->second) == TGSERROR_OK) {
-            if (parseOperationMode(it->second, &mode, &filter) == TGSERROR_OK) {
-                notifyOperationMode(it->first, mode, filter);
-            }
-        }
+        _queue.clear();
     }
-    _queue.clear();
-    return;
+    return error;
 }
 
 /*public */TGSError TGSTransceiverCIV::selectVFOMode(unsigned char id)
@@ -447,7 +463,6 @@ namespace tgs {
     std::string response;
     TGSError error(TGSERROR_OK);
     
-    flushRead();
     if ((error = write(id, request + param)) == TGSERROR_OK) {
         if ((error = read(id, &response)) == TGSERROR_OK) {
             if ((error = test(request_ng, response, &response)) == TGSERROR_OK) {
@@ -466,7 +481,6 @@ namespace tgs {
     std::string response;
     TGSError error(TGSERROR_OK);
     
-    flushRead();
     if ((error = write(id, request)) == TGSERROR_OK) {
         if ((error = read(id, &response)) == TGSERROR_OK) {
             error = test(request, response, result);
@@ -795,6 +809,32 @@ namespace tgs {
     return error;
 }
 
+/*public */TGSError TGSTransceiverCIV::Transceiver::setSubBandMode(bool param)
+{
+    TGSError error(TGSERROR_OK);
+    
+    if (_civ != NULL) {
+        error = _civ->setSubBandMode(_id, param);
+    }
+    else {
+        error = TGSERROR_INVALID_STATE;
+    }
+    return error;
+}
+
+/*public */TGSError TGSTransceiverCIV::Transceiver::getSubBandMode(bool* result)
+{
+    TGSError error(TGSERROR_OK);
+    
+    if (_civ != NULL) {
+        error = _civ->getSubBandMode(_id, result);
+    }
+    else {
+        error = TGSERROR_INVALID_STATE;
+    }
+    return error;
+}
+
 /*public */TGSError TGSTransceiverCIV::Transceiver::setSatelliteMode(bool param)
 {
     TGSError error(TGSERROR_OK);
@@ -871,6 +911,16 @@ namespace tgs {
         error = TGSERROR_INVALID_STATE;
     }
     return error;
+}
+
+/*public */bool TGSTransceiverCIV::Transceiver::isConnected(void) const
+{
+    bool result(false);
+    
+    if (_civ != NULL) {
+        result = _civ->isValid();
+    }
+    return result;
 }
 
 /*public */TGSError TGSTransceiverCIV::Transceiver::connect(TGSTransceiverCIV* param)

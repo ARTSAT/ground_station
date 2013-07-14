@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6 (LLVM compiler 4.2)
+**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
 **
 **      TGSTransceiverCIV.h
 **
@@ -99,12 +99,15 @@ class TGSTransceiverCIV : public TGSDeviceInterface {
                         TGSError            getOperationFrequency           (int* result);
                         TGSError            setOperationMode                (OperationModeEnum mode, FilterEnum filter = FILTER_UNKNOWN);
                         TGSError            getOperationMode                (OperationModeEnum* mode, FilterEnum* filter = NULL);
+                        TGSError            setSubBandMode                  (bool param);
+                        TGSError            getSubBandMode                  (bool* result);
                         TGSError            setSatelliteMode                (bool param);
                         TGSError            getSatelliteMode                (bool* result);
                         TGSError            setTransceiveMode               (bool param);
                         TGSError            getTransceiveMode               (bool* result);
                         TGSError            setDataMode                     (bool mode, FilterEnum filter = FILTER_UNKNOWN);
                         TGSError            getDataMode                     (bool* mode, FilterEnum* filter = NULL);
+                        bool                isConnected                     (void) const;
                         TGSError            connect                         (TGSTransceiverCIV* param);
                         void                disconnect                      (void);
                         TGSError            selectVFOMode                   (void);
@@ -141,6 +144,8 @@ class TGSTransceiverCIV : public TGSDeviceInterface {
                 TGSError                    getOperationFrequency           (unsigned char id, int* result);
                 TGSError                    setOperationMode                (unsigned char id, OperationModeEnum mode, FilterEnum filter = FILTER_UNKNOWN);
                 TGSError                    getOperationMode                (unsigned char id, OperationModeEnum* mode, FilterEnum* filter = NULL);
+                TGSError                    setSubBandMode                  (unsigned char id, bool param);
+                TGSError                    getSubBandMode                  (unsigned char id, bool* result);
                 TGSError                    setSatelliteMode                (unsigned char id, bool param);
                 TGSError                    getSatelliteMode                (unsigned char id, bool* result);
                 TGSError                    setTransceiveMode               (unsigned char id, bool param);
@@ -149,7 +154,7 @@ class TGSTransceiverCIV : public TGSDeviceInterface {
                 TGSError                    getDataMode                     (unsigned char id, bool* mode, FilterEnum* filter = NULL);
         virtual TGSError                    open                            (std::string const& port, int baud, bool verbose = true);
         virtual void                        close                           (void);
-        virtual void                        update                          (void);
+        virtual TGSError                    update                          (void);
                 TGSError                    selectVFOMode                   (unsigned char id);
                 TGSError                    selectVFOA                      (unsigned char id);
                 TGSError                    selectVFOB                      (unsigned char id);

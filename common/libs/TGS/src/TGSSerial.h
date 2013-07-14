@@ -203,7 +203,7 @@
 #include <cfloat>
 
 
-#if defined( TARGET_OSX ) || defined( TARGET_LINUX ) || defined (TARGET_ANDROID)
+#if defined( TARGET_OSX ) || defined( TARGET_OF_IPHONE ) || defined( TARGET_LINUX ) || defined (TARGET_ANDROID)
 	#include <termios.h>
 #else
 	#include <winbase.h>

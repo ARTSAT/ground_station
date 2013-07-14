@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6 (LLVM compiler 4.2)
+**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
 **
 **      main.cpp
 **
@@ -45,6 +45,7 @@
 */
 
 #include "TGSDeviceLoader.h"
+#include "TGSSatelliteINVADER.h"
 #include "TGSRotatorGS232B.h"
 #include "TGSTransceiverCIV.h"
 #include "TGSTransceiverIC9100.h"
@@ -56,22 +57,25 @@ using namespace tgs;
 int main(int argc, const char * argv[])
 {
     TGSDeviceLoader loader;
+    TGSSatelliteINVADER satellite;
     TGSRotatorGS232B rotator;
     TGSTransceiverCIV civ;
-    TGSTransceiverIC9100 ic9100;
+    TGSTransceiverIC9100 transceiver;
     TGSTNCTNC555 tnc;
     TGSError error(TGSERROR_OK);
     
-    if ((error = loader.append(&rotator, "rotator")) == TGSERROR_OK) {
-        if ((error = loader.append(&civ, "civ")) == TGSERROR_OK) {
-            if ((error = loader.append(&ic9100, "transceiver")) == TGSERROR_OK) {
-                if ((error = loader.append(&tnc, "tnc")) == TGSERROR_OK) {
-                    if ((error = loader.open("usbserial.xml")) == TGSERROR_OK) {
-                        if ((error = ic9100.connect(&civ)) == TGSERROR_OK) {
-                            loader.update();
-                            ic9100.disconnect();
+    if ((error = loader.append(&satellite, "satellite")) == TGSERROR_OK) {
+        if ((error = loader.append(&rotator, "rotator")) == TGSERROR_OK) {
+            if ((error = loader.append(&civ, "civ")) == TGSERROR_OK) {
+                if ((error = loader.append(&transceiver, "transceiver")) == TGSERROR_OK) {
+                    if ((error = loader.append(&tnc, "tnc")) == TGSERROR_OK) {
+                        if ((error = loader.open("usbserial.xml")) == TGSERROR_OK) {
+                            if ((error = transceiver.connect(&civ)) == TGSERROR_OK) {
+                                loader.update();
+                                transceiver.disconnect();
+                            }
+                            loader.close();
                         }
-                        loader.close();
                     }
                 }
             }

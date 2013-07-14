@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6 (LLVM compiler 4.2)
+**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
 **
 **      TGSDeviceInterface.h
 **
@@ -75,10 +75,10 @@ class TGSDeviceInterface {
         virtual                             ~TGSDeviceInterface             (void) = 0;
                 void                        setTimeout                      (TimeoutType param);
                 TimeoutType                 getTimeout                      (void) const;
-                bool                        isValid                         (void) const;
+        virtual bool                        isValid                         (void) const;
         virtual TGSError                    open                            (std::string const& port, int baud, bool verbose = true);
         virtual void                        close                           (void);
-        virtual void                        update                          (void);
+        virtual TGSError                    update                          (void);
     protected:
         explicit                            TGSDeviceInterface              (void);
                 bool                        available                       (void);
@@ -105,11 +105,6 @@ class TGSDeviceInterface {
 /*public */inline TGSDeviceInterface::TimeoutType TGSDeviceInterface::getTimeout(void) const
 {
     return _timeout;
-}
-
-/*public */inline bool TGSDeviceInterface::isValid(void) const
-{
-    return _state;
 }
 
 }// end of namespace

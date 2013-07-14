@@ -8,19 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		C33A9C1C1722725C00F7CE70 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C1B1722725C00F7CE70 /* main.cpp */; };
-		C33A9C581722730400F7CE70 /* TGSDeviceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C27172272C200F7CE70 /* TGSDeviceInterface.cpp */; };
-		C33A9C591722730400F7CE70 /* TGSDeviceLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C29172272C200F7CE70 /* TGSDeviceLoader.cpp */; };
-		C33A9C5A1722730400F7CE70 /* TGSDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C2B172272C200F7CE70 /* TGSDeviceManager.cpp */; };
-		C33A9C5B1722730400F7CE70 /* TGSError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C2D172272C200F7CE70 /* TGSError.cpp */; };
-		C33A9C5C1722730400F7CE70 /* TGSRotatorGS232B.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C2F172272C200F7CE70 /* TGSRotatorGS232B.cpp */; };
-		C33A9C5D1722730500F7CE70 /* TGSRotatorInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C31172272C200F7CE70 /* TGSRotatorInterface.cpp */; };
-		C33A9C5E1722730500F7CE70 /* TGSSerial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C33172272C200F7CE70 /* TGSSerial.cpp */; };
-		C33A9C5F1722730500F7CE70 /* TGSTNCInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C35172272C200F7CE70 /* TGSTNCInterface.cpp */; };
-		C33A9C601722730500F7CE70 /* TGSTNCTNC555.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C37172272C200F7CE70 /* TGSTNCTNC555.cpp */; };
-		C33A9C611722730500F7CE70 /* TGSTransceiverCIV.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C39172272C200F7CE70 /* TGSTransceiverCIV.cpp */; };
-		C33A9C621722730500F7CE70 /* TGSTransceiverIC9100.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C3B172272C200F7CE70 /* TGSTransceiverIC9100.cpp */; };
-		C33A9C631722730500F7CE70 /* TGSTransceiverInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C3D172272C200F7CE70 /* TGSTransceiverInterface.cpp */; };
-		C33A9C641722730500F7CE70 /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C51172272C200F7CE70 /* tinyxml2.cpp */; };
+		C3D19E11177FFAB8006BEE07 /* TGSDeviceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DDD177FFAB8006BEE07 /* TGSDeviceInterface.cpp */; };
+		C3D19E12177FFAB8006BEE07 /* TGSDeviceLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DDF177FFAB8006BEE07 /* TGSDeviceLoader.cpp */; };
+		C3D19E13177FFAB8006BEE07 /* TGSDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE1177FFAB8006BEE07 /* TGSDeviceManager.cpp */; };
+		C3D19E14177FFAB8006BEE07 /* TGSError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE3177FFAB8006BEE07 /* TGSError.cpp */; };
+		C3D19E15177FFAB8006BEE07 /* TGSRotatorGS232B.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE5177FFAB8006BEE07 /* TGSRotatorGS232B.cpp */; };
+		C3D19E16177FFAB8006BEE07 /* TGSRotatorInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE7177FFAB8006BEE07 /* TGSRotatorInterface.cpp */; };
+		C3D19E17177FFAB8006BEE07 /* TGSSatelliteInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE9177FFAB8006BEE07 /* TGSSatelliteInterface.cpp */; };
+		C3D19E18177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DEB177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp */; };
+		C3D19E19177FFAB8006BEE07 /* TGSSerial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DED177FFAB8006BEE07 /* TGSSerial.cpp */; };
+		C3D19E1A177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DEF177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp */; };
+		C3D19E1B177FFAB8006BEE07 /* TGSTNCInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF1177FFAB8006BEE07 /* TGSTNCInterface.cpp */; };
+		C3D19E1C177FFAB8006BEE07 /* TGSTNCTNC555.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF3177FFAB8006BEE07 /* TGSTNCTNC555.cpp */; };
+		C3D19E1D177FFAB8006BEE07 /* TGSTransceiverCIV.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF5177FFAB8006BEE07 /* TGSTransceiverCIV.cpp */; };
+		C3D19E1E177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF7177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp */; };
+		C3D19E1F177FFAB8006BEE07 /* TGSTransceiverInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF9177FFAB8006BEE07 /* TGSTransceiverInterface.cpp */; };
+		C3D19E21177FFAB8006BEE07 /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19E0D177FFAB8006BEE07 /* tinyxml2.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,33 +41,39 @@
 /* Begin PBXFileReference section */
 		C33A9C181722725C00F7CE70 /* TGS_POSIX */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TGS_POSIX; sourceTree = BUILT_PRODUCTS_DIR; };
 		C33A9C1B1722725C00F7CE70 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		C33A9C27172272C200F7CE70 /* TGSDeviceInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceInterface.cpp; sourceTree = "<group>"; };
-		C33A9C28172272C200F7CE70 /* TGSDeviceInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSDeviceInterface.h; sourceTree = "<group>"; };
-		C33A9C29172272C200F7CE70 /* TGSDeviceLoader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceLoader.cpp; sourceTree = "<group>"; };
-		C33A9C2A172272C200F7CE70 /* TGSDeviceLoader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSDeviceLoader.h; sourceTree = "<group>"; };
-		C33A9C2B172272C200F7CE70 /* TGSDeviceManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceManager.cpp; sourceTree = "<group>"; };
-		C33A9C2C172272C200F7CE70 /* TGSDeviceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSDeviceManager.h; sourceTree = "<group>"; };
-		C33A9C2D172272C200F7CE70 /* TGSError.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSError.cpp; sourceTree = "<group>"; };
-		C33A9C2E172272C200F7CE70 /* TGSError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSError.h; sourceTree = "<group>"; };
-		C33A9C2F172272C200F7CE70 /* TGSRotatorGS232B.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorGS232B.cpp; sourceTree = "<group>"; };
-		C33A9C30172272C200F7CE70 /* TGSRotatorGS232B.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSRotatorGS232B.h; sourceTree = "<group>"; };
-		C33A9C31172272C200F7CE70 /* TGSRotatorInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorInterface.cpp; sourceTree = "<group>"; };
-		C33A9C32172272C200F7CE70 /* TGSRotatorInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSRotatorInterface.h; sourceTree = "<group>"; };
-		C33A9C33172272C200F7CE70 /* TGSSerial.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSerial.cpp; sourceTree = "<group>"; };
-		C33A9C34172272C200F7CE70 /* TGSSerial.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSSerial.h; sourceTree = "<group>"; };
-		C33A9C35172272C200F7CE70 /* TGSTNCInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCInterface.cpp; sourceTree = "<group>"; };
-		C33A9C36172272C200F7CE70 /* TGSTNCInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSTNCInterface.h; sourceTree = "<group>"; };
-		C33A9C37172272C200F7CE70 /* TGSTNCTNC555.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCTNC555.cpp; sourceTree = "<group>"; };
-		C33A9C38172272C200F7CE70 /* TGSTNCTNC555.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSTNCTNC555.h; sourceTree = "<group>"; };
-		C33A9C39172272C200F7CE70 /* TGSTransceiverCIV.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverCIV.cpp; sourceTree = "<group>"; };
-		C33A9C3A172272C200F7CE70 /* TGSTransceiverCIV.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverCIV.h; sourceTree = "<group>"; };
-		C33A9C3B172272C200F7CE70 /* TGSTransceiverIC9100.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverIC9100.cpp; sourceTree = "<group>"; };
-		C33A9C3C172272C200F7CE70 /* TGSTransceiverIC9100.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverIC9100.h; sourceTree = "<group>"; };
-		C33A9C3D172272C200F7CE70 /* TGSTransceiverInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverInterface.cpp; sourceTree = "<group>"; };
-		C33A9C3E172272C200F7CE70 /* TGSTransceiverInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverInterface.h; sourceTree = "<group>"; };
-		C33A9C3F172272C200F7CE70 /* TGSType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGSType.h; sourceTree = "<group>"; };
-		C33A9C51172272C200F7CE70 /* tinyxml2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxml2.cpp; sourceTree = "<group>"; };
-		C33A9C52172272C200F7CE70 /* tinyxml2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tinyxml2.h; sourceTree = "<group>"; };
+		C3D19DDD177FFAB8006BEE07 /* TGSDeviceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceInterface.cpp; sourceTree = "<group>"; };
+		C3D19DDE177FFAB8006BEE07 /* TGSDeviceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceInterface.h; sourceTree = "<group>"; };
+		C3D19DDF177FFAB8006BEE07 /* TGSDeviceLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceLoader.cpp; sourceTree = "<group>"; };
+		C3D19DE0177FFAB8006BEE07 /* TGSDeviceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceLoader.h; sourceTree = "<group>"; };
+		C3D19DE1177FFAB8006BEE07 /* TGSDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceManager.cpp; sourceTree = "<group>"; };
+		C3D19DE2177FFAB8006BEE07 /* TGSDeviceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceManager.h; sourceTree = "<group>"; };
+		C3D19DE3177FFAB8006BEE07 /* TGSError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSError.cpp; sourceTree = "<group>"; };
+		C3D19DE4177FFAB8006BEE07 /* TGSError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSError.h; sourceTree = "<group>"; };
+		C3D19DE5177FFAB8006BEE07 /* TGSRotatorGS232B.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorGS232B.cpp; sourceTree = "<group>"; };
+		C3D19DE6177FFAB8006BEE07 /* TGSRotatorGS232B.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSRotatorGS232B.h; sourceTree = "<group>"; };
+		C3D19DE7177FFAB8006BEE07 /* TGSRotatorInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorInterface.cpp; sourceTree = "<group>"; };
+		C3D19DE8177FFAB8006BEE07 /* TGSRotatorInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSRotatorInterface.h; sourceTree = "<group>"; };
+		C3D19DE9177FFAB8006BEE07 /* TGSSatelliteInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSatelliteInterface.cpp; sourceTree = "<group>"; };
+		C3D19DEA177FFAB8006BEE07 /* TGSSatelliteInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSatelliteInterface.h; sourceTree = "<group>"; };
+		C3D19DEB177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSatelliteINVADER.cpp; sourceTree = "<group>"; };
+		C3D19DEC177FFAB8006BEE07 /* TGSSatelliteINVADER.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSatelliteINVADER.h; sourceTree = "<group>"; };
+		C3D19DED177FFAB8006BEE07 /* TGSSerial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSerial.cpp; sourceTree = "<group>"; };
+		C3D19DEE177FFAB8006BEE07 /* TGSSerial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSerial.h; sourceTree = "<group>"; };
+		C3D19DEF177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTelemetryINVADER.cpp; sourceTree = "<group>"; };
+		C3D19DF0177FFAB8006BEE07 /* TGSTelemetryINVADER.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTelemetryINVADER.h; sourceTree = "<group>"; };
+		C3D19DF1177FFAB8006BEE07 /* TGSTNCInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCInterface.cpp; sourceTree = "<group>"; };
+		C3D19DF2177FFAB8006BEE07 /* TGSTNCInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTNCInterface.h; sourceTree = "<group>"; };
+		C3D19DF3177FFAB8006BEE07 /* TGSTNCTNC555.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCTNC555.cpp; sourceTree = "<group>"; };
+		C3D19DF4177FFAB8006BEE07 /* TGSTNCTNC555.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTNCTNC555.h; sourceTree = "<group>"; };
+		C3D19DF5177FFAB8006BEE07 /* TGSTransceiverCIV.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverCIV.cpp; sourceTree = "<group>"; };
+		C3D19DF6177FFAB8006BEE07 /* TGSTransceiverCIV.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverCIV.h; sourceTree = "<group>"; };
+		C3D19DF7177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverIC9100.cpp; sourceTree = "<group>"; };
+		C3D19DF8177FFAB8006BEE07 /* TGSTransceiverIC9100.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverIC9100.h; sourceTree = "<group>"; };
+		C3D19DF9177FFAB8006BEE07 /* TGSTransceiverInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverInterface.cpp; sourceTree = "<group>"; };
+		C3D19DFA177FFAB8006BEE07 /* TGSTransceiverInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverInterface.h; sourceTree = "<group>"; };
+		C3D19DFB177FFAB8006BEE07 /* TGSType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSType.h; sourceTree = "<group>"; };
+		C3D19E0D177FFAB8006BEE07 /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxml2.cpp; sourceTree = "<group>"; };
+		C3D19E0E177FFAB8006BEE07 /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyxml2.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,58 +115,64 @@
 		C33A9C24172272C200F7CE70 /* libs */ = {
 			isa = PBXGroup;
 			children = (
-				C33A9C25172272C200F7CE70 /* TGS */,
+				C3D19DDB177FFAB8006BEE07 /* TGS */,
 			);
 			name = libs;
 			path = ../../common/libs;
 			sourceTree = "<group>";
 		};
-		C33A9C25172272C200F7CE70 /* TGS */ = {
+		C3D19DDB177FFAB8006BEE07 /* TGS */ = {
 			isa = PBXGroup;
 			children = (
-				C33A9C26172272C200F7CE70 /* src */,
+				C3D19DDC177FFAB8006BEE07 /* src */,
 			);
 			path = TGS;
 			sourceTree = "<group>";
 		};
-		C33A9C26172272C200F7CE70 /* src */ = {
+		C3D19DDC177FFAB8006BEE07 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				C33A9C27172272C200F7CE70 /* TGSDeviceInterface.cpp */,
-				C33A9C28172272C200F7CE70 /* TGSDeviceInterface.h */,
-				C33A9C29172272C200F7CE70 /* TGSDeviceLoader.cpp */,
-				C33A9C2A172272C200F7CE70 /* TGSDeviceLoader.h */,
-				C33A9C2B172272C200F7CE70 /* TGSDeviceManager.cpp */,
-				C33A9C2C172272C200F7CE70 /* TGSDeviceManager.h */,
-				C33A9C2D172272C200F7CE70 /* TGSError.cpp */,
-				C33A9C2E172272C200F7CE70 /* TGSError.h */,
-				C33A9C2F172272C200F7CE70 /* TGSRotatorGS232B.cpp */,
-				C33A9C30172272C200F7CE70 /* TGSRotatorGS232B.h */,
-				C33A9C31172272C200F7CE70 /* TGSRotatorInterface.cpp */,
-				C33A9C32172272C200F7CE70 /* TGSRotatorInterface.h */,
-				C33A9C33172272C200F7CE70 /* TGSSerial.cpp */,
-				C33A9C34172272C200F7CE70 /* TGSSerial.h */,
-				C33A9C35172272C200F7CE70 /* TGSTNCInterface.cpp */,
-				C33A9C36172272C200F7CE70 /* TGSTNCInterface.h */,
-				C33A9C37172272C200F7CE70 /* TGSTNCTNC555.cpp */,
-				C33A9C38172272C200F7CE70 /* TGSTNCTNC555.h */,
-				C33A9C39172272C200F7CE70 /* TGSTransceiverCIV.cpp */,
-				C33A9C3A172272C200F7CE70 /* TGSTransceiverCIV.h */,
-				C33A9C3B172272C200F7CE70 /* TGSTransceiverIC9100.cpp */,
-				C33A9C3C172272C200F7CE70 /* TGSTransceiverIC9100.h */,
-				C33A9C3D172272C200F7CE70 /* TGSTransceiverInterface.cpp */,
-				C33A9C3E172272C200F7CE70 /* TGSTransceiverInterface.h */,
-				C33A9C3F172272C200F7CE70 /* TGSType.h */,
-				C33A9C40172272C200F7CE70 /* tinyxml2 */,
+				C3D19DDD177FFAB8006BEE07 /* TGSDeviceInterface.cpp */,
+				C3D19DDE177FFAB8006BEE07 /* TGSDeviceInterface.h */,
+				C3D19DDF177FFAB8006BEE07 /* TGSDeviceLoader.cpp */,
+				C3D19DE0177FFAB8006BEE07 /* TGSDeviceLoader.h */,
+				C3D19DE1177FFAB8006BEE07 /* TGSDeviceManager.cpp */,
+				C3D19DE2177FFAB8006BEE07 /* TGSDeviceManager.h */,
+				C3D19DE3177FFAB8006BEE07 /* TGSError.cpp */,
+				C3D19DE4177FFAB8006BEE07 /* TGSError.h */,
+				C3D19DE5177FFAB8006BEE07 /* TGSRotatorGS232B.cpp */,
+				C3D19DE6177FFAB8006BEE07 /* TGSRotatorGS232B.h */,
+				C3D19DE7177FFAB8006BEE07 /* TGSRotatorInterface.cpp */,
+				C3D19DE8177FFAB8006BEE07 /* TGSRotatorInterface.h */,
+				C3D19DE9177FFAB8006BEE07 /* TGSSatelliteInterface.cpp */,
+				C3D19DEA177FFAB8006BEE07 /* TGSSatelliteInterface.h */,
+				C3D19DEB177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp */,
+				C3D19DEC177FFAB8006BEE07 /* TGSSatelliteINVADER.h */,
+				C3D19DED177FFAB8006BEE07 /* TGSSerial.cpp */,
+				C3D19DEE177FFAB8006BEE07 /* TGSSerial.h */,
+				C3D19DEF177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp */,
+				C3D19DF0177FFAB8006BEE07 /* TGSTelemetryINVADER.h */,
+				C3D19DF1177FFAB8006BEE07 /* TGSTNCInterface.cpp */,
+				C3D19DF2177FFAB8006BEE07 /* TGSTNCInterface.h */,
+				C3D19DF3177FFAB8006BEE07 /* TGSTNCTNC555.cpp */,
+				C3D19DF4177FFAB8006BEE07 /* TGSTNCTNC555.h */,
+				C3D19DF5177FFAB8006BEE07 /* TGSTransceiverCIV.cpp */,
+				C3D19DF6177FFAB8006BEE07 /* TGSTransceiverCIV.h */,
+				C3D19DF7177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp */,
+				C3D19DF8177FFAB8006BEE07 /* TGSTransceiverIC9100.h */,
+				C3D19DF9177FFAB8006BEE07 /* TGSTransceiverInterface.cpp */,
+				C3D19DFA177FFAB8006BEE07 /* TGSTransceiverInterface.h */,
+				C3D19DFB177FFAB8006BEE07 /* TGSType.h */,
+				C3D19DFC177FFAB8006BEE07 /* tinyxml2 */,
 			);
 			path = src;
 			sourceTree = "<group>";
 		};
-		C33A9C40172272C200F7CE70 /* tinyxml2 */ = {
+		C3D19DFC177FFAB8006BEE07 /* tinyxml2 */ = {
 			isa = PBXGroup;
 			children = (
-				C33A9C51172272C200F7CE70 /* tinyxml2.cpp */,
-				C33A9C52172272C200F7CE70 /* tinyxml2.h */,
+				C3D19E0D177FFAB8006BEE07 /* tinyxml2.cpp */,
+				C3D19E0E177FFAB8006BEE07 /* tinyxml2.h */,
 			);
 			path = tinyxml2;
 			sourceTree = "<group>";
@@ -213,20 +228,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C33A9C581722730400F7CE70 /* TGSDeviceInterface.cpp in Sources */,
-				C33A9C591722730400F7CE70 /* TGSDeviceLoader.cpp in Sources */,
-				C33A9C5A1722730400F7CE70 /* TGSDeviceManager.cpp in Sources */,
-				C33A9C5B1722730400F7CE70 /* TGSError.cpp in Sources */,
-				C33A9C5C1722730400F7CE70 /* TGSRotatorGS232B.cpp in Sources */,
-				C33A9C5D1722730500F7CE70 /* TGSRotatorInterface.cpp in Sources */,
-				C33A9C5E1722730500F7CE70 /* TGSSerial.cpp in Sources */,
-				C33A9C5F1722730500F7CE70 /* TGSTNCInterface.cpp in Sources */,
-				C33A9C601722730500F7CE70 /* TGSTNCTNC555.cpp in Sources */,
-				C33A9C611722730500F7CE70 /* TGSTransceiverCIV.cpp in Sources */,
-				C33A9C621722730500F7CE70 /* TGSTransceiverIC9100.cpp in Sources */,
-				C33A9C631722730500F7CE70 /* TGSTransceiverInterface.cpp in Sources */,
-				C33A9C641722730500F7CE70 /* tinyxml2.cpp in Sources */,
 				C33A9C1C1722725C00F7CE70 /* main.cpp in Sources */,
+				C3D19E11177FFAB8006BEE07 /* TGSDeviceInterface.cpp in Sources */,
+				C3D19E12177FFAB8006BEE07 /* TGSDeviceLoader.cpp in Sources */,
+				C3D19E13177FFAB8006BEE07 /* TGSDeviceManager.cpp in Sources */,
+				C3D19E14177FFAB8006BEE07 /* TGSError.cpp in Sources */,
+				C3D19E15177FFAB8006BEE07 /* TGSRotatorGS232B.cpp in Sources */,
+				C3D19E16177FFAB8006BEE07 /* TGSRotatorInterface.cpp in Sources */,
+				C3D19E17177FFAB8006BEE07 /* TGSSatelliteInterface.cpp in Sources */,
+				C3D19E18177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp in Sources */,
+				C3D19E19177FFAB8006BEE07 /* TGSSerial.cpp in Sources */,
+				C3D19E1A177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp in Sources */,
+				C3D19E1B177FFAB8006BEE07 /* TGSTNCInterface.cpp in Sources */,
+				C3D19E1C177FFAB8006BEE07 /* TGSTNCTNC555.cpp in Sources */,
+				C3D19E1D177FFAB8006BEE07 /* TGSTransceiverCIV.cpp in Sources */,
+				C3D19E1E177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp in Sources */,
+				C3D19E1F177FFAB8006BEE07 /* TGSTransceiverInterface.cpp in Sources */,
+				C3D19E21177FFAB8006BEE07 /* tinyxml2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

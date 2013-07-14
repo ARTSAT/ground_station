@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6 (LLVM compiler 4.2)
+**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
 **
 **      TGSTransceiverIC9100.cpp
 **
@@ -99,6 +99,11 @@ namespace tgs {
     return error;
 }
 
+/*public virtual */bool TGSTransceiverIC9100::isValid(void) const
+{
+    return super::isValid() || Transceiver::isConnected();
+}
+
 /*public virtual */TGSError TGSTransceiverIC9100::open(std::string const& port, int baud, bool verbose)
 {
     return TGSERROR_NO_SUPPORT;
@@ -114,9 +119,11 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = Transceiver::setSatelliteMode(false)) == TGSERROR_OK) {
-        if ((error = Transceiver::selectMainBand()) == TGSERROR_OK) {
-            if ((error = Transceiver::selectVFOA()) == TGSERROR_OK) {
-                error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_CW);
+        if ((error = Transceiver::setSubBandMode(false)) == TGSERROR_OK) {
+            if ((error = Transceiver::selectMainBand()) == TGSERROR_OK) {
+                if ((error = Transceiver::selectVFOA()) == TGSERROR_OK) {
+                    error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_CW);
+                }
             }
         }
     }
@@ -128,12 +135,14 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = Transceiver::setSatelliteMode(true)) == TGSERROR_OK) {
-        if ((error = Transceiver::selectSubBand()) == TGSERROR_OK) {
-            if ((error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_FM)) == TGSERROR_OK) {
-                if ((error = Transceiver::setDataMode(true)) == TGSERROR_OK) {
-                    if ((error = Transceiver::selectMainBand()) == TGSERROR_OK) {
-                        if ((error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_FM)) == TGSERROR_OK) {
-                            error = Transceiver::setDataMode(true);
+        if ((error = Transceiver::setSubBandMode(true)) == TGSERROR_OK) {
+            if ((error = Transceiver::selectSubBand()) == TGSERROR_OK) {
+                if ((error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_FM)) == TGSERROR_OK) {
+                    if ((error = Transceiver::setDataMode(true)) == TGSERROR_OK) {
+                        if ((error = Transceiver::selectMainBand()) == TGSERROR_OK) {
+                            if ((error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_FM)) == TGSERROR_OK) {
+                                error = Transceiver::setDataMode(true);
+                            }
                         }
                     }
                 }
