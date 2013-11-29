@@ -56,6 +56,12 @@ namespace tgs {
 #define lengthof(param)         (sizeof(param) / sizeof(param[0]))
 #define asciiesof(param)        (lengthof(param) - 1)
 
+struct TLERec {
+    char                        name[25];
+    char                        one[70];
+    char                        two[70];
+};
+
 }// end of namespace
 
 #include "TGSError.h"

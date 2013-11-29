@@ -61,14 +61,12 @@
     std::string response;
     TGSError error(TGSERROR_OK);
     
-    if (baud == 19200) {
+    if (baud == 4800) {
         if ((error = super::open(port, baud, false, verbose)) == TGSERROR_OK) {
-            sleep(2);
             flushRead();
             if ((error = write("c-m-c-eco")) == TGSERROR_OK) {
                 if ((error = read(&response)) == TGSERROR_OK) {
                     if (response == "r-c-m-eco") {
-                        _shutdown = false;
                         if (verbose) {
                             std::cout << "MBSMainBoard::open [port : " << port << ", baud : " << baud << "]" << std::endl;
                         }
@@ -99,20 +97,24 @@
 /*public virtual */TGSError MBSMainBoard::update(void)
 {
     std::vector<std::string>::iterator it;
-    int address;
-    TGSError condition;
     TGSError error(TGSERROR_OK);
     
     if ((error = super::update()) == TGSERROR_OK) {
         poll();
         for (it = _queue.begin(); it != _queue.end(); ++it) {
-            if (sscanf(it->c_str(), "c-c-m-nsd-%04x", &address) >= 1) {
-                condition = write("r-m-c-nsd");
-                if (!_shutdown) {
-                    if (_notifier != NULL) {
-                        _notifier->onNotifyNSD(address, condition);
-                    }
-                    _shutdown = true;
+            if (*it == "c-c-m-nsd") {
+                if (_notifier != NULL) {
+                    _notifier->onNotifyNSD();
+                }
+            }
+            else if (*it == "c-c-m-don") {
+                if (_notifier != NULL) {
+                    _notifier->onNotifyDON();
+                }
+            }
+            else if (*it == "c-c-m-dof") {
+                if (_notifier != NULL) {
+                    _notifier->onNotifyDOF();
                 }
             }
         }
@@ -121,15 +123,16 @@
     return error;
 }
 
-/*public */TGSError MBSMainBoard::pushTelemetry(std::string const& param)
+/*public */TGSError MBSMainBoard::pushTelemetry(unsigned char const* data, int length)
 {
     std::string request;
     TGSError error(TGSERROR_OK);
     
     if (isValid()) {
         request = "c-m-c-smm";
-        if (!param.empty()) {
-            request += "-" + param;
+        if (data != NULL && length > 0) {
+            request += "-";
+            request.append(reinterpret_cast<char const*>(data), length);
         }
         error = write(request);
     }
@@ -139,24 +142,12 @@
     return error;
 }
 
-/*public */TGSError MBSMainBoard::shutdown(int* result)
+/*public */TGSError MBSMainBoard::shutdown(void)
 {
-    std::string response;
     TGSError error(TGSERROR_OK);
     
     if (isValid()) {
-        if (result != NULL) {
-            if ((error = write("c-m-c-asd")) == TGSERROR_OK) {
-                if ((error = read(&response)) == TGSERROR_OK) {
-                    if (sscanf(response.c_str(), "r-c-m-asd-%04x", result) < 1) {
-                        error = TGSERROR_INVALID_FORMAT;
-                    }
-                }
-            }
-        }
-        else {
-            error = TGSERROR_INVALID_PARAM;
-        }
+        error = write("c-m-c-asd");
     }
     else {
         error = TGSERROR_INVALID_STATE;
@@ -205,7 +196,17 @@
     return;
 }
 
-/*protected virtual */void MBSMainBoard::Notifier::onNotifyNSD(int address, TGSError error)
+/*protected virtual */void MBSMainBoard::Notifier::onNotifyNSD(void)
+{
+    return;
+}
+
+/*protected virtual */void MBSMainBoard::Notifier::onNotifyDON(void)
+{
+    return;
+}
+
+/*protected virtual */void MBSMainBoard::Notifier::onNotifyDOF(void)
 {
     return;
 }

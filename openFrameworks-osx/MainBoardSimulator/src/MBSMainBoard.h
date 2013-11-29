@@ -59,12 +59,13 @@ class MBSMainBoard : public TGSDeviceInterface {
     public:
         class Notifier {
             protected:
-                virtual void                onNotifyNSD                     (int address, TGSError error);
+                virtual void                onNotifyNSD                     (void);
+                virtual void                onNotifyDON                     (void);
+                virtual void                onNotifyDOF                     (void);
             friend      class               MBSMainBoard;
         };
     
     private:
-                bool                        _shutdown;
                 std::vector<std::string>    _queue;
                 Notifier*                   _notifier;
     
@@ -76,8 +77,8 @@ class MBSMainBoard : public TGSDeviceInterface {
         virtual TGSError                    open                            (std::string const& port, int baud, bool verbose = true);
         virtual void                        close                           (void);
         virtual TGSError                    update                          (void);
-                TGSError                    pushTelemetry                   (std::string const& param);
-                TGSError                    shutdown                        (int* result);
+                TGSError                    pushTelemetry                   (unsigned char const* data, int length);
+                TGSError                    shutdown                        (void);
     private:
                 TGSError                    write                           (std::string const& param);
                 TGSError                    read                            (std::string* result);

@@ -46,15 +46,17 @@
 
 #include "testApp.h"
 
-static unsigned char const g_table[63] = {
+static unsigned char const g_table[59] = {
     0x00, 0x00, 0x00, 0x00,
     0x04, 0x05, 0x00,
+    0xFF, 0xFF, 0xFF,   // reserved
     0x09, 0x38, 0x25, 0x00, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x00, 0x05, 0x18, 0x0A,
+    0xFF,               // reserved
     0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C, 0x4C,
+    0xFF, 0xFF,         // reserved
     0x85, 0x86, 0x80,
     0xA5, 0x65, 0x23,
-    0x00,
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11
+    0xFF, 0xFF, 0xFF    // reserved
 };
 
 void testApp::setup()
@@ -75,11 +77,11 @@ void testApp::setup()
     _ui->addSpacer();
     _state = new ofxUILabel("", OFX_UI_FONT_MEDIUM);
     _ui->addWidgetDown(_state);
-    _memory = new ofxUILabel("", OFX_UI_FONT_MEDIUM);
-    _ui->addWidgetDown(_memory);
+    _audio = new ofxUILabel("", OFX_UI_FONT_MEDIUM);
+    _ui->addWidgetDown(_audio);
     _connect = new ofxUILabelToggle("", value, 150);
     _ui->addWidgetDown(_connect);
-    _ui->addWidgetRight(new ofxUILabelButton("shutdown", value, 150));
+    _ui->addWidgetRight(new ofxUILabelButton("asd", value, 150));
     _ledTelemetry = new ofxUILabelButton("", value, 50);
     _ledTelemetry->setVisible(false);
     _ui->addWidgetRight(_ledTelemetry, OFX_UI_ALIGN_RIGHT);
@@ -89,7 +91,7 @@ void testApp::setup()
     ofAddListener(_ui->newGUIEvent, this, &testApp::guiEvent);
     
     setLabelState("disconnect");
-    setLabelMemory(0);
+    setLabelAudio("off");
     setToggleConnect(false);
     return;
 }
@@ -111,26 +113,17 @@ void testApp::update()
 
 void testApp::threadedFunction(void)
 {
-    stringstream serialize;
     unsigned int time;
     int i;
     
-    serialize << hex << setfill('0');
     while (isThreadRunning()) {
         time = ofGetUnixTime();
-        _mutexTelemetry.lock();
         _telemetry[0] = (time >> 24) & 0xFF;
         _telemetry[1] = (time >> 16) & 0xFF;
         _telemetry[2] = (time >>  8) & 0xFF;
         _telemetry[3] = (time >>  0) & 0xFF;
-        serialize.str("");
-        for (i = 0; i < lengthof(_telemetry); ++i) {
-            serialize << setw(2) << static_cast<int>(_telemetry[i]);
-        }
-        _mutexTelemetry.unlock();
         _mutexMain.lock();
-        cout << serialize.str() << endl;
-        if (_main.pushTelemetry(serialize.str()) == TGSERROR_OK) {
+        if (_main.pushTelemetry(_telemetry, sizeof(_telemetry)) == TGSERROR_OK) {
             _mutexBeat.lock();
             _beat = 255;
             _mutexBeat.unlock();
@@ -141,15 +134,26 @@ void testApp::threadedFunction(void)
             _mutexBeat.unlock();
         }
         _mutexMain.unlock();
-        sleep(1000);
+        sleep(900);
     }
     return;
 }
 
-void testApp::onNotifyNSD(int address, TGSError error)
+void testApp::onNotifyNSD(void)
 {
     setLabelState("shutdown");
-    setLabelMemory(address);
+    return;
+}
+
+void testApp::onNotifyDON(void)
+{
+    setLabelAudio("on");
+    return;
+}
+
+void testApp::onNotifyDOF(void)
+{
+    setLabelAudio("off");
     return;
 }
 
@@ -168,35 +172,17 @@ void testApp::guiEvent(ofxUIEventArgs& e)
         }
         case 7:
         {
-            int address;
             TGSError error;
             
             if (!static_cast<ofxUILabelButton*>(e.widget)->getValue()) {
-                _mutexMain.lock();
-                error = _main.shutdown(&address);
-                _mutexMain.unlock();
-                switch (error) {
-                    case TGSERROR_OK:
-                    case TGSERROR_TIMEOUT:
-                    case TGSERROR_INVALID_FORMAT:
-                        setLabelState("shutdown");
-                        switch (error) {
-                            case TGSERROR_OK:
-                                setLabelMemory(address);
-                                break;
-                            case TGSERROR_TIMEOUT:
-                                setLabelMemory("<timeout>");
-                                break;
-                            case TGSERROR_INVALID_FORMAT:
-                                setLabelMemory("<???>");
-                                break;
-                            default:
-                                break;
-                        }
-                        close();
-                        break;
-                    default:
-                        break;
+                if (!_asd) {
+                    _mutexMain.lock();
+                    error = _main.shutdown();
+                    _mutexMain.unlock();
+                    if (error == TGSERROR_OK) {
+                        setLabelState("abnormal");
+                        _asd = true;
+                    }
                 }
             }
             break;
@@ -214,8 +200,9 @@ TGSError testApp::open(void)
         if ((error = _loader.open(ofToDataPath("usbserial.xml"))) == TGSERROR_OK) {
             if (_main.isValid()) {
                 setLabelState("start");
-                setLabelMemory(0);
+                setLabelAudio("on");
                 setToggleConnect(true);
+                _asd = false;
                 startThread();
             }
             else {
@@ -234,6 +221,7 @@ void testApp::close(void)
     waitForThread();
     _loader.close();
     _loader.clear();
+    setLabelAudio("off");
     setLabelState("disconnect");
     setToggleConnect(false);
     return;
@@ -245,17 +233,9 @@ void testApp::setLabelState(string const& param)
     return;
 }
 
-void testApp::setLabelMemory(string const& param)
+void testApp::setLabelAudio(string const& param)
 {
-    _memory->setLabel("shared memory : " + param);
-    return;
-}
-
-void testApp::setLabelMemory(int param)
-{
-    string hex(ofToHex(param));
-    
-    setLabelMemory("0x" + hex.substr(hex.size() - 4, hex.size()));
+    _audio->setLabel("audio bus : " + param);
     return;
 }
 
@@ -284,6 +264,10 @@ void testApp::draw()
     }
     else if (_state->getLabel().find("start") != string::npos) {
         ofSetColor(127, 255, 127);
+        _ledState->getRect()->draw();
+    }
+    else if (_state->getLabel().find("abnormal") != string::npos) {
+        ofSetColor(255, 255, 127);
         _ledState->getRect()->draw();
     }
     else if (_state->getLabel().find("shutdown") != string::npos) {

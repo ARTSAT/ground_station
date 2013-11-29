@@ -3,6 +3,9 @@ TGS package information
 o common
   This is a directory containing main TGS library.
 
+o artsatd
+  This is a ground station daemon software using TGS library.
+
 o TGS_OF
   This is a test project to test compilability of TGS library on the openFrameworks.
   To compile this, put this project path as 'of_vX.X.X_osx_release/ground_station/TGS_OF'.

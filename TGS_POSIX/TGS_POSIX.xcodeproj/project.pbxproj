@@ -91,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				C33A9C1A1722725C00F7CE70 /* TGS_POSIX */,
+				C33A9C24172272C200F7CE70 /* libs */,
 				C33A9C191722725C00F7CE70 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -107,7 +108,6 @@
 			isa = PBXGroup;
 			children = (
 				C33A9C1B1722725C00F7CE70 /* main.cpp */,
-				C33A9C24172272C200F7CE70 /* libs */,
 			);
 			path = TGS_POSIX;
 			sourceTree = "<group>";
@@ -118,7 +118,7 @@
 				C3D19DDB177FFAB8006BEE07 /* TGS */,
 			);
 			name = libs;
-			path = ../../common/libs;
+			path = ../common/libs;
 			sourceTree = "<group>";
 		};
 		C3D19DDB177FFAB8006BEE07 /* TGS */ = {
