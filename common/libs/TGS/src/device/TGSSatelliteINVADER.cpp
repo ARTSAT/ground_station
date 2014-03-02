@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -84,6 +84,7 @@ namespace tgs {
     
     if (baud == 19200) {
         if ((error = super::open(port, baud, false, verbose)) == TGSERROR_OK) {
+            usleep(1000000);
             flushRead();
             if ((error = write("c-c-g-sta")) == TGSERROR_OK) {
                 if ((error = read(&response)) == TGSERROR_OK) {

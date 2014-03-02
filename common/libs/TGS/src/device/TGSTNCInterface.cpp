@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -58,7 +58,7 @@ namespace tgs {
     close();
 }
 
-/*public virtual */TGSError TGSTNCInterface::setupModePacket(std::string const& local, std::string const& remote)
+/*public virtual */TGSError TGSTNCInterface::setPacketMode(std::string const& local, std::string const& remote)
 {
     TGSError error(TGSERROR_OK);
     

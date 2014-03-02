@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -63,10 +63,10 @@ class TGSTNCTNC555 : public TGSTNCInterface {
     public:
         explicit                            TGSTNCTNC555                    (void);
         virtual                             ~TGSTNCTNC555                   (void);
+        virtual TGSError                    setPacketMode                   (std::string const& local, std::string const& remote);
         virtual TGSError                    open                            (std::string const& port, int baud, bool verbose = true);
         virtual void                        close                           (void);
         virtual TGSError                    update                          (void);
-        virtual TGSError                    setupModePacket                 (std::string const& local, std::string const& remote);
         virtual TGSError                    selectModeCommand               (void);
         virtual TGSError                    selectModeConverse              (void);
         virtual TGSError                    sendPacket                      (std::string const& packet);

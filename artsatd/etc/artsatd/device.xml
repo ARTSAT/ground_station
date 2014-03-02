@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device>
+    <civ>
+        <port></port>
+        <baud>9600</baud>
+    </civ>
+    <rotator>
+        <port></port>
+        <baud>9600</baud>
+    </rotator>
+    <satellite>
+        <port>tty.usbserial-A900XS1Q</port>
+        <baud>19200</baud>
+    </satellite>
+    <tnc>
+        <port></port>
+        <baud>9600</baud>
+    </tnc>
+    <transceiver>
+        <port></port>
+        <baud>9600</baud>
+    </transceiver>
+</device>

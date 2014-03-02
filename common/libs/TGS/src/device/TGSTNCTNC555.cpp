@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -57,6 +57,24 @@ namespace tgs {
     close();
 }
 
+/*public virtual */TGSError TGSTNCTNC555::setPacketMode(std::string const& local, std::string const& remote)
+{
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::setPacketMode(local, remote)) == TGSERROR_NO_SUPPORT) {
+        if ((error = set("MYCALL", local)) == TGSERROR_OK) {
+            if ((error = set("UNPROTO", remote)) == TGSERROR_OK) {
+                if ((error = set("CR", "ON")) == TGSERROR_OK) {
+                    if ((error = set("LFADD", "ON")) == TGSERROR_OK) {
+                        error = set("FULLDUP", "ON");
+                    }
+                }
+            }
+        }
+    }
+    return error;
+}
+
 /*public virtual */TGSError TGSTNCTNC555::open(std::string const& port, int baud, bool verbose)
 {
     std::string response;
@@ -68,17 +86,18 @@ namespace tgs {
                 if ((error = write("MODE AUTO")) == TGSERROR_OK) {
                     if ((error = write("AUTOLF OFF")) == TGSERROR_OK) {
                         if ((error = write("ECHO ON")) == TGSERROR_OK) {
+                            usleep(1000000);
                             flushRead();
                             if ((error = write("ECHO ON")) == TGSERROR_OK) {
                                 if ((error = read(&response)) == TGSERROR_OK) {
-                                    //if (response == "ECHO ON""\x0D""ECHO     was ON") {
+                                    if (response == "ECHO ON""\x0D""ECHO     was ON") {
                                         if (verbose) {
                                             std::cout << "TGSTNCTNC555::open [port : " << port << ", baud : " << baud << "]" << std::endl;
                                         }
-                                    //}
-                                    //else {
-                                    //    error = TGSERROR_INVALID_STATE;
-                                    //}
+                                    }
+                                    else {
+                                        error = TGSERROR_INVALID_STATE;
+                                    }
                                 }
                             }
                         }
@@ -114,20 +133,6 @@ namespace tgs {
             notifyReceivePacket(*it);
         }
         _queue.clear();
-    }
-    return error;
-}
-
-/*public virtual */TGSError TGSTNCTNC555::setupModePacket(std::string const& local, std::string const& remote)
-{
-    TGSError error(TGSERROR_OK);
-    
-    if ((error = super::setupModePacket(local, remote)) == TGSERROR_NO_SUPPORT) {
-        if ((error = set("MYCALL", local)) == TGSERROR_OK) {
-            if ((error = set("UNPROTO", remote)) == TGSERROR_OK) {
-                error = set("FULLDUP", "ON");
-            }
-        }
     }
     return error;
 }
@@ -202,7 +207,7 @@ namespace tgs {
     std::string string;
     
     while (available()) {
-        if (super::read("", &string, "\x09\x0D", true) == TGSERROR_OK) {
+        if (super::read("", &string, "\x0D\x0A", true) == TGSERROR_OK) {
             _queue.push_back(string);
         }
     }

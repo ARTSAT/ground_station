@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<network>
+    <celestrak>
+        <site>http://www.celestrak.com/NORAD/elements/tle-new.txt</site>
+        <site>http://www.celestrak.com/NORAD/elements/cubesat.txt</site>
+        <site>http://www.celestrak.com/NORAD/elements/amateur.txt</site>
+        <interval>180000</interval>
+    </celestrak>
+</network>

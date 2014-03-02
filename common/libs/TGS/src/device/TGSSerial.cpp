@@ -1,6 +1,6 @@
 /*
 **      Copyright (c) 2004- openFrameworks Community
-**      Portions Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Portions Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **
 **      The MIT License (MIT)
 **

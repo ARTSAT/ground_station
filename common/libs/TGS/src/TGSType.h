@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -65,5 +65,11 @@ struct TLERec {
 }// end of namespace
 
 #include "TGSError.h"
+
+namespace tgs {
+
+extern  TGSError    convert     (std::string const& name, std::string const& one, std::string const& two, TLERec* result);
+
+}// end of namespace
 
 #endif

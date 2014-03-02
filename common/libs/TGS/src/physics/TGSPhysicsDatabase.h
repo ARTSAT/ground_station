@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -48,30 +48,24 @@
 #define __TGS_PHYSICSDATABASE_H
 
 #include "TGSType.h"
+#include "TGSDatabaseInterface.h"
 #include <vector>
 #include "IRXTime.h"
 
 namespace tgs {
 
-class TGSPhysicsDatabase {
+class TGSPhysicsDatabase : public TGSDatabaseInterface {
     public:
-        enum RadioModeEnum {
-            RADIOMODE_NONE,
-            RADIOMODE_LSB,
-            RADIOMODE_USB,
-            RADIOMODE_AM,
-            RADIOMODE_CW,
-            RADIOMODE_FM,
-            RADIOMODE_LIMIT
-        };
+        typedef TGSPhysicsDatabase          self;
+        typedef TGSDatabaseInterface        super;
     
     public:
         struct RadioRec {
-            RadioModeEnum                   mode;
+            std::string                     mode;
             int                             frequency;
+            int                             drift;
         };
-    private:
-        struct ItemRec {
+        struct FieldRec {
             int                             norad;
             std::string                     name;
             std::string                     callsign;
@@ -79,40 +73,46 @@ class TGSPhysicsDatabase {
             RadioRec                        sender;
             RadioRec                        receiver;
             ir::IRXTime                     time;
-            union {
-                TLERec                      tle;
-            };
+            TLERec                          tle;
         };
-    
-    private:
-                std::vector<ItemRec>        _item;
     
     public:
         explicit                            TGSPhysicsDatabase              (void);
-                                            ~TGSPhysicsDatabase             (void);
-                TGSError                    registerName                    (int norad, std::string const& param);
-                TGSError                    registerCallsign                (int norad, std::string const& param);
-                TGSError                    registerRadioBeacon             (int norad, RadioRec const& param);
-                TGSError                    registerRadioSender             (int norad, RadioRec const& param);
-                TGSError                    registerRadioReceiver           (int norad, RadioRec const& param);
-                TGSError                    registerOrbitData               (TLERec const& param);
-                TGSError                    open                            (std::string const& file);
-                void                        close                           (void);
+        virtual                             ~TGSPhysicsDatabase             (void);
+                TGSError                    setName                         (int norad, std::string const& param);
+                TGSError                    getName                         (int norad, std::string* result);
+                TGSError                    setCallsign                     (int norad, std::string const& param);
+                TGSError                    getCallsign                     (int norad, std::string* result);
+                TGSError                    setRadioBeacon                  (int norad, RadioRec const& param);
+                TGSError                    getRadioBeacon                  (int norad, RadioRec* result);
+                TGSError                    setRadioSender                  (int norad, RadioRec const& param);
+                TGSError                    getRadioSender                  (int norad, RadioRec* result);
+                TGSError                    setRadioReceiver                (int norad, RadioRec const& param);
+                TGSError                    getRadioReceiver                (int norad, RadioRec* result);
+                TGSError                    setOrbitData                    (TLERec const& param, ir::IRXTime const& time);
+                TGSError                    getOrbitData                    (int norad, TLERec* result, ir::IRXTime* time = NULL);
+                TGSError                    getCount                        (int* result);
+                TGSError                    getField                        (int norad, FieldRec* result);
+                TGSError                    getField                        (int limit, int offset, std::vector<FieldRec>* result);
+                TGSError                    getFieldByName                  (std::string const& name, std::vector<FieldRec>* result);
+                TGSError                    getFieldByCallsign              (std::string const& callsign, std::vector<FieldRec>* result);
+                TGSError                    getNoradByName                  (std::string const& name, std::vector<int>* result);
+                TGSError                    getNoradByCallsign              (std::string const& callsign, std::vector<int>* result);
+                bool                        hasUpdate                       (int norad);
+        virtual TGSError                    open                            (std::string const& file);
+        virtual void                        close                           (void);
     private:
-                TGSError                    findItem                        (int norad, ItemRec** result);
+                TGSError                    setText                         (int norad, char const* format[3][2], std::string const& param);
+                TGSError                    getText                         (int norad, char const* format[2][2], std::string* result);
+                TGSError                    setRadio                        (int norad, char const* format[5][2], RadioRec const& param);
+                TGSError                    getRadio                        (int norad, char const* format[4][2], RadioRec* result);
+                TGSError                    getField                        (std::string const& key, int index, std::vector<FieldRec>* result);
+                TGSError                    getNorad                        (std::string const& key, int index, std::vector<int>* result);
+                TGSError                    readField                       (int column, FieldRec* result);
     private:
                                             TGSPhysicsDatabase              (TGSPhysicsDatabase const&);
                 TGSPhysicsDatabase&         operator=                       (TGSPhysicsDatabase const&);
 };
-
-/*public */inline TGSPhysicsDatabase::TGSPhysicsDatabase(void)
-{
-}
-
-/*public */inline TGSPhysicsDatabase::~TGSPhysicsDatabase(void)
-{
-    close();
-}
 
 }// end of namespace
 

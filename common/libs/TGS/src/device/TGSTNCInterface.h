@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -65,13 +65,16 @@ class TGSTNCInterface : public TGSDeviceInterface {
         };
     
     private:
+                std::string                 _delimiter;
                 Notifier*                   _notifier;
     
     public:
         virtual                             ~TGSTNCInterface                (void) = 0;
+                void                        setPacketDelimiter              (std::string const& param);
+                std::string const&          getPacketDelimiter              (void) const;
                 void                        setNotifier                     (Notifier* param);
                 Notifier*                   getNotifier                     (void) const;
-        virtual TGSError                    setupModePacket                 (std::string const& local, std::string const& remote);
+        virtual TGSError                    setPacketMode                   (std::string const& local, std::string const& remote);
         virtual TGSError                    selectModeCommand               (void);
         virtual TGSError                    selectModeConverse              (void);
         virtual TGSError                    sendPacket                      (std::string const& packet);
@@ -82,6 +85,17 @@ class TGSTNCInterface : public TGSDeviceInterface {
                                             TGSTNCInterface                 (TGSTNCInterface const&);
                 TGSTNCInterface&            operator=                       (TGSTNCInterface const&);
 };
+
+/*public */inline void TGSTNCInterface::setPacketDelimiter(std::string const& param)
+{
+    _delimiter = param;
+    return;
+}
+
+/*public */inline std::string const& TGSTNCInterface::getPacketDelimiter(void) const
+{
+    return _delimiter;
+}
 
 /*public */inline void TGSTNCInterface::setNotifier(Notifier* param)
 {
