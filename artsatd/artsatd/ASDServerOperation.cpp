@@ -252,7 +252,7 @@
                     "<td>" + sender + "</td>"
                 "</tr>"
                 "<tr>"
-                    "<th rowspan='4'>Command</th>"
+                    "<th rowspan='9'>Command</th>"
                     "<td>"
                         "<form action='' method='get'>"
                             "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
