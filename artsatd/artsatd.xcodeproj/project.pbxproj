@@ -184,6 +184,19 @@
 		C31409C417812D8D00F320FE /* ASDServerDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDServerDatabase.h; sourceTree = "<group>"; };
 		C31409C61781303900F320FE /* ASDServerOperation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDServerOperation.cpp; sourceTree = "<group>"; };
 		C31409C71781303900F320FE /* ASDServerOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDServerOperation.h; sourceTree = "<group>"; };
+		C31DC1C0192BC2F900AE6A3A /* config.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		C31DC1C1192BC2F900AE6A3A /* device.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = device.xml; sourceTree = "<group>"; };
+		C31DC1C2192BC2F900AE6A3A /* network.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = network.xml; sourceTree = "<group>"; };
+		C31DC1C3192BC2F900AE6A3A /* plugin.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = plugin.xml; sourceTree = "<group>"; };
+		C31DC1C6192BC2F900AE6A3A /* default.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = default.css; sourceTree = "<group>"; };
+		C31DC1C8192BC2F900AE6A3A /* TamabiGS.app.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = TamabiGS.app.zip; sourceTree = "<group>"; };
+		C31DC1C9192BC2F900AE6A3A /* hardware.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = hardware.html; sourceTree = "<group>"; };
+		C31DC1CA192BC2F900AE6A3A /* orbital.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = orbital.html; sourceTree = "<group>"; };
+		C31DC1CC192BC2F900AE6A3A /* invader.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = invader.html; sourceTree = "<group>"; };
+		C31DC1CD192BC2F900AE6A3A /* root.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = root.html; sourceTree = "<group>"; };
+		C31DC1CE192BC2F900AE6A3A /* streaming.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = streaming.html; sourceTree = "<group>"; };
+		C31DC1CF192BC2F900AE6A3A /* webcam.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = webcam.html; sourceTree = "<group>"; };
+		C31DC1D3192BC2F900AE6A3A /* jp.artsat.artsatd.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = jp.artsat.artsatd.plist; sourceTree = "<group>"; };
 		C325847C175645E3000EDE42 /* artsatd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = artsatd; sourceTree = BUILT_PRODUCTS_DIR; };
 		C325850617568F54000EDE42 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
 		C325855017569147000EDE42 /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = ../../../../../../usr/lib/libssl.dylib; sourceTree = "<group>"; };
@@ -306,18 +319,6 @@
 		C3E8B3C818C30BB10061702D /* ASDServerRPCMethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDServerRPCMethods.cpp; sourceTree = "<group>"; };
 		C3E8B3C918C30BB10061702D /* ASDServerRPCMethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDServerRPCMethods.h; sourceTree = "<group>"; };
 		C3E8B3CE18C30D2B0061702D /* prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefix.pch; sourceTree = "<group>"; };
-		C3FB53641925BB5900167F7B /* config.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
-		C3FB53651925BB5900167F7B /* device.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = device.xml; sourceTree = "<group>"; };
-		C3FB53661925BB5900167F7B /* network.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = network.xml; sourceTree = "<group>"; };
-		C3FB53671925BB5900167F7B /* plugin.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = plugin.xml; sourceTree = "<group>"; };
-		C3FB536A1925BB5900167F7B /* default.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = default.css; sourceTree = "<group>"; };
-		C3FB536C1925BB5900167F7B /* TamabiGS.app.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = TamabiGS.app.zip; sourceTree = "<group>"; };
-		C3FB536D1925BB5900167F7B /* hardware.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = hardware.html; sourceTree = "<group>"; };
-		C3FB536E1925BB5900167F7B /* orbital.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = orbital.html; sourceTree = "<group>"; };
-		C3FB53701925BB5900167F7B /* invader.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = invader.html; sourceTree = "<group>"; };
-		C3FB53711925BB5900167F7B /* root.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = root.html; sourceTree = "<group>"; };
-		C3FB53721925BB5900167F7B /* streaming.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = streaming.html; sourceTree = "<group>"; };
-		C3FB53731925BB5900167F7B /* webcam.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = webcam.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -338,14 +339,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C31119AF18D6C4C500E42E8A /* etc */ = {
-			isa = PBXGroup;
-			children = (
-				C3FB53631925BB5900167F7B /* artsatd */,
-			);
-			path = etc;
-			sourceTree = "<group>";
-		};
 		C3111A4518D758CC00E42E8A /* websocketpp */ = {
 			isa = PBXGroup;
 			children = (
@@ -644,12 +637,104 @@
 			path = internal;
 			sourceTree = "<group>";
 		};
+		C31DC1BD192BC2F900AE6A3A /* install */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1BE192BC2F900AE6A3A /* etc */,
+				C31DC1D0192BC2F900AE6A3A /* System */,
+			);
+			path = install;
+			sourceTree = "<group>";
+		};
+		C31DC1BE192BC2F900AE6A3A /* etc */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1BF192BC2F900AE6A3A /* artsatd */,
+			);
+			path = etc;
+			sourceTree = "<group>";
+		};
+		C31DC1BF192BC2F900AE6A3A /* artsatd */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1C0192BC2F900AE6A3A /* config.xml */,
+				C31DC1C1192BC2F900AE6A3A /* device.xml */,
+				C31DC1C2192BC2F900AE6A3A /* network.xml */,
+				C31DC1C3192BC2F900AE6A3A /* plugin.xml */,
+				C31DC1C4192BC2F900AE6A3A /* server */,
+			);
+			path = artsatd;
+			sourceTree = "<group>";
+		};
+		C31DC1C4192BC2F900AE6A3A /* server */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1C5192BC2F900AE6A3A /* css */,
+				C31DC1C7192BC2F900AE6A3A /* download */,
+				C31DC1C9192BC2F900AE6A3A /* hardware.html */,
+				C31DC1CA192BC2F900AE6A3A /* orbital.html */,
+				C31DC1CB192BC2F900AE6A3A /* plugin */,
+				C31DC1CD192BC2F900AE6A3A /* root.html */,
+				C31DC1CE192BC2F900AE6A3A /* streaming.html */,
+				C31DC1CF192BC2F900AE6A3A /* webcam.html */,
+			);
+			path = server;
+			sourceTree = "<group>";
+		};
+		C31DC1C5192BC2F900AE6A3A /* css */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1C6192BC2F900AE6A3A /* default.css */,
+			);
+			path = css;
+			sourceTree = "<group>";
+		};
+		C31DC1C7192BC2F900AE6A3A /* download */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1C8192BC2F900AE6A3A /* TamabiGS.app.zip */,
+			);
+			path = download;
+			sourceTree = "<group>";
+		};
+		C31DC1CB192BC2F900AE6A3A /* plugin */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1CC192BC2F900AE6A3A /* invader.html */,
+			);
+			path = plugin;
+			sourceTree = "<group>";
+		};
+		C31DC1D0192BC2F900AE6A3A /* System */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1D1192BC2F900AE6A3A /* Library */,
+			);
+			path = System;
+			sourceTree = "<group>";
+		};
+		C31DC1D1192BC2F900AE6A3A /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1D2192BC2F900AE6A3A /* LaunchDaemons */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		C31DC1D2192BC2F900AE6A3A /* LaunchDaemons */ = {
+			isa = PBXGroup;
+			children = (
+				C31DC1D3192BC2F900AE6A3A /* jp.artsat.artsatd.plist */,
+			);
+			path = LaunchDaemons;
+			sourceTree = "<group>";
+		};
 		C3258473175645E3000EDE42 = {
 			isa = PBXGroup;
 			children = (
 				C325847E175645E3000EDE42 /* artsatd */,
 				C32584FA17568CB2000EDE42 /* libs */,
-				C31119AF18D6C4C500E42E8A /* etc */,
+				C31DC1BD192BC2F900AE6A3A /* install */,
 				C325847D175645E3000EDE42 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -939,57 +1024,6 @@
 				C35DC93B18D8B085003370D0 /* sqlite3.h */,
 			);
 			path = sqlite;
-			sourceTree = "<group>";
-		};
-		C3FB53631925BB5900167F7B /* artsatd */ = {
-			isa = PBXGroup;
-			children = (
-				C3FB53641925BB5900167F7B /* config.xml */,
-				C3FB53651925BB5900167F7B /* device.xml */,
-				C3FB53661925BB5900167F7B /* network.xml */,
-				C3FB53671925BB5900167F7B /* plugin.xml */,
-				C3FB53681925BB5900167F7B /* server */,
-			);
-			path = artsatd;
-			sourceTree = "<group>";
-		};
-		C3FB53681925BB5900167F7B /* server */ = {
-			isa = PBXGroup;
-			children = (
-				C3FB53691925BB5900167F7B /* css */,
-				C3FB536B1925BB5900167F7B /* download */,
-				C3FB536D1925BB5900167F7B /* hardware.html */,
-				C3FB536E1925BB5900167F7B /* orbital.html */,
-				C3FB536F1925BB5900167F7B /* plugin */,
-				C3FB53711925BB5900167F7B /* root.html */,
-				C3FB53721925BB5900167F7B /* streaming.html */,
-				C3FB53731925BB5900167F7B /* webcam.html */,
-			);
-			path = server;
-			sourceTree = "<group>";
-		};
-		C3FB53691925BB5900167F7B /* css */ = {
-			isa = PBXGroup;
-			children = (
-				C3FB536A1925BB5900167F7B /* default.css */,
-			);
-			path = css;
-			sourceTree = "<group>";
-		};
-		C3FB536B1925BB5900167F7B /* download */ = {
-			isa = PBXGroup;
-			children = (
-				C3FB536C1925BB5900167F7B /* TamabiGS.app.zip */,
-			);
-			path = download;
-			sourceTree = "<group>";
-		};
-		C3FB536F1925BB5900167F7B /* plugin */ = {
-			isa = PBXGroup;
-			children = (
-				C3FB53701925BB5900167F7B /* invader.html */,
-			);
-			path = plugin;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
