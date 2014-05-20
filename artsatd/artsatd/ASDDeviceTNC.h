@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDDeviceTNC.h
 **
@@ -47,81 +47,13 @@
 #ifndef __ASD_DEVICETNC_H
 #define __ASD_DEVICETNC_H
 
+#include "ASDDeviceInterface.h"
 #include "TGSTNCInterface.h"
 
-class ASDDeviceTNC {
+class ASDDeviceTNC : public ASDDeviceInterface<tgs::TGSTNCInterface> {
     public:
-        class Operator {
-            private:
-                mutable ASDDeviceTNC const*     _self;
-            
-            public:
-                                                ~Operator                   (void);
-                        tgs::TGSTNCInterface*   operator->                  (void) const;
-            private:
-                explicit                        Operator                    (ASDDeviceTNC const* param);
-                                                Operator                    (Operator const& param);
-            private:
-                        Operator&               operator=                   (Operator const&);
-            friend      class                   ASDDeviceTNC;
-        };
-    
-    private:
-                boost::shared_ptr<tgs::TGSTNCInterface>
-                                                _device;
-                boost::thread                   _thread;
-        mutable boost::mutex                    _mutex_device;
-    
-    public:
-        explicit                                ASDDeviceTNC                (void);
-                                                ~ASDDeviceTNC               (void);
-                Operator                        operator->                  (void) const;
-                tgs::TGSError                   open                        (boost::shared_ptr<tgs::TGSTNCInterface> const& device);
-                void                            close                       (void);
-    private:
-                void                            thread                      (void);
-                void                            update                      (void);
-    private:
-                                                ASDDeviceTNC                (ASDDeviceTNC const&);
-                ASDDeviceTNC&                   operator=                   (ASDDeviceTNC const&);
+        typedef ASDDeviceTNC                    self;
+        typedef ASDDeviceInterface              super;
 };
-
-/*public */inline ASDDeviceTNC::ASDDeviceTNC(void)
-{
-}
-
-/*public */inline ASDDeviceTNC::~ASDDeviceTNC(void)
-{
-    close();
-}
-
-/*public */inline ASDDeviceTNC::Operator ASDDeviceTNC::operator->(void) const
-{
-    return Operator(this);
-}
-
-/*private */inline ASDDeviceTNC::Operator::Operator(ASDDeviceTNC const* param) : _self(param)
-{
-    if (_self != NULL) {
-        _self->_mutex_device.lock();
-    }
-}
-
-/*private */inline ASDDeviceTNC::Operator::Operator(Operator const& param) : _self(param._self)
-{
-    param._self = NULL;
-}
-
-/*public */inline ASDDeviceTNC::Operator::~Operator(void)
-{
-    if (_self != NULL) {
-        _self->_mutex_device.unlock();
-    }
-}
-
-/*public */inline tgs::TGSTNCInterface* ASDDeviceTNC::Operator::operator->(void) const
-{
-    return _self->_device.get();
-}
 
 #endif

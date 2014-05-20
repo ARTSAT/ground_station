@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSTransceiverIC9100.cpp
 **
@@ -61,11 +61,19 @@ namespace tgs {
 
 /*public virtual */TGSError TGSTransceiverIC9100::setFrequencySender(int param)
 {
+    bool flag;
     TGSError error(TGSERROR_OK);
     
     if ((error = super::setFrequencySender(param)) == TGSERROR_NO_SUPPORT) {
-        if ((error = Transceiver::selectSubBand()) == TGSERROR_OK) {
-            error = Transceiver::setOperationFrequency(param);
+        if ((error = Transceiver::getSubBandMode(&flag)) == TGSERROR_OK) {
+            if (flag) {
+                if ((error = Transceiver::selectSubBand()) == TGSERROR_OK) {
+                    error = Transceiver::setOperationFrequency(param);
+                }
+            }
+            else {
+                error = TGSERROR_NO_RESULT;
+            }
         }
     }
     return error;
@@ -73,11 +81,19 @@ namespace tgs {
 
 /*public virtual */TGSError TGSTransceiverIC9100::getFrequencySender(int* result)
 {
+    bool flag;
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getFrequencySender(result)) == TGSERROR_NO_SUPPORT) {
-        if ((error = Transceiver::selectSubBand()) == TGSERROR_OK) {
-            error = Transceiver::getOperationFrequency(result);
+        if ((error = Transceiver::getSubBandMode(&flag)) == TGSERROR_OK) {
+            if (flag) {
+                if ((error = Transceiver::selectSubBand()) == TGSERROR_OK) {
+                    error = Transceiver::getOperationFrequency(result);
+                }
+            }
+            else {
+                error = TGSERROR_NO_RESULT;
+            }
         }
     }
     return error;
@@ -131,7 +147,7 @@ namespace tgs {
             if ((error = Transceiver::setSubBandMode(false)) == TGSERROR_OK) {
                 if ((error = Transceiver::selectMainBand()) == TGSERROR_OK) {
                     if ((error = Transceiver::selectVFOA()) == TGSERROR_OK) {
-                        error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_CW, TGSTransceiverCIV::FILTER_FIL1);
+                        error = Transceiver::setOperationMode(TGSTransceiverCIV::OPERATIONMODE_CW, TGSTransceiverCIV::FILTER_FIL2);
                     }
                 }
             }

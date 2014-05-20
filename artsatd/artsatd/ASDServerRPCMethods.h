@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDServerRPCMethods.h
 **
@@ -59,22 +59,6 @@ namespace ASDServerRPC {
     }
     namespace trans {
         
-        /* params: {"active": <bool>}      */
-        /* result: {"active": <bool>}      */
-        Result setActive(const Params& args, Params *result);
-        
-        /* params: {}                      */
-        /* result: {"active": <bool>}      */
-        Result getActive(const Params& args, Params *result);
-        
-        /* params: {"manual": <bool>}      */
-        /* result: {"manual": <bool>}      */
-        Result setManualSatellite(const Params& args, Params *result);
-        
-        /* params: {}                      */
-        /* result: {"manual": <bool>}      */
-        Result getManualSatellite(const Params& args, Params *result);
-        
         /* params: {"manual": <bool>}      */
         /* result: {"manual": <bool>}      */
         Result setManualRotator(const Params& args, Params *result);
@@ -98,6 +82,18 @@ namespace ASDServerRPC {
         /* params: {}                      */
         /* result: {"manual": <bool>}      */
         Result getManualTNC(const Params& args, Params *result);
+        
+        /* params: {}                      */
+        /* result: {"valid": <bool>}       */
+        Result getStateRotator(const Params& args, Params *result);
+        
+        /* params: {}                      */
+        /* result: {"valid": <bool>}       */
+        Result getStateTransceiver(const Params& args, Params *result);
+        
+        /* params: {}                      */
+        /* result: {"valid": <bool>}       */
+        Result getStateTNC(const Params& args, Params *result);
     
         /* params: {"mode": <string>}      */
         /* result: {"mode": <string>}      */
@@ -135,9 +131,144 @@ namespace ASDServerRPC {
         /* result: {"receiver": <dobule>}  */
         Result getFrequencyReceiver(const Params& args, Params *result);
         
+        /* params: {"command": <string>}   */
+        /* result: {"command": <string>}   */
+        Result sendSafeCommand(const Params& args, Params *result);
+    }
+    namespace pass {
         /* params: {}                      */
-        /* result: {"error": <string>}     */
-        Result getError(const Params& args, Params *result);
+        /* result: {"visible": <bool>}     */
+        Result getStateNearest(const Params& args, Params *result);
+    }
+    namespace db {
+        
+        /* params: {"norad": <int>, 
+                    "name":  <string>}                   */
+        /* result: {"name":  <string>}                   */
+        Result setName(const Params& args, Params *result);
+         
+        /* params: {"norad": <int>}                      */
+        /* result: {"name":  <string>}                   */
+        Result getName(const Params& args, Params *result);
+        
+        /* params: {"norad":    <int>, 
+                    "callsign": <string>}                */
+        /* result: {"callsign": <string>}                */
+        Result setCallsign(const Params& args, Params *result);
+        
+        /* params: {"norad":    <int>}                   */
+        /* result: {"callsign": <string>}                */
+        Result getCallsign(const Params& args, Params *result);
+        
+        /* params: {"norad":     <int>, 
+                   ("mode":      <string>), 
+                   ("frequency": <double>), 
+                   ("drift":     <double>)}              */
+        /* result: {"mode":      <string>, 
+                    "frequency": <double>, 
+                    "drift":     <double>}               */
+        Result setRadioBeacon(const Params& args, Params *result);
+        
+        /* params: {"norad":     <int>}                  */
+        /* result: {"mode":      <string>,
+                    "frequency": <double>, 
+                    "drift":     <double>}               */
+        Result getRadioBeacon(const Params& args, Params *result);
+        
+        /* params: {"norad":     <int>,
+                   ("mode":      <string>),
+                   ("frequency": <double>),
+                   ("drift":     <double>)}              */
+        /* result: {"mode":      <string>, 
+                    "frequency": <double>, 
+                    "drift":     <double>}               */
+        Result setRadioSender(const Params& args, Params *result);
+        
+        /* params: {"norad":     <int>}                  */
+        /* result: {"mode":      <string>,
+                    "frequency": <double>, 
+                    "drift":     <double>}               */
+        Result getRadioSender(const Params& args, Params *result);
+        
+        /* params: {"norad":     <int>,
+                   ("mode":      <string>),
+                   ("frequency": <double>),
+                   ("drift":     <double>)}              */
+        /* result: {"mode":      <string>, 
+                    "frequency": <double>, 
+                    "drift":     <double>}               */
+        Result setRadioReceiver(const Params& args, Params *result);
+        
+        /* params: {"norad":     <int>}                  */
+        /* result: {"mode":      <string>, 
+                    "frequency": <double>, 
+                    "drift":     <double>}               */
+        Result getRadioReceiver(const Params& args, Params *result);
+        
+        /* params: {"time":          <string>,
+                    "tle":  {"name": <string>,
+                             "one":  <string>,
+                             "two":  <string>}}          */
+        /* result: {"time":          <string>,
+                    "tle":  {"name": <string>,
+                             "one":  <string>,
+                             "two":  <string>}}          */
+        Result setOrbitData(const Params& args, Params *result);
+        
+        /* params: {"norad":          <int>}             */
+        /* result: {"time":           <string>,
+                    "tle":   {"name": <string>,
+                              "one":  <string>,
+                              "two":  <string>}}         */
+        Result getOrbitData(const Params& args, Params *result);
+        
+        /* params: {}                                    */
+        /* result: {"count":          <int>}             */
+        Result getCount(const Params& args, Params *result);
+        
+        /* params: {"norad":                  <int>}     */
+        /* result: {"norad":                  <int>,
+                    "name":                   <string>,
+                    "callsign":               <string>,
+                    "beacon":   {"mode":      <string>,
+                                 "frequency": <double>,
+                                 "drift":     <double>},
+                    "sender":   {"mode":      <string>,
+                                 "frequency": <double>,
+                                 "drift":     <double>},
+                    "receiver": {"mode":      <string>,
+                                 "frequency": <double>,
+                                 "drift":     <double>},
+                    "time":                   <string>,
+                    "tle":      {"name":      <string>,
+                                 "one":       <string>,
+                                 "two":       <string>}} */
+        
+        /* params: {"limit":  <int>,
+                    "offset": <int>}                     */
+        /* result: {"fields": [...]}                     */
+        
+        Result getField(const Params& args, Params *result);
+    
+        /* params: {"name":   <string>}                  */
+        /* result: {"fields": [...]}                     */
+        Result getFieldByName(const Params& args, Params *result);
+        
+        /* params: {"callsign": <string>}                */
+        /* result: {"fields":   [...]}                   */
+        Result getFieldByCallsign(const Params& args, Params *result);
+        
+        /* params: {"name":   <string>}                  */
+        /* result: {"norads": [...]}                     */
+        Result getNoradByName(const Params& args, Params *result);
+        
+        /* params: {"callsign": <string>}                */
+        /* result: {"norads":   [...]}                   */
+        Result getNoradByCallsign(const Params& args, Params *result);
+        
+        /* params: {"norad":  <int>}                     */
+        /* result: {"update": <bool>}                    */
+        Result hasUpdate(const Params& args, Params *result);
         
     }
 };

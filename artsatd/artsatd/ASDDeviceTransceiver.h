@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDDeviceTransceiver.h
 **
@@ -47,93 +47,35 @@
 #ifndef __ASD_DEVICETRANSCEIVER_H
 #define __ASD_DEVICETRANSCEIVER_H
 
+#include "ASDDeviceInterface.h"
 #include "TGSTransceiverInterface.h"
 
-class ASDDeviceTransceiver {
+class ASDDeviceTransceiver : public ASDDeviceInterface<tgs::TGSTransceiverInterface> {
+    public:
+        typedef ASDDeviceTransceiver            self;
+        typedef ASDDeviceInterface              super;
+    
     public:
         struct DataRec {
             int                                 frequencySender;
             int                                 frequencyReceiver;
         };
-        class Operator {
-            private:
-                mutable ASDDeviceTransceiver const*
-                                                _self;
-            
-            public:
-                                                ~Operator                   (void);
-                        tgs::TGSTransceiverInterface*
-                                                operator->                  (void) const;
-            private:
-                explicit                        Operator                    (ASDDeviceTransceiver const* param);
-                                                Operator                    (Operator const& param);
-            private:
-                        Operator&               operator=                   (Operator const&);
-            friend      class                   ASDDeviceTransceiver;
-        };
     
     private:
-                boost::shared_ptr<tgs::TGSTransceiverInterface>
-                                                _device;
-                boost::thread                   _thread;
                 DataRec                         _data;
         mutable bool                            _update;
-        mutable boost::mutex                    _mutex_device;
-        mutable boost::mutex                    _mutex_data;
+        mutable boost::shared_mutex             _mutex;
     
     public:
         explicit                                ASDDeviceTransceiver        (void);
-                                                ~ASDDeviceTransceiver       (void);
-                Operator                        operator->                  (void) const;
+        virtual                                 ~ASDDeviceTransceiver       (void);
                 DataRec                         getData                     (void) const;
                 bool                            hasUpdate                   (void) const;
-                tgs::TGSError                   open                        (boost::shared_ptr<tgs::TGSTransceiverInterface> const& device);
-                void                            close                       (void);
-    private:
-                void                            thread                      (void);
-                void                            update                      (void);
-                void                            synchronize                 (void);
+    protected:
+        virtual void                            update                      (ptr_type device);
     private:
                                                 ASDDeviceTransceiver        (ASDDeviceTransceiver const&);
                 ASDDeviceTransceiver&           operator=                   (ASDDeviceTransceiver const&);
 };
-
-/*public */inline ASDDeviceTransceiver::ASDDeviceTransceiver(void)
-{
-}
-
-/*public */inline ASDDeviceTransceiver::~ASDDeviceTransceiver(void)
-{
-    close();
-}
-
-/*public */inline ASDDeviceTransceiver::Operator ASDDeviceTransceiver::operator->(void) const
-{
-    return Operator(this);
-}
-
-/*private */inline ASDDeviceTransceiver::Operator::Operator(ASDDeviceTransceiver const* param) : _self(param)
-{
-    if (_self != NULL) {
-        _self->_mutex_device.lock();
-    }
-}
-
-/*private */inline ASDDeviceTransceiver::Operator::Operator(Operator const& param) : _self(param._self)
-{
-    param._self = NULL;
-}
-
-/*public */inline ASDDeviceTransceiver::Operator::~Operator(void)
-{
-    if (_self != NULL) {
-        _self->_mutex_device.unlock();
-    }
-}
-
-/*public */inline tgs::TGSTransceiverInterface* ASDDeviceTransceiver::Operator::operator->(void) const
-{
-    return _self->_device.get();
-}
 
 #endif

@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSError.h
 **
@@ -60,6 +60,7 @@ enum TGSErrorEnum {
     TGSERROR_INVALID_PARAM,
     TGSERROR_INVALID_STATE,
     TGSERROR_INVALID_FORMAT,
+    TGSERROR_INVALID_SESSION,
     TGSERROR_WAIT_RESULT,
     TGSERROR_FILE_NOTFOUND,
     TGSERROR_FILE_NOTSAVED,

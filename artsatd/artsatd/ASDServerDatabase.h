@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDServerDatabase.h
 **
@@ -62,7 +62,7 @@ class ASDServerDatabase : public ASDNetworkServer::Notifier {
         explicit                                ASDServerDatabase           (void);
         virtual                                 ~ASDServerDatabase          (void);
     private:
-        virtual tgs::TGSError                   onRequest                   (std::string const& path, std::map<std::string, std::string>& query, int* status, std::string* response);
+        virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
                 tgs::TGSError                   responseData                (std::string* response);
                 tgs::TGSError                   responseMeta                (std::string* response);
         template <typename T>

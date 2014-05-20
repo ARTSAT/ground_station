@@ -1,0 +1,191 @@
+<tr>
+    <td>Normal Operation</td>
+    <td class="normal">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="normal_operation" />
+            <input type="submit" name="command" value="STA" <!_DF /> />
+            <input type="submit" name="command" value="MRR" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Telemetry Index</td>
+    <td class="telemetry">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="telemetry_index" />
+            <input type="submit" name="command" value="PTI" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Telemetry Data</td>
+    <td class="telemetry">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="telemetry_data" />
+            <select name="value" <!_DF />>
+                <!TA />
+            </select>
+            <input type="submit" name="command" value="PTR" <!_DF /> />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="edit" value="remove" <!_DF /> />
+            <input type="submit" name="edit" value="clear" <!_DF /> />
+            &nbsp;&nbsp;offset : <input type="text" size="7" maxlength="7" name="offset" value="<!OF />" <!_RO /> />
+            &nbsp;&nbsp;count : <select name="count" <!_DF />>
+                <option value="1" <!_C1 />>1</option>
+                <option value="6" <!_C6 />>6</option>
+                <option value="12" <!_C12 />>12</option>
+            </select>
+            <input type="submit" name="edit" value="append" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Boot Mode</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="boot_mode" />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <select name="value" <!_DF />>
+                <optgroup label="Application">
+                    <option value="0" <!_M0 />>000 - Self Test</option>
+                    <option value="1" <!_M1 />>001 - Hello Space!</option>
+                    <option value="2" <!_M2 />>002 - Speech Text</option>
+                    <option value="3" <!_M3 />>003 - Code Text</option>
+                    <option value="4" <!_M4 />>004 - Play Melody</option>
+                    <option value="5" <!_M5 />>005 - INVADER Bot</option>
+                    <option value="6" <!_M6 />>006 - INVADER Music</option>
+                    <option value="7" <!_M7 />>007 - INVADER Cam</option>
+                    <option value="8" <!_M8 />>008 - INVADER VM</option>
+                    <option value="9" <!_M9 />>009 - Telemetry Dump</option>
+                </optgroup>
+                <optgroup label="Utility">
+                    <option value="128" <!_M128 />>128 - Erase Self Test Log</option>
+                    <option value="129" <!_M129 />>129 - Format EEPROM</option>
+                    <option value="130" <!_M130 />>130 - Format Shared Memory</option>
+                    <option value="131" <!_M131 />>131 - Format FRAM</option>
+                    <option value="132" <!_M132 />>132 - Format FlashROM</option>
+                </optgroup>
+            </select>
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Text Param</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="text_param" />
+            <select name="text" <!_DF />>
+                <option value="x" <!_Tx />>X</option>
+                <option value="y" <!_Ty />>Y</option>
+                <option value="z" <!_Tz />>Z</option>
+                <option value="debug" <!_Tdebug />>Debug</option>
+            </select>
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <input type="text" size="127" maxlength="127" name="value" value="<!TP />" <!_RO /> />
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>VM Param</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="vm_param" />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <input type="text" size="127" maxlength="254" name="value" value="<!VP />" <!_RO /> />
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Note Param</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="note_param" />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <input type="text" size="127" name="value" value="<!NP />" <!_RO /> />
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Morse Param</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="morse_param" />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <input type="text" size="63" maxlength="63" name="value" value="<!MP />" <!_RO /> />
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Digitalker Param</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="digitalker_param" />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <input type="text" size="127" maxlength="127" name="value" value="<!DP />" <!_RO /> />
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Camera Param</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="camera_param" />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+            <input type="text" size="63" maxlength="63" name="value" value="<!CP />" <!_RO /> />
+            <input type="submit" name="command" value="GWA" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Camera Data</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="camera_data" />
+            line : <input type="text" size="3" maxlength="3" name="value" value="<!LN />" <!_RO /> />
+            <input type="submit" name="command" value="GRS" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Mission Power</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="mission_power" />
+            <input type="submit" name="command" value="MSR" <!_DF /> />
+            <input type="submit" name="command" value="MSD" <!_DF /> />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBC Time : 0x<input type="text" size="8" maxlength="8" name="obc" value="<!OT />" <!_RO /> />
+            &nbsp;&nbsp;offset : <input type="text" size="2" maxlength="2" name="ohour" value="<!OH />" <!_RO /> />h
+            <input type="text" size="2" maxlength="2" name="ominute" value="<!OM />" <!_RO /> />m
+            <input type="text" size="2" maxlength="2" name="osecond" value="<!OS />" <!_RO /> />s
+            &nbsp;&nbsp;duration : <input type="text" size="2" maxlength="2" name="dhour" value="<!DH />" <!_RO /> />h
+            <input type="text" size="2" maxlength="2" name="dminute" value="<!DM />" <!_RO /> />m
+            <input type="text" size="2" maxlength="2" name="dsecond" value="<!DS />" <!_RO /> />s
+            <input type="submit" name="command" value="SMS" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Digitalker Power</td>
+    <td class="mission">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="digitalker_power" />
+            <input type="submit" name="command" value="DON" <!_DF /> />
+            <input type="submit" name="command" value="DOF" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Critical Operation</td>
+    <td class="critical">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="critical_operation" />
+            <input type="submit" name="command" value="AEF" disabled />
+            <input type="submit" name="command" value="HDS" disabled />
+        </form>
+    </td>
+</tr>

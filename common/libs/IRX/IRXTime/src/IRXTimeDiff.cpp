@@ -12,7 +12,7 @@
 **      E-mail      zap00365@nifty.com
 **
 **      This source code is for Xcode.
-**      Xcode 4.2 (LLVM compiler 3.0)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      IRXTimeDiff.cpp
 **
@@ -45,6 +45,7 @@
 */
 
 #include "IRXTimeDiff.h"
+#include <stdlib.h>
 #include "IRXTimeType.h"
 #include "IRXTime.h"
 

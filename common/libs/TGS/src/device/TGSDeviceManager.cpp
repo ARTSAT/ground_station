@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSDeviceManager.cpp
 **
@@ -128,7 +128,7 @@ namespace tgs {
 
 /*public */void TGSDeviceManager::removeByIndex(int index)
 {
-    std::vector<RecordRec>::iterator it;
+    std::vector<RecordRec>::const_iterator it;
     
     if (0 <= index && index < _record.size()) {
         it = _record.begin() + index;
@@ -139,7 +139,7 @@ namespace tgs {
 
 /*public */void TGSDeviceManager::removeByDevice(TGSDeviceInterface* device)
 {
-    std::vector<RecordRec>::iterator it;
+    std::vector<RecordRec>::const_iterator it;
     
     if (device != NULL) {
         for (it = _record.begin(); it != _record.end(); ++it) {
@@ -189,6 +189,7 @@ namespace tgs {
                         rit->support = false;
                         break;
                     default:
+                        // nop
                         break;
                 }
             }
@@ -227,6 +228,7 @@ namespace tgs {
                         rit->support = false;
                         break;
                     default:
+                        // nop
                         break;
                 }
             }

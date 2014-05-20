@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDServerDatabase.cpp
 **
@@ -47,7 +47,6 @@
 #include "ASDServerDatabase.h"
 #include "writer.h"
 #include "stringbuffer.h"
-#include "IRXTime.h"
 #include "artsatd.h"
 
 #define DATA(doc, add, value, field)            (append((doc), (add), (value).field))
@@ -63,22 +62,22 @@
 {
 }
 
-/*private virtual */tgs::TGSError ASDServerDatabase::onRequest(std::string const& path, std::map<std::string, std::string>& query, int* status, std::string* response)
+/*private virtual */tgs::TGSError ASDServerDatabase::onRequest(RequestRec const& request, ResponseRec* response)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    if (path == "/data/simulator") {
-        if ((error = responseData(response)) == tgs::TGSERROR_OK) {
-            *status = 200;
+    if (request.path == "/data/simulator") {
+        if ((error = responseData(&response->content)) == tgs::TGSERROR_OK) {
+            response->status = 200;
         }
     }
-    else if (path == "/meta") {
-        if ((error = responseMeta(response)) == tgs::TGSERROR_OK) {
-            *status = 200;
+    else if (request.path == "/meta") {
+        if ((error = responseMeta(&response->content)) == tgs::TGSERROR_OK) {
+            response->status = 200;
         }
     }
     else {
-        *status = 404;
+        response->status = 404;
     }
     return error;
 }
@@ -90,17 +89,15 @@
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     rapidjson::Value history(rapidjson::kObjectType);
     rapidjson::Value telemetry(rapidjson::kObjectType);
-    ASDDeviceSatellite::DataRec data;
     tgs::TGSTelemetryINVADER::TelemetryRec value;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     doc.SetArray();
     history.AddMember("time", ir::IRXTime::currentUTCTime().formatISO8601().c_str(), doc.GetAllocator());
-    data = artsatd::getSatellite().getData();
     // TODO:
-    data.status = "163C6E5903034600000008090039000102002600000000002A0028140700181F1A4B722F752E6F3372271E1C5C6F69390000C3A36DC1FDFD00000000000000000000000000000000000000000000000000000000000000000000000E010300000000000002040000003EC5C7F2C52B9715A900000000000000000000000000";
+    std::string data = "163C6E5903034600000008090039000102002600000000002A0028140700181F1A4B722F752E6F3372271E1C5C6F69390000C3A36DC1FDFD00000000000000000000000000000000000000000000000000000000000000000000000E010300000000000002040000003EC5C7F2C52B9715A900000000000000000000000000";
     // :ODOT
-    if (tgs::TGSTelemetryINVADER::convert(data.status, &value) == tgs::TGSERROR_OK) {
+    if (tgs::TGSTelemetryINVADER::convert(data, &value) == tgs::TGSERROR_OK) {
         DATA(doc, &telemetry, value,                            obctime_OBCTime);
         DATA(doc, &telemetry, value,                            voltage_Battery);
         DATA(doc, &telemetry, value,                                voltage_Bus);

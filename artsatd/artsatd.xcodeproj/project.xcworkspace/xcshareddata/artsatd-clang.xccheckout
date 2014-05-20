@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>EA12D237-58A4-43B0-9D19-A744181FBFCC</string>
+	<key>IDESourceControlProjectName</key>
+	<string>artsatd-clang</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</key>
+		<string>http://vps.artsat.jp/git/artsat.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ground_station/artsatd/artsatd-clang.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>http://vps.artsat.jp/git/artsat.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</string>
+			<key>IDESourceControlWCCName</key>
+			<string>artsat</string>
+		</dict>
+	</array>
+</dict>
+</plist>

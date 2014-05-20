@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDServerOperation.cpp
 **
@@ -45,586 +45,549 @@
 */
 
 #include "ASDServerOperation.h"
-#include "ASDServerRPCMethods.h"
-#include "stringbuffer.h"
 #include "writer.h"
+#include "stringbuffer.h"
 #include "artsatd.h"
+#include "ASDServerRPCMethods.h"
+
+#define COOKIE_SESSION_ID                       ("session")
+#define COOKIE_ERROR_CATEGORY                   ("category")
+#define COOKIE_ERROR_MESSAGE                    ("error")
+#define COOKIE_SHRINK_HARDWARE                  ("hardware")
+#define COOKIE_SHRINK_DATABASE                  ("database")
+#define COOKIE_SHRINK_STATUS                    ("status")
+#define COOKIE_SHRINK_CONTROL                   ("control")
+#define COOKIE_MAXAGE                           (365 * 24 * 60 * 60)
+#define CATEGORY_SESSION                        ("session")
+#define CATEGORY_HARDWARE                       ("hardware")
+#define CATEGORY_DATABASE                       ("database")
+#define CATEGORY_CONTROL                        ("control")
+#define SHRINK_SHOW                             ("show")
+#define SHRINK_HIDE                             ("hide")
+#define DEVICE_OK                               ("ok")
+#define DEVICE_NG                               ("ng")
+#define DEFAULT_TIME                            ("----/--/-- --:--:-- JST")
+#define DEFAULT_TIMEDIFF                        ("&Delta; --:--:--")
+#define FORM_DISABLED                           ("disabled")
+#define FORM_READONLY                           ("readonly")
+
+struct CacheTableRec {
+    char const*                 path;
+    char const*                 mime;
+    char const*                 cache;
+    char const*                 content;
+    void  (ASDServerOperation::*function)       (ASDServerOperation::RequestRec const& request, ASDServerOperation::ResponseRec* response);
+};
+struct MethodTableRec {
+    char const*                 name;
+    ASDServerRPC::Method        method;
+};
+
+static  CacheTableRec const                     g_cache[] = {
+    {"/",               "text/html",        "no-cache",              "/root.html",          &ASDServerOperation::replyRoot},
+    {"/hardware.html",  "text/html",        "private, max-age=3600", "/hardware.html",      &ASDServerOperation::replyHardware},
+    {"/orbital.html",   "text/html",        "private, max-age=3600", "/orbital.html",       &ASDServerOperation::replyOrbital},
+    {"/streaming.html", "text/html",        "private, max-age=3600", "/streaming.html",     NULL},
+    {"/webcam.html",    "text/html",        "private, max-age=3600", "/webcam.html",        NULL},
+    {"/rpc.json",       "application/json", "no-cache",              "",                    &ASDServerOperation::replyJSONRPC},
+    {"/default.css",    "text/css",         "private, max-age=3600", "/css/default.css",    NULL}
+};
+static  MethodTableRec const                    g_method[] = {
+    {"sys.rpcEcho",                &ASDServerRPC::sys::rpcEcho},
+    {"trans.setManualRotator",     &ASDServerRPC::trans::setManualRotator},
+    {"trans.getManualRotator",     &ASDServerRPC::trans::getManualRotator},
+    {"trans.setManualTransceiver", &ASDServerRPC::trans::setManualTransceiver},
+    {"trans.getManualTransceiver", &ASDServerRPC::trans::getManualTransceiver},
+    {"trans.setManualTNC",         &ASDServerRPC::trans::setManualTNC},
+    {"trans.getManualTNC",         &ASDServerRPC::trans::getManualTNC},
+    {"trans.getStateRotator",      &ASDServerRPC::trans::getStateRotator},
+    {"trans.getStateTransceiver",  &ASDServerRPC::trans::getStateTransceiver},
+    {"trans.getStateTNC",          &ASDServerRPC::trans::getStateTNC},
+    {"trans.setMode",              &ASDServerRPC::trans::setMode},
+    {"trans.getMode",              &ASDServerRPC::trans::getMode},
+    {"trans.setNorad",             &ASDServerRPC::trans::setNorad},
+    {"trans.getNorad",             &ASDServerRPC::trans::getNorad},
+    {"trans.getAngleAzimuth",      &ASDServerRPC::trans::getAngleAzimuth},
+    {"trans.getAngleElevation",    &ASDServerRPC::trans::getAngleElevation},
+    {"trans.getFrequencyBeacon",   &ASDServerRPC::trans::getFrequencyBeacon},
+    {"trans.getFrequencySender",   &ASDServerRPC::trans::getFrequencySender},
+    {"trans.getFrequencyReceiver", &ASDServerRPC::trans::getFrequencyReceiver},
+    {"trans.sendSafeCommand",      &ASDServerRPC::trans::sendSafeCommand},
+    {"pass.getStateNearest",       &ASDServerRPC::pass::getStateNearest},
+    {"db.setName",                 &ASDServerRPC::db::setName},
+    {"db.getName",                 &ASDServerRPC::db::getName},
+    {"db.setCallsign",             &ASDServerRPC::db::setCallsign},
+    {"db.getCallsign",             &ASDServerRPC::db::getCallsign},
+    {"db.setRadioBeacon",          &ASDServerRPC::db::setRadioBeacon},
+    {"db.getRadioBeacon",          &ASDServerRPC::db::getRadioBeacon},
+    {"db.setRadioSender",          &ASDServerRPC::db::setRadioSender},
+    {"db.getRadioSender",          &ASDServerRPC::db::getRadioSender},
+    {"db.setRadioReceiver",        &ASDServerRPC::db::setRadioReceiver},
+    {"db.getRadioReceiver",        &ASDServerRPC::db::getRadioReceiver},
+    {"db.setOrbitData",            &ASDServerRPC::db::setOrbitData},
+    {"db.getOrbitData",            &ASDServerRPC::db::getOrbitData},
+    {"db.getCount",                &ASDServerRPC::db::getCount},
+    {"db.getField",                &ASDServerRPC::db::getField},
+    {"db.getFieldByName",          &ASDServerRPC::db::getFieldByName},
+    {"db.getFieldByCallsign",      &ASDServerRPC::db::getFieldByCallsign},
+    {"db.getNoradByName",          &ASDServerRPC::db::getNoradByName},
+    {"db.getNoradByCallsign",      &ASDServerRPC::db::getNoradByCallsign},
+    {"db.hasUpdate",               &ASDServerRPC::db::hasUpdate}
+};
 
 /*public */ASDServerOperation::ASDServerOperation(void)
 {
-    registerRpcMethod("sys.rpcEcho",                &ASDServerRPC::sys::rpcEcho);
-    
-    registerRpcMethod("trans.setActive",            &ASDServerRPC::trans::setActive);
-    registerRpcMethod("trans.getActive",            &ASDServerRPC::trans::getActive);
-    registerRpcMethod("trans.setManualSatellite",   &ASDServerRPC::trans::setManualSatellite);
-    registerRpcMethod("trans.getManualSatellite",   &ASDServerRPC::trans::getManualSatellite);
-    registerRpcMethod("trans.setManualRotator",     &ASDServerRPC::trans::setManualRotator);
-    registerRpcMethod("trans.getManualRotator",     &ASDServerRPC::trans::getManualRotator);
-    registerRpcMethod("trans.setManualTransceiver", &ASDServerRPC::trans::setManualTransceiver);
-    registerRpcMethod("trans.getManualTransceiver", &ASDServerRPC::trans::getManualTransceiver);
-    registerRpcMethod("trans.setManualTNC",         &ASDServerRPC::trans::setManualTNC);
-    registerRpcMethod("trans.getManualTNC",         &ASDServerRPC::trans::getManualTNC);
-    registerRpcMethod("trans.setMode",              &ASDServerRPC::trans::setMode);
-    registerRpcMethod("trans.getMode",              &ASDServerRPC::trans::getMode);
-    registerRpcMethod("trans.setNorad",             &ASDServerRPC::trans::setNorad);
-    registerRpcMethod("trans.getNorad",             &ASDServerRPC::trans::getNorad);
-    registerRpcMethod("trans.getAngleAzimuth",      &ASDServerRPC::trans::getAngleAzimuth);
-    registerRpcMethod("trans.getAngleElevation",    &ASDServerRPC::trans::getAngleElevation);
-    registerRpcMethod("trans.getFrequencyBeacon",   &ASDServerRPC::trans::getFrequencyBeacon);
-    registerRpcMethod("trans.getFrequencySender",   &ASDServerRPC::trans::getFrequencySender);
-    registerRpcMethod("trans.getFrequencyReceiver", &ASDServerRPC::trans::getFrequencyReceiver);
-    registerRpcMethod("trans.getError",             &ASDServerRPC::trans::getError);
 }
 
 /*public virtual */ASDServerOperation::~ASDServerOperation(void)
 {
+    close();
 }
 
-/*private virtual */tgs::TGSError ASDServerOperation::onRequest(std::string const& path, std::map<std::string, std::string>& query, int* status, std::string* response)
+/*public */tgs::TGSError ASDServerOperation::open(std::string const& skeleton, std::string const& database)
 {
-    std::string mode;
-    std::string norad;
-    char azimuth[64];
-    char elevation[64];
-    char beacon[64];
-    char sender[64];
-    char receiver[64];
+    CacheRec cache;
+    int i;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    if (!(query["mode"] == "Idle" || query["mode"] == "CW" || query["mode"] == "FM" || query["mode"] == "list")) {
-        mode = artsatd::getInstance().getMode();
-        if (mode == "CW") {
-            query["mode"] = "CW";
+    close();
+    for (i = 0; i < lengthof(g_cache); ++i) {
+        cache.content.clear();
+        if (strlen(g_cache[i].content) > 0) {
+            error = serializeCache(skeleton + g_cache[i].content, &cache.content);
         }
-        else if (mode == "FM") {
-            query["mode"] = "FM";
-        }
-        else {
-            query["mode"] = "Idle";
-        }
-    }
-    if (query["mode"] == "CW") {
-        artsatd::getInstance().setMode("CW");
-    }
-    else if (query["mode"] == "FM") {
-        artsatd::getInstance().setMode("FM");
-        if (query["command"] == "sta") {
-            artsatd::getInstance().queueCommand("c-c-g-sta");
-        }
-        else if (query["command"] == "aef") {
-            artsatd::getInstance().queueCommand("c-p-g-aef");
-        }
-        else if (query["command"] == "mrr") {
-            artsatd::getInstance().queueCommand("c-p-g-mrr");
-        }
-        else if (query["command"] == "hds") {
-            artsatd::getInstance().queueCommand("c-p-g-hds");
-        }
-        else if (query["command"] == "pti") {
-            artsatd::getInstance().queueCommand("c-c-g-pti");
-        }
-        else if (query["command"] == "pta_0015023") {
-            artsatd::getInstance().queueCommand("c-c-g-pta-0015023");
-        }
-        else if (query["command"] == "pta_0015053") {
-            artsatd::getInstance().queueCommand("c-c-g-pta-0015053");
-        }
-        else if (query["command"] == "pta_0015083") {
-            artsatd::getInstance().queueCommand("c-c-g-pta-0015083");
-        }
-        else if (query["command"] == "pta_0015119") {
-            artsatd::getInstance().queueCommand("c-c-g-pta-0015119");
-        }
-    }
-    else {
-        artsatd::getInstance().setMode("Idle");
-    }
-    norad = boost::lexical_cast<std::string>(artsatd::getInstance().getNorad());
-    if (query["norad"].empty()) {
-        query["norad"] = norad;
-    }
-    else {
-        artsatd::getInstance().setNorad(boost::lexical_cast<int>(query["norad"]));
-    }
-    *status = 200;
-    *response += ""
-    "<html>"
-        "<head>"
-            "<meta http-equiv='refresh' content='" + std::string("5") + ";url=?mode=" + query["mode"] + "&norad=" + query["norad"] + "'/>"
-            "<style><!--"
-                "th {"
-                    "text-align: left;"
-                    "background-color: #eeeeff;"
-                    "padding: 2px 6px;"
-                "}"
-                "td {"
-                    "background-color: #ccccff;"
-                    "padding: 2px 6px;"
-                "}"
-                "table form {"
-                    "display: inline;"
-                "}"
-                "p {"
-                    "font-size: 10pt;"
-                "}"
-            "--></style>"
-        "</head>"
-        "<body>"
-            "<h1>ARTSAT Tamabi GS Tester 2.0<h1/>";
-    ///////////////////////////////////////////////
-    if (path == "/") {
-        *response += ""
-            "<form action='' method='get'>"
-                "<input type='submit' name='mode' value='Idle'/>"
-                "<input type='submit' name='mode' value='CW'/>"
-                "<input type='submit' name='mode' value='FM'/>"
-                "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-            "</form>";
-        *response += ""
-            "NORAD:"
-            "<form action='' method='get'>"
-                "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                "<input type='text' name='norad' value='" + query["norad"] + "' size='50' maxlength='39'/>"
-            "</form>";
-        snprintf(azimuth, sizeof(azimuth), "%+.6lf deg", artsatd::getInstance().getAngleAzimuth());
-        snprintf(elevation, sizeof(elevation), "%+.6lf deg", artsatd::getInstance().getAngleElevation());
-        snprintf(beacon, sizeof(beacon), "%.6lf MHz", artsatd::getInstance().getFrequencyBeacon() / 1000000.0);
-        snprintf(sender, sizeof(sender), "%.6lf MHz", artsatd::getInstance().getFrequencySender() / 1000000.0);
-        snprintf(receiver, sizeof(receiver), "%.6lf MHz", artsatd::getInstance().getFrequencyReceiver() / 1000000.0);
-        if (query["mode"] == "CW") {
-            *response += ""
-            "<table>"
-                "<tr>"
-                    "<th>NORAD</th>"
-                    "<td>" + norad + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Time</th>"
-                    "<td>" + ir::IRXTime::currentTime().formatYMD() + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Mode</th>"
-                    "<td>" + query["mode"] + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Angle (Azimuth)</th>"
-                    "<td>" + azimuth + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Angle (Elevation)</th>"
-                    "<td>" + elevation + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Frequency (Receiver)</th>"
-                    "<td>" + beacon + "</td>"
-                "</tr>"
-            "</table>";
-        }
-        else if (query["mode"] == "FM") {
-            *response += ""
-            "<table>"
-                "<tr>"
-                    "<th>NORAD</th>"
-                    "<td>" + norad + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Time</th>"
-                    "<td>" + ir::IRXTime::currentTime().formatYMD() + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Mode</th>"
-                    "<td>" + query["mode"] + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Angle (Azimuth)</th>"
-                    "<td>" + azimuth + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Angle (Elevation)</th>"
-                    "<td>" + elevation + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Frequency (Receiver)</th>"
-                    "<td>" + receiver + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Frequency (Sender)</th>"
-                    "<td>" + sender + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th rowspan='9'>Command</th>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='sta'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='aef'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='mrr'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='hds'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='pti'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='pta_0015023'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='pta_0015053'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='pta_0015083'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-                "<tr>"
-                    "<td>"
-                        "<form action='' method='get'>"
-                            "<input type='hidden' name='mode' value='" + query["mode"] + "'/>"
-                            "<input type='submit' name='command' value='pta_0015119'/>"
-                            "<input type='hidden' name='norad' value='" + query["norad"] + "'/>"
-                        "</form>"
-                    "</td>"
-                "</tr>"
-            "</table>";
+        if (error == tgs::TGSERROR_OK) {
+            cache.mime = g_cache[i].mime;
+            cache.cache = g_cache[i].cache;
+            cache.function = g_cache[i].function;
+            _cache[g_cache[i].path] = cache;
         }
         else {
-            *response += ""
-            "<table>"
-                "<tr>"
-                    "<th>NORAD</th>"
-                    "<td>" + norad + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Time</th>"
-                    "<td>" + ir::IRXTime::currentTime().formatYMD() + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Mode</th>"
-                    "<td>" + query["mode"] + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Angle (Azimuth)</th>"
-                    "<td>" + azimuth + "</td>"
-                "</tr>"
-                "<tr>"
-                    "<th>Angle (Elevation)</th>"
-                    "<td>" + elevation + "</td>"
-                "</tr>"
-            "</table>";
+            break;
         }
     }
-    else if (path == "/database") {
-        *response += "<h1>Database</h1>";
-        
-        tgs::TGSPhysicsDatabase db;
-        db.open("physics.db");
-        
-        std::vector<int> result;
-        tgs::TGSPhysicsDatabase::FieldRec temp;
-        std::vector<tgs::TGSPhysicsDatabase::FieldRec> field;
-        
-        if (query["mode"] == "list") {
-            if (query.find("name") != query.end()) {
-                db.getNoradByName(query["name"], &result);
-                for (std::vector<int>::iterator it = result.begin(); it != result.end(); ++it) {
-                    db.getField(*it, &temp);
-                    field.push_back(temp);
-                }
-            }
-            else if (query.find("callsign") != query.end()) {
-                db.getNoradByCallsign(query["callsign"], &result);
-                for (std::vector<int>::iterator it = result.begin(); it != result.end(); ++it) {
-                    db.getField(*it, &temp);
-                    field.push_back(temp);
-                }
-            }
-            else {
-                db.getField(-1, -1, &field);
-            }
+    if (error == tgs::TGSERROR_OK) {
+        for (i = 0; i < lengthof(g_method); ++i) {
+            _method[g_method[i].name] = g_method[i].method;
         }
-        else if (query["mode"] == "set") {
-            if (query.find("id") != query.end()) {
-                int norad = boost::lexical_cast<int>(query["id"]);
-                field.resize(1);
-                tgs::TGSPhysicsDatabase::FieldRec &frontField = field.front();
-                frontField.norad = norad;
-                frontField.beacon.frequency = 0;
-                frontField.beacon.drift = 0;
-                frontField.sender.frequency = 0;
-                frontField.sender.drift = 0;
-                frontField.receiver.frequency = 0;
-                frontField.receiver.drift = 0;
-                frontField.time = ir::IRXTime::currentTime();
-                
-                db.getField(norad, &field.front());
-                
-                // "Name"
-                if (query.find("Name") != query.end()) {
-                    db.setName(norad, query["Name"]);
-                }
-                
-                // "CallSign"
-                if (query.find("CallSign") != query.end()) {
-                    db.setCallsign(norad, query["CallSign"]);
-                }
-                
-                // "Beacon/Mode"
-                // "Beacon/Frequency"
-                // "Beacon/Drift"
-                
-                if (query.find("Beacon") != query.end()) {
-                    std::vector<std::string> args;
-                    boost::split(args, query["Beacon"], boost::is_any_of("_"));
-                    if (args.size() == 3) {
-                        frontField.beacon.mode = args[0];
-                        frontField.beacon.frequency = boost::lexical_cast<int>(args[1]);
-                        frontField.beacon.drift = boost::lexical_cast<int>(args[2]);
-                        db.setRadioBeacon(norad, frontField.beacon);
-                    }
-                }
-                
-                // "Sender/Mode"
-                // "Sender/Frequency"
-                // "Sender/Drift"
-                
-                if (query.find("Sender") != query.end()) {
-                    std::vector<std::string> args;
-                    boost::split(args, query["Sender"], boost::is_any_of("_"));
-                    if (args.size() == 3) {
-                        frontField.sender.mode = args[0];
-                        frontField.sender.frequency = boost::lexical_cast<int>(args[1]);
-                        frontField.sender.drift = boost::lexical_cast<int>(args[2]);
-                        db.setRadioSender(norad, frontField.sender);
-                    }
-                }
-                
-                // "Receiver/Mode"
-                // "Receiver/Frequency"
-                // "Receiver/Drift"
-                
-                if (query.find("Receiver") != query.end()) {
-                    std::vector<std::string> args;
-                    boost::split(args, query["Receiver"], boost::is_any_of("_"));
-                    if (args.size() == 3) {
-                        frontField.receiver.mode = args[0];
-                        frontField.receiver.frequency = boost::lexical_cast<int>(args[1]);
-                        frontField.receiver.drift = boost::lexical_cast<int>(args[2]);
-                        db.setRadioReceiver(norad, frontField.receiver);
-                    }
-                }
-                
-                // "Time"
-                if (query.find("Time") != query.end()) {
-                    frontField.time.parseISO8601(query["Time"]);
-                }
-                
-                // "TLE"
-                if (query.find("TLE") != query.end()) {
-                    std::vector<std::string> args;
-                    boost::split(args, query["TLE"], boost::is_any_of("_"));
-                    std::cout << query["TLE"] << std::endl;
-                    if (args.size() == 3) {
-                        args[0].copy(frontField.tle.name, sizeof(frontField.tle.name));
-                        args[1].copy(frontField.tle.one, sizeof(frontField.tle.one));
-                        args[2].copy(frontField.tle.two, sizeof(frontField.tle.two));
-                        std::cout << frontField.tle.name << std::endl;
-                        std::cout << frontField.tle.one << std::endl;
-                        std::cout << frontField.tle.two << std::endl;
-                    }
-                }
-                
-                std::cout << db.setOrbitData(frontField.tle, ir::IRXTime::currentTime()).print();
-                
-                db.getField(norad, &field.front());
-            }
-        }
-        else if (query["mode"] == "get") {
-            if (query.find("id") != query.end()) {
-                int norad = boost::lexical_cast<int>(query["id"]);
-                field.resize(1);
-                db.getField(norad, &field.front());
-            }
-        }
-        
-        // http://localhost:16780/database?mode=set&id=0&Time=20140227T072917&TLE=INVADER%28PRE02%29_1%2000000U%2000000A%20%20%2014058%2E80299768%20%20%2E00000000%20%2000000%2D0%20%2010000%2D3%200%2000010_2%2000000%20%2065%2E0000%20%2053%2E0000%200021000%20%2061%2E4000%20203%2E1000%2015%2E63328135%2000000
-        
-        *response += ""
-        "<table>"
-        "<th>"
-        "<td>Norad</td>"
-        "<td>CallSign</td>"
-        "<td>Beacon/Mode</td>"
-        "<td>Beacon/Frequency</td>"
-        "<td>Beacon/Drift</td>"
-        "<td>Sender/Mode</td>"
-        "<td>Sender/Frequency</td>"
-        "<td>Sender/Drift</td>"
-        "<td>Receiver/Mode</td>"
-        "<td>Receiver/Frequency</td>"
-        "<td>Receiver/Drift</td>"
-        "<td>Time</td>"
-        "<td>TLE</td>"
-        "</th>";
-        
-        for (std::vector<tgs::TGSPhysicsDatabase::FieldRec>::iterator it = field.begin(); it != field.end(); ++it) {
-            *response += ""
-            "<tr>"
-            "<td>"
-            + it->name +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->norad) +
-            "</td>"
-            "<td>"
-            + it->callsign +
-            "</td>"
-            "<td>"
-            + it->beacon.mode +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->beacon.frequency) +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->beacon.drift) +
-            "</td>"
-            "<td>"
-            + it->sender.mode +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->sender.frequency) +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->sender.drift) +
-            "</td>"
-            "<td>"
-            + it->receiver.mode +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->receiver.frequency) +
-            "</td>"
-            "<td>"
-            + boost::lexical_cast<std::string>(it->receiver.drift) +
-            "</td>"
-            "<td>"
-            + it->time.formatISO8601() +
-            "</td>"
-            "<td>"
-            + it->tle.one + "<BR>" + it->tle.two +
-            "</td>"
-            "</tr>";
-        }
-        *response += "</table>";
+        _database = database;
     }
-    /*
-    *response += ""
-            "<p>" + artsatd::getInstance().getConsole() + "</p>";
-     */
-    ///////////////////////////////////////////////
-    *response += ""
-        "</body>"
-    "</html>";
+    if (error != tgs::TGSERROR_OK) {
+        close();
+    }
     return error;
 }
 
-/*private virtual */tgs::TGSError ASDServerOperation::onJsonRpcRequest(std::string const& body, int* status, std::string* response)
+/*public */void ASDServerOperation::close(void)
 {
-    tgs::TGSError error(tgs::TGSERROR_OK);
+    _method.clear();
+    _cache.clear();
+    return;
+}
+
+/*public */void ASDServerOperation::replyRoot(RequestRec const& request, ResponseRec* response)
+{
+    static char const* const s_shrink[] = {
+        COOKIE_SHRINK_HARDWARE,
+        COOKIE_SHRINK_DATABASE,
+        COOKIE_SHRINK_STATUS,
+        COOKIE_SHRINK_CONTROL
+    };
+    static boost::xpressive::sregex const s_ESS(boost::xpressive::sregex::compile("<!\\[ESS />.*?<!\\]ESS />"));
+    static boost::xpressive::sregex const s_HWT(boost::xpressive::sregex::compile("<!\\[HWF />.*?<!\\]HWF />"));
+    static boost::xpressive::sregex const s_HWF(boost::xpressive::sregex::compile("<!\\[HWT />.*?<!\\]HWT />"));
+    static boost::xpressive::sregex const s_EHW(boost::xpressive::sregex::compile("<!\\[EHW />.*?<!\\]EHW />"));
+    static boost::xpressive::sregex const s_DBT(boost::xpressive::sregex::compile("<!\\[DBF />.*?<!\\]DBF />"));
+    static boost::xpressive::sregex const s_DBF(boost::xpressive::sregex::compile("<!\\[DBT />.*?<!\\]DBT />"));
+    static boost::xpressive::sregex const s_EDB(boost::xpressive::sregex::compile("<!\\[EDB />.*?<!\\]EDB />"));
+    static boost::xpressive::sregex const s_STT(boost::xpressive::sregex::compile("<!\\[STF />.*?<!\\]STF />"));
+    static boost::xpressive::sregex const s_STF(boost::xpressive::sregex::compile("<!\\[STT />.*?<!\\]STT />"));
+    static boost::xpressive::sregex const s_CNT(boost::xpressive::sregex::compile("<!\\[CNF />.*?<!\\]CNF />"));
+    static boost::xpressive::sregex const s_CNF(boost::xpressive::sregex::compile("<!\\[CNT />.*?<!\\]CNT />"));
+    static boost::xpressive::sregex const s_ECN(boost::xpressive::sregex::compile("<!\\[ECN />.*?<!\\]ECN />"));
+    static boost::xpressive::sregex const s_tag(boost::xpressive::sregex::compile("<![^<>]+? />"));
+    artsatd& daemon(artsatd::getInstance());
+    insensitive::map<std::string, std::string>::const_iterator it;
+    std::string session;
+    std::string category;
+    std::string message;
+    bool shrink[lengthof(s_shrink)];
+    int owner;
+    int norad;
+    boost::shared_ptr<ASDPluginInterface> plugin;
+    tgs::TGSPhysicsDatabase database;
+    tgs::TGSPhysicsDatabase::FieldRec field;
+    std::string string;
+    bool flag;
+    int i;
+    tgs::TGSError error;
     
+    if ((it = request.cookie.find(COOKIE_SESSION_ID)) != request.cookie.end()) {
+        session = it->second;
+    }
+    if (daemon.requestSession(&session, &flag) == tgs::TGSERROR_OK) {
+        if (!flag) {
+            if ((it = request.cookie.find(COOKIE_ERROR_CATEGORY)) != request.cookie.end()) {
+                category = it->second;
+            }
+            if ((it = request.cookie.find(COOKIE_ERROR_MESSAGE)) != request.cookie.end()) {
+                message = it->second;
+            }
+        }
+        for (i = 0; i < lengthof(s_shrink); ++i) {
+            shrink[i] = false;
+            if ((it = request.cookie.find(s_shrink[i])) != request.cookie.end()) {
+                if (it->second == SHRINK_HIDE) {
+                    shrink[i] = true;
+                }
+            }
+        }
+        daemon.getSession(session, &owner, &flag, &string, NULL);
+        norad = daemon.getNORAD();
+        if (!request.query.empty()) {
+            if ((it = request.query.find("session")) != request.query.end()) {
+                if (it->second == "reload") {
+                    bindError(CATEGORY_SESSION, tgs::TGSERROR_OK, &category, &message);
+                }
+                else if (it->second == "session") {
+                    bindError(CATEGORY_SESSION, daemon.controlSession(session, owner <= 0, request.host), &category, &message);
+                }
+                else if (it->second == "exclusive") {
+                    bindError(CATEGORY_SESSION, daemon.excludeSession(session, !flag), &category, &message);
+                }
+            }
+            if ((it = request.query.find("shrink")) != request.query.end()) {
+                for (i = 0; i < lengthof(s_shrink); ++i) {
+                    if (it->second == s_shrink[i]) {
+                        shrink[i] = !shrink[i];
+                        break;
+                    }
+                }
+            }
+            if ((it = request.query.find("manual")) != request.query.end()) {
+                if (it->second == "rotator") {
+                    bindError(CATEGORY_HARDWARE, daemon.setManualRotator(session, !daemon.getManualRotator()), &category, &message);
+                }
+                else if (it->second == "transceiver") {
+                    bindError(CATEGORY_HARDWARE, daemon.setManualTransceiver(session, !daemon.getManualTransceiver()), &category, &message);
+                }
+                else if (it->second == "tnc") {
+                    bindError(CATEGORY_HARDWARE, daemon.setManualTNC(session, !daemon.getManualTNC()), &category, &message);
+                }
+            }
+            if ((it = request.query.find("norad")) != request.query.end()) {
+                bindError(CATEGORY_DATABASE, daemon.setNORAD(session, it->second), &category, &message);
+            }
+            if ((it = request.query.find("mode")) != request.query.end()) {
+                bindError(CATEGORY_CONTROL, daemon.setMode(session, it->second), &category, &message);
+            }
+            if ((plugin = daemon.getPlugin(norad)) != NULL) {
+                plugin->execute(session, request.query, &category, &message);
+            }
+            replyStatus(Server::response::found, response);
+            response->header["Location"] = "/";
+        }
+        else {
+            if (owner > 0) {
+                boost::replace_first(response->content, "<!PM />", "green");
+                if (flag) {
+                    boost::replace_first(response->content, "<!EX />", "green");
+                    boost::replace_first(response->content, "<!SI />", "You are controlling the ground station exclusively.");
+                }
+                else {
+                    boost::replace_first(response->content, "<!SI />", "You are controlling the ground station.");
+                }
+            }
+            else if (owner < 0) {
+                boost::replace_first(response->content, "<!PM />", "red");
+                if (flag) {
+                    boost::replace_first(response->content, "<!_DP />", FORM_DISABLED);
+                    boost::replace_first(response->content, "<!EX />", "red");
+                    boost::replace_first(response->content, "<!SI />", string + " is controlling the ground station exclusively.");
+                }
+                else {
+                    boost::replace_first(response->content, "<!SI />", string + " is controlling the ground station.");
+                }
+            }
+            else {
+                boost::replace_first(response->content, "<!SI />", "The ground station is on standby.");
+            }
+            if (category == CATEGORY_SESSION && !message.empty()) {
+                boost::replace_first(response->content, "<!ES />", message);
+            }
+            else {
+                response->content = boost::xpressive::regex_replace(response->content, s_ESS, "");
+            }
+            if (!shrink[0]) {
+                boost::replace_first(response->content, "<!HW />", SHRINK_HIDE);
+                response->content = boost::xpressive::regex_replace(response->content, s_HWT, "");
+                if (daemon.getManualRotator()) {
+                    boost::replace_first(response->content, "<!MR />", "red");
+                }
+                if (daemon.getManualTransceiver()) {
+                    boost::replace_first(response->content, "<!MT />", "red");
+                }
+                if (daemon.getManualTNC()) {
+                    boost::replace_first(response->content, "<!MM />", "red");
+                }
+                if (category == CATEGORY_HARDWARE && !message.empty()) {
+                    boost::replace_first(response->content, "<!EH />", message);
+                }
+                else {
+                    response->content = boost::xpressive::regex_replace(response->content, s_EHW, "");
+                }
+            }
+            else {
+                boost::replace_first(response->content, "<!HW />", SHRINK_SHOW);
+                response->content = boost::xpressive::regex_replace(response->content, s_HWF, "");
+            }
+            boost::replace_first(response->content, "<!HR />", (artsatd::getRotator()->isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+            boost::replace_first(response->content, "<!HT />", (artsatd::getTransceiver()->isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+            boost::replace_first(response->content, "<!HM />", (artsatd::getTNC()->isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+            boost::replace_first(response->content, "<!ND />", stringizeNORAD(norad));
+            if (category == CATEGORY_DATABASE && !message.empty()) {
+                boost::replace_first(response->content, "<!ED />", message);
+            }
+            else {
+                response->content = boost::xpressive::regex_replace(response->content, s_EDB, "");
+            }
+            string = daemon.getMode();
+            if (!shrink[1]) {
+                boost::replace_first(response->content, "<!DB />", SHRINK_HIDE);
+                response->content = boost::xpressive::regex_replace(response->content, s_DBT, "");
+                field.norad = -1;
+                field.beacon.frequency = -1;
+                field.beacon.drift = INT_MIN;
+                field.sender.frequency = -1;
+                field.sender.drift = INT_MIN;
+                field.receiver.frequency = -1;
+                field.receiver.drift = INT_MIN;
+                memset(&field.tle, 0, sizeof(field.tle));
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    if (database.getField(norad, &field) == tgs::TGSERROR_OK) {
+                        boost::replace_first(response->content, "<!NM />", colorizeSpan("green", field.name));
+                    }
+                    else {
+                        boost::replace_first(response->content, "<!NM />", "Unknown NORAD");
+                    }
+                    database.close();
+                }
+                else {
+                    boost::replace_first(response->content, "<!NM />", colorizeSpan("red", "Database Error " + error.print()));
+                }
+                boost::replace_first(response->content, "<!CS />", stringizeCallsign(field.callsign));
+                boost::replace_first(response->content, "<!BM />", stringizeMode(field.beacon.mode));
+                boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW_TEST") ? ("green") : (""), stringizeFrequency(field.beacon.frequency)));
+                boost::replace_first(response->content, "<!BD />", stringizeDrift(field.beacon.drift));
+                boost::replace_first(response->content, "<!SM />", stringizeMode(field.sender.mode));
+                boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.sender.frequency)));
+                boost::replace_first(response->content, "<!SD />", stringizeDrift(field.sender.drift));
+                boost::replace_first(response->content, "<!RM />", stringizeMode(field.receiver.mode));
+                boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency)));
+                boost::replace_first(response->content, "<!RD />", stringizeDrift(field.receiver.drift));
+                boost::replace_first(response->content, "<!TU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
+                boost::replace_first(response->content, "<!TL />", stringizeTLE(field.tle));
+            }
+            else {
+                boost::replace_first(response->content, "<!DB />", SHRINK_SHOW);
+                response->content = boost::xpressive::regex_replace(response->content, s_DBF, "");
+            }
+            if (!shrink[2]) {
+                boost::replace_first(response->content, "<!ST />", SHRINK_HIDE);
+                response->content = boost::xpressive::regex_replace(response->content, s_STT, "");
+            }
+            else {
+                boost::replace_first(response->content, "<!ST />", SHRINK_SHOW);
+                response->content = boost::xpressive::regex_replace(response->content, s_STF, "");
+            }
+            boost::replace_first(response->content, "<!" + ((!string.empty()) ? (string) : ("NO")) + " />", "green");
+            if (category == CATEGORY_CONTROL && !message.empty()) {
+                boost::replace_first(response->content, "<!EC />", message);
+            }
+            else {
+                response->content = boost::xpressive::regex_replace(response->content, s_ECN, "");
+            }
+            if (!shrink[3]) {
+                boost::replace_first(response->content, "<!CN />", SHRINK_HIDE);
+                response->content = boost::xpressive::regex_replace(response->content, s_CNT, "");
+                string.clear();
+                if ((plugin = daemon.getPlugin(norad)) != NULL) {
+                    plugin->process(session, category, message, &string);
+                }
+                boost::replace_first(response->content, "<!CD />", string);
+            }
+            else {
+                boost::replace_first(response->content, "<!CN />", SHRINK_SHOW);
+                response->content = boost::xpressive::regex_replace(response->content, s_CNF, "");
+            }
+            if (owner <= 0) {
+                boost::replace_all(response->content, "<!_DF />", FORM_DISABLED);
+                boost::replace_all(response->content, "<!_RO />", FORM_READONLY);
+            }
+            response->content = boost::xpressive::regex_replace(response->content, s_tag, "");
+        }
+        setCookie(COOKIE_SESSION_ID, session, COOKIE_MAXAGE, response);
+        setCookie(COOKIE_ERROR_CATEGORY, category, COOKIE_MAXAGE, response);
+        setCookie(COOKIE_ERROR_MESSAGE, message, COOKIE_MAXAGE, response);
+        for (i = 0; i < lengthof(s_shrink); ++i) {
+            setCookie(s_shrink[i], (!shrink[i]) ? (SHRINK_SHOW) : (SHRINK_HIDE), COOKIE_MAXAGE, response);
+        }
+    }
+    else {
+        replyStatus(Server::response::service_unavailable, response);
+    }
+    return;
+}
+
+/*public */void ASDServerOperation::replyHardware(RequestRec const& request, ResponseRec* response)
+{
+    artsatd& daemon(artsatd::getInstance());
+    insensitive::map<std::string, std::string>::const_iterator it;
+    std::string session;
+    int owner;
+    bool exclusive;
+    int online;
+    std::string string;
+    ASDDeviceRotator::DataRec rotator;
+    ASDDeviceTransceiver::DataRec transceiver;
+    double x;
+    double y;
+    double z;
+    
+    if ((it = request.cookie.find(COOKIE_SESSION_ID)) != request.cookie.end()) {
+        session = it->second;
+    }
+    daemon.getObserverCallsign(&string);
+    boost::replace_first(response->content, "<!CS />", stringizeCallsign(string));
+    daemon.getObserverPosition(&x, &y, &z);
+    boost::replace_first(response->content, "<!LT />", stringizeLatitude(x));
+    boost::replace_first(response->content, "<!LN />", stringizeLongitude(y));
+    boost::replace_first(response->content, "<!AT />", stringizeAltitude(z));
+    rotator = artsatd::getRotator().getData();
+    boost::replace_first(response->content, "<!AZ />", colorizeSpan("cyan", stringizeAzimuth(rotator.azimuth)));
+    boost::replace_first(response->content, "<!EL />", colorizeSpan("magenta", stringizeElevation(rotator.elevation)));
+    transceiver = artsatd::getTransceiver().getData();
+    boost::replace_first(response->content, "<!SF />", stringizeFrequency(transceiver.frequencySender));
+    boost::replace_first(response->content, "<!RF />", stringizeFrequency(transceiver.frequencyReceiver));
+    daemon.getSession(session, &owner, &exclusive, &session, &online);
+    session = stringizeSession(session);
+    if (owner > 0) {
+        session = colorizeSpan("green", session);
+    }
+    else if (exclusive) {
+        session = colorizeSpan("red", session);
+    }
+    boost::replace_first(response->content, "<!SS />", session);
+    boost::replace_first(response->content, "<!OS />", stringizeOnline(online));
+    return;
+}
+
+/*public */void ASDServerOperation::replyOrbital(RequestRec const& request, ResponseRec* response)
+{
+    artsatd& daemon(artsatd::getInstance());
+    std::string string;
+    ir::IRXTime time;
+    ir::IRXTime aos;
+    ir::IRXTime los;
+    double x;
+    double y;
+    double z;
+    
+    daemon.getSatellitePosition(&x, &y, &z);
+    boost::replace_first(response->content, "<!LT />", stringizeLatitude(x));
+    boost::replace_first(response->content, "<!LN />", stringizeLongitude(y));
+    boost::replace_first(response->content, "<!AT />", stringizeAltitude(z));
+    daemon.getSatelliteDirection(&x, &y);
+    boost::replace_first(response->content, "<!AZ />", colorizeSpan("cyan", stringizeAzimuth(x)));
+    boost::replace_first(response->content, "<!EL />", colorizeSpan("magenta", stringizeElevation(y)));
+    string = daemon.getMode();
+    daemon.getSatelliteFrequency(&x, &y, &z);
+    boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW") ? ("green") : (""), stringizeFrequency(x)));
+    boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(y)));
+    boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(z)));
+    daemon.getSatelliteDopplerShift(&x, &y);
+    boost::replace_first(response->content, "<!SD />", stringizeDopplerShift(x));
+    boost::replace_first(response->content, "<!RD />", stringizeDopplerShift(y));
+    time = daemon.getTime();
+    boost::replace_first(response->content, "<!TM />", stringizeTime(time));
+    daemon.getSatelliteAOSLOS(&aos, &los);
+    if (aos.asTime_t() > 0 && los.asTime_t() > 0) {
+        if (aos <= time && time <= los) {
+            boost::replace_first(response->content, "<!DA />", colorizeSpan("red", "<!DA />"));
+            boost::replace_first(response->content, "<!DL />", colorizeSpan("green", "<!DL />"));
+        }
+    }
+    if (aos.asTime_t() > 0) {
+        boost::replace_first(response->content, "<!AS />", stringizeTime(aos));
+        boost::replace_first(response->content, "<!DA />", stringizeTimeDiff(aos - time));
+    }
+    else {
+        boost::replace_first(response->content, "<!AS />", DEFAULT_TIME);
+        boost::replace_first(response->content, "<!DA />", DEFAULT_TIMEDIFF);
+    }
+    if (los.asTime_t() > 0) {
+        boost::replace_first(response->content, "<!LS />", stringizeTime(los));
+        boost::replace_first(response->content, "<!DL />", stringizeTimeDiff(los - time));
+    }
+    else {
+        boost::replace_first(response->content, "<!LS />", DEFAULT_TIME);
+        boost::replace_first(response->content, "<!DL />", DEFAULT_TIMEDIFF);
+    }
+    daemon.getSatelliteMEL(&y);
+    boost::replace_first(response->content, "<!ML />", colorizeSpan("magenta", stringizeElevation(y)));
+    daemon.getRotatorStart(&aos);
+    if (aos.asTime_t() > 0) {
+        boost::replace_first(response->content, "<!RS />", stringizeTime(aos));
+        boost::replace_first(response->content, "<!DR />", stringizeTimeDiff(aos - time));
+    }
+    else {
+        boost::replace_first(response->content, "<!RS />", DEFAULT_TIME);
+        boost::replace_first(response->content, "<!DR />", DEFAULT_TIMEDIFF);
+    }
+    return;
+}
+
+/*public */void ASDServerOperation::replyJSONRPC(RequestRec const& request, ResponseRec* response)
+{
     rapidjson::Document req;
-    req.Parse<0>(body.c_str());
-    
     rapidjson::Document res;
-    res.SetObject();
-    res.AddMember("jsonrpc", "2.0", res.GetAllocator());
-    
     rapidjson::Value result_obj;
-    
     int req_id = -1;
     int error_code = 0;
-    std::string error_msg = "";
+    std::string error_msg;
     
+    req.Parse<0>(request.content.c_str());
+    res.SetObject();
+    res.AddMember("jsonrpc", "2.0", res.GetAllocator());
     if (req.HasParseError()) {
-        
         error_code = -32700;
         error_msg = "Parse error";
-        
-        *status = 400;
+        response->status = 400;
     }
     else {
         if (req["id"].IsInt()) {
             req_id = req["id"].GetInt();
-            
             if (req_id >= 0 && req["method"].IsString()) {
                 std::string method = req["method"].GetString();
-                if (_methods.find(method) != _methods.end()) {
+                if (_method.find(method) != _method.end()) {
                     ASDServerRPC::Params args, result;
-                    
                     if (req.HasMember("params") && req["params"].IsObject()) {
                         ASDServerRPC::Variant variant = ASDServerRPC::toVariant(req["params"]);
                         args = boost::get<ASDServerRPC::Params>(variant);
                     }
-                    
-                    ASDServerRPC::Result rpc_result = _methods[method](args, &result);
+                    ASDServerRPC::Result rpc_result = _method[method](args, &result);
                     if (rpc_result == ASDServerRPC::RPC_OK) {
-                        *status = 200;
+                        response->status = 200;
                     }
                     else if (rpc_result == ASDServerRPC::RPC_WRONG_ARGS) {
                         error_code = -32602;
                         error_msg = "Invalid params";
-                        *status = 400;
+                        response->status = 400;
                     }
                     else {
                         error_code = -32603;
                         error_msg = "Internal error";
-                        *status = 500;
+                        response->status = 500;
                     }
                     result_obj.SetObject();
                     ASDServerRPC::toJson(result, &result_obj, res.GetAllocator());
@@ -632,22 +595,21 @@
                 else {
                     error_code = -32601;
                     error_msg = "Method not found";
-                    *status = 400;
+                    response->status = 400;
                 }
             }
             else {
                 error_code = -32600;
                 error_msg = "Invalid Request";
-                *status = 400;
+                response->status = 400;
             }
         }
         else {
             error_code = -32600;
             error_msg = "Invalid Request";
-            *status = 400;
+            response->status = 400;
         }
     }
-    
     if (req_id == -1) {
         rapidjson::Value null;
         null.SetNull();
@@ -656,7 +618,6 @@
     else {
         res.AddMember("id", req_id, res.GetAllocator());
     }
-    
     if (error_code == 0) {
         res.AddMember("result", result_obj, res.GetAllocator());
     }
@@ -670,18 +631,251 @@
         }
         res.AddMember("error", res_error, res.GetAllocator());
     }
-    
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     res.Accept(writer);
+    response->content += buffer.GetString();
+    return;
+}
+
+/*private virtual */tgs::TGSError ASDServerOperation::onRequest(RequestRec const& request, ResponseRec* response)
+{
+    insensitive::map<std::string, CacheRec>::const_iterator it;
     
-    *response += buffer.GetString();
+    if ((it = _cache.find(request.path)) != _cache.end()) {
+        if (!it->second.mime.empty()) {
+            response->header["Content-Type"] = it->second.mime;
+        }
+        if (!it->second.cache.empty()) {
+            response->header["Cache-Control"] = it->second.cache;
+        }
+        response->content = it->second.content;
+        if (it->second.function != NULL) {
+            (this->*it->second.function)(request, response);
+        }
+    }
+    else {
+        replyStatus(Server::response::not_found, response);
+    }
+    return tgs::TGSERROR_OK;
+}
+
+/*private static */tgs::TGSError ASDServerOperation::serializeCache(std::string const& file, std::string* result)
+{
+    std::ifstream stream;
+    std::string line;
+    std::string string;
+    tgs::TGSError error(tgs::TGSERROR_OK);
     
+    stream.open(file.c_str());
+    if (stream.is_open()) {
+        while (std::getline(stream, line)) {
+            boost::trim(line);
+            string += line;
+        }
+        *result = string;
+        stream.close();
+    }
+    else {
+        error = tgs::TGSERROR_FILE_NOTFOUND;
+    }
     return error;
 }
 
-/*private */void ASDServerOperation::registerRpcMethod(std::string const& name, ASDServerRPC::Method const& func)
+/*private static */void ASDServerOperation::bindError(std::string const& name, tgs::TGSError error, std::string* category, std::string* message)
 {
-    _methods[name] = func;
+    *category = name;
+    if (error == tgs::TGSERROR_OK) {
+        message->clear();
+    }
+    else {
+        *message = error.print();
+    }
     return;
+}
+
+/*private static */std::string ASDServerOperation::colorizeSpan(std::string const& color, std::string const& string)
+{
+    return (!color.empty()) ? ("<span class='" + color + "'>" + string + "</span>") : (string);
+}
+
+/*private static */std::string ASDServerOperation::stringizeLatitude(double param)
+{
+    std::string result("-       -");
+    
+    if (!std::isnan(param)) {
+        result = (boost::format("%s %7.3lf") % ((param >= 0.0) ? ("N") : ("S")) % std::abs(param)).str();
+    }
+    return result + "&deg;";
+}
+
+/*private static */std::string ASDServerOperation::stringizeLongitude(double param)
+{
+    std::string result("-       -");
+    
+    if (!std::isnan(param)) {
+        if (param < -180.0) {
+            param += 360.0;
+        }
+        else if (param >= 180.0) {
+            param -= 360.0;
+        }
+        result = (boost::format("%s %7.3lf") % ((param >= 0.0) ? ("E") : ("W")) % std::abs(param)).str();
+    }
+    return result + "&deg;";
+}
+
+/*private static */std::string ASDServerOperation::stringizeAltitude(double param)
+{
+    std::string result("      -");
+    
+    if (!std::isnan(param)) {
+        result = (boost::format("%7.3lf") % param).str();
+    }
+    return result + " km";
+}
+
+/*private static */std::string ASDServerOperation::stringizeAzimuth(int param)
+{
+    std::string result("  -");
+    
+    if (param >= 0) {
+        result = (boost::format("%3d") % param).str();
+    }
+    return result + "&deg;";
+}
+
+/*private static */std::string ASDServerOperation::stringizeAzimuth(double param)
+{
+    std::string result("      -");
+    
+    if (!std::isnan(param)) {
+        result = (boost::format("%7.3lf") % param).str();
+    }
+    return result + "&deg;";
+}
+
+/*private static */std::string ASDServerOperation::stringizeElevation(int param)
+{
+    std::string result(" -");
+    
+    if (param >= 0) {
+        result = (boost::format("%2d") % param).str();
+    }
+    return result + "&deg;";
+}
+
+/*private static */std::string ASDServerOperation::stringizeElevation(double param)
+{
+    std::string result("      -");
+    
+    if (!std::isnan(param)) {
+        result = (boost::format("%+7.3lf") % param).str();
+    }
+    return result + "&deg;";
+}
+
+/*private static */std::string ASDServerOperation::stringizeNORAD(int param)
+{
+    std::string result;
+    
+    if (param >= 0) {
+        result = (boost::format("%05d") % param).str();
+    }
+    return result;
+}
+
+/*private static */std::string ASDServerOperation::stringizeCallsign(std::string const& param)
+{
+    return (!param.empty()) ? (param) : ("-");
+}
+
+/*private static */std::string ASDServerOperation::stringizeMode(std::string const& param)
+{
+    return (!param.empty()) ? (param) : ("-");
+}
+
+/*private static */std::string ASDServerOperation::stringizeFrequency(int param)
+{
+    std::string result("         -");
+    
+    if (param >= 0) {
+        result = (boost::format("%10.6lf") % (param / 1000000.0)).str();
+    }
+    return result + " MHz";
+}
+
+/*private static */std::string ASDServerOperation::stringizeFrequency(double param)
+{
+    std::string result("         -");
+    
+    if (!std::isnan(param)) {
+        result = (boost::format("%10.6lf") % (param / 1000000.0)).str();
+    }
+    return result + " MHz";
+}
+
+/*private static */std::string ASDServerOperation::stringizeDrift(int param)
+{
+    std::string result("         -");
+    
+    if (param != INT_MIN) {
+        result = (boost::format("%+10d") % param).str();
+    }
+    return result + " Hz";
+}
+
+/*private static */std::string ASDServerOperation::stringizeDopplerShift(double param)
+{
+    std::string result("         -");
+    
+    if (!std::isnan(param)) {
+        result = (boost::format("%10.6lf") % (param * 100.0)).str();
+    }
+    return result + " %";
+}
+
+/*private static */std::string ASDServerOperation::stringizeTLE(tgs::TLERec const& param)
+{
+    std::string result;
+    
+    result  = (strlen(param.one) > 0) ? (param.one) : ("1                                                                    ");
+    result += "<br />";
+    result += (strlen(param.two) > 0) ? (param.two) : ("2                                                                    ");
+    return result;
+}
+
+/*private static */std::string ASDServerOperation::stringizeTime(ir::IRXTime const& param)
+{
+    return param.format("%YYYY/%MM/%DD %hh:%mm:%ss JST");
+}
+
+/*private static */std::string ASDServerOperation::stringizeTimeDiff(ir::IRXTimeDiff const& param)
+{
+    long hour;
+    int minute;
+    int second;
+    std::string result;
+    
+    param.get(&hour, &minute, &second);
+    result  = (param >= ir::IRXTimeDiff(0)) ? (" ") : ("-");
+    result += (boost::format("%02d:%02d:%02d") % std::abs(hour) % std::abs(minute) % std::abs(second)).str();
+    return "&Delta;" + result;
+}
+
+/*private static */std::string ASDServerOperation::stringizeSession(std::string const& param)
+{
+    std::vector<std::string> fragment;
+    std::string result("---.---.---.---");
+    
+    boost::split(fragment, param, boost::is_any_of("."));
+    if (fragment.size() == 4) {
+        result = (boost::format("%3s.%3s.%3s.%3s") % fragment[0] % fragment[1] % fragment[2] % fragment[3]).str();
+    }
+    return result;
+}
+
+/*private static */std::string ASDServerOperation::stringizeOnline(int param)
+{
+    return (param >= 0) ? ((boost::format("%d") % param).str()) : ("-");
 }

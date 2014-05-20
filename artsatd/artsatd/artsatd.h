@@ -12,7 +12,7 @@
 **      E-mail      zap00365@nifty.com
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      artsatd.h
 **
@@ -48,17 +48,19 @@
 #define __ARTSATD_H
 
 #include "IRXDaemon.h"
+#include "ASDPluginInterface.h"
 #include "TGSDeviceLoader.h"
-#include "ASDDeviceSatellite.h"
 #include "ASDDeviceRotator.h"
 #include "TGSTransceiverCIV.h"
 #include "ASDDeviceTransceiver.h"
 #include "ASDDeviceTNC.h"
 #include "ASDTLEClientInterface.h"
-#include "ASDNetworkServer.h"
 #include "ASDServerDatabase.h"
 #include "ASDServerOperation.h"
-#include "TGSOrbitTLE.h"
+//<<<
+#include "ASDTLEPassFactory.h"
+#include "ASDRotationSolver.h"
+//>>>
 
 class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
     public:
@@ -66,43 +68,114 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
         typedef ir::IRXDaemon                   super;
     
     private:
-        struct SessionRec {
-            unsigned int                        id;
-            bool                                exclusive;
+        enum ModeEnum {
+            MODE_CW,
+            MODE_CW_TEST,
+            MODE_FM,
+            MODE_FM_TEST,
+            MODE_LIMIT
         };
-        struct StateRec {
-            bool                                active;
-            bool                                manualSatellite;
-            bool                                manualRotator;
-            bool                                manualTransceiver;
-            bool                                manualTnc;
-            std::string                         mode;
-            int                                 norad;
+        enum ModeTransceiverEnum {
+            MODETRANSCEIVER_BEACON,
+            MODETRANSCEIVER_COMMUNICATION,
+            MODETRANSCEIVER_LIMIT
         };
-        struct ControlRec {
-            std::string                         mode;
-            tgs::TGSPhysicsDatabase::FieldRec   field;
-            tgs::TGSOrbitTLE                    orbit;
-            double                              azimuth;
-            double                              elevation;
-            double                              beacon;
-            double                              sender;
-            double                              receiver;
-        };
-        struct MonitorRec {
-            tgs::TGSPhysicsDatabase::FieldRec   field;
-            double                              azimuth;
-            double                              elevation;
-            double                              beacon;
-            double                              sender;
-            double                              receiver;
-            std::string                         error;
+        enum ModeTNCEnum {
+            MODETNC_COMMAND,
+            MODETNC_CONVERSE,
+            MODETNC_LIMIT
         };
     
     private:
-                tgs::TGSPhysicsDatabase         _physics;
+        struct ConfigRec {
+            std::string                         serverDatabasePort;
+            int                                 serverDatabaseListen;
+            std::string                         serverOperationPort;
+            int                                 serverOperationListen;
+            int                                 sessionMaximum;
+            int                                 sessionTimeout;
+            std::string                         observerCallsign;
+            double                              observerLatitude;
+            double                              observerLongitude;
+            double                              observerAltitude;
+            int                                 cwTestAzimuth;
+            int                                 cwTestElevation;
+            int                                 fmTestAzimuth;
+            int                                 fmTestElevation;
+            int                                 algorithmLookahead;
+            int                                 intervalSession;
+            int                                 intervalRotator;
+            int                                 intervalTransceiver;
+            int                                 intervalTNC;
+            int                                 intervalLog;
+        };
+        struct SessionRec {
+            std::map<std::string, ir::IRXTime>  id;
+            std::string                         owner;
+            bool                                exclusive;
+            std::string                         host;
+            boost::random::mt19937              random;
+        };
+        struct ControlRec {
+            bool                                manualRotator;
+            bool                                manualTransceiver;
+            bool                                manualTNC;
+            int                                 norad;
+            ModeEnum                            mode;
+        };
+        struct CurrentRec {
+            int                                 norad;
+            ir::IRXTime                         time;
+        };
+        struct StateRec {
+            tgs::TGSOrbitTLE                    orbit;
+            bool                                manualRotator;
+            bool                                manualTransceiver;
+            bool                                manualTNC;
+            tgs::TGSPhysicsDatabase::FieldRec   field;
+            ModeEnum                            mode;
+            ModeTransceiverEnum                 modeTransceiver;
+            ModeTNCEnum                         modeTNC;
+            std::string                         callsign;
+            ir::IRXTime                         timeSession;
+            ir::IRXTime                         timeRotator;
+            double                              azimuth;
+            double                              elevation;
+            ir::IRXTime                         timeTransceiver;
+            double                              sender;
+            double                              receiver;
+            ir::IRXTime                         timeTNC;
+            ir::IRXTime                         timeLog;
+        };
+        struct MonitorRec {
+            double                              latitude;
+            double                              longitude;
+            double                              altitude;
+            double                              azimuth;
+            double                              elevation;
+            double                              beacon;
+            double                              sender;
+            double                              receiver;
+            double                              dopplerSender;
+            double                              dopplerReceiver;
+            //<<<
+            ir::IRXTime                         aos;
+            ir::IRXTime                         los;
+            double                              mel;
+            ir::IRXTime                         start;
+            //>>>
+            tgs::TGSError                       error;
+        };
+        struct CommandRec {
+            std::deque<std::string>             queue;
+        };
+    
+    private:
+                ConfigRec                       _config;
+                tgs::TGSPhysicsDatabase         _database;
+                std::map<int, boost::shared_ptr<ASDPluginInterface> >
+                                                _plugin;
                 tgs::TGSDeviceLoader            _loader;
-                ASDDeviceSatellite              _satellite;
                 ASDDeviceRotator                _rotator;
                 tgs::TGSTransceiverCIV          _civ;
                 ASDDeviceTransceiver            _transceiver;
@@ -113,43 +186,59 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 ASDNetworkServer                _serverOperation;
                 ASDServerDatabase               _replierDatabase;
                 ASDServerOperation              _replierOperation;
+                //<<<
+                ASDTLEPassFactory               _passFactory;
+                ASDTLEPass                      _pass;
+                ASDRotationSolver               _rotationSolver;
+                //>>>
                 SessionRec                      _session;
-        mutable boost::mutex                    _mutex_session;
-                StateRec                        _state;
-        mutable boost::mutex                    _mutex_state;
+        mutable boost::shared_mutex             _mutex_session;
                 ControlRec                      _control;
+        mutable boost::shared_mutex             _mutex_control;
+                CurrentRec                      _current;
+        mutable boost::shared_mutex             _mutex_current;
+                StateRec                        _state;
                 MonitorRec                      _monitor;
-        mutable boost::mutex                    _mutex_monitor;
-                std::deque<std::string>         _queue;
-        mutable boost::mutex                    _mutex_queue;
+        mutable boost::shared_mutex             _mutex_monitor;
+                CommandRec                      _command;
+        mutable boost::shared_mutex             _mutex_command;
     
     public:
         static  artsatd&                        getInstance                 (void);
-        static  ASDDeviceSatellite&             getSatellite                (void);
         static  ASDDeviceRotator&               getRotator                  (void);
         static  ASDDeviceTransceiver&           getTransceiver              (void);
         static  ASDDeviceTNC&                   getTNC                      (void);
-                tgs::TGSError                   setActive                   (bool param);
-                bool                            getActive                   (void) const;
-                tgs::TGSError                   setManualSatellite          (bool param);
-                bool                            getManualSatellite          (void) const;
-                tgs::TGSError                   setManualRotator            (bool param);
+                void                            getSession                  (std::string const& session, int* owner, bool* exclusive, std::string* host, int* online) const;
+                tgs::TGSError                   setManualRotator            (std::string const& session, bool manual);
                 bool                            getManualRotator            (void) const;
-                tgs::TGSError                   setManualTransceiver        (bool param);
+                tgs::TGSError                   setManualTransceiver        (std::string const& session, bool manual);
                 bool                            getManualTransceiver        (void) const;
-                tgs::TGSError                   setManualTNC                (bool param);
+                tgs::TGSError                   setManualTNC                (std::string const& session, bool manual);
                 bool                            getManualTNC                (void) const;
-                tgs::TGSError                   setMode                     (std::string const& param);
+                tgs::TGSError                   setNORAD                    (std::string const& session, std::string const& query);
+                tgs::TGSError                   setNORAD                    (std::string const& session, int norad);
+                int                             getNORAD                    (void) const;
+                tgs::TGSError                   setMode                     (std::string const& session, std::string const& mode);
                 std::string                     getMode                     (void) const;
-                tgs::TGSError                   setNorad                    (int param);
-                int                             getNorad                    (void) const;
-                double                          getAngleAzimuth             (void) const;
-                double                          getAngleElevation           (void) const;
-                double                          getFrequencyBeacon          (void) const;
-                double                          getFrequencySender          (void) const;
-                double                          getFrequencyReceiver        (void) const;
-                std::string                     getError                    (void) const;
-                void                            queueCommand                (std::string const& param);
+                ir::IRXTime                     getTime                     (void) const;
+                boost::shared_ptr<ASDPluginInterface>
+                                                getPlugin                   (int norad) const;
+                void                            getObserverCallsign         (std::string* callsign) const;
+                void                            getObserverPosition         (double* latitude, double* longitude, double* altitude) const;
+                void                            getSatellitePosition        (double* latitude, double* longitude, double* altitude) const;
+                void                            getSatelliteDirection       (double* azimuth, double* elevation) const;
+                void                            getSatelliteFrequency       (double* beacon, double* sender, double* receiver) const;
+                void                            getSatelliteDopplerShift    (double* sender, double* receiver) const;
+                //<<<
+                void                            getSatelliteAOSLOS          (ir::IRXTime* aos, ir::IRXTime* los) const;
+                void                            getSatelliteMEL             (double* mel) const;
+                void                            getRotatorStart             (ir::IRXTime* start) const;
+                //>>>
+                tgs::TGSError                   getError                    (void) const;
+                tgs::TGSError                   requestSession              (std::string* session, bool* update);
+                tgs::TGSError                   controlSession              (std::string const& session, bool owner, std::string const& host);
+                tgs::TGSError                   excludeSession              (std::string const& session, bool exclusive);
+                tgs::TGSError                   requestCommand              (std::string const& session, std::string const& command);
     private:
         explicit                                artsatd                     (void);
         virtual                                 ~artsatd                    (void);
@@ -159,22 +248,44 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
         virtual void                            loop                        (void);
         virtual void                            syslog                      (int priority, char const* format, va_list ap);
         virtual void                            onNotifyReceivePacket       (std::string const& packet);
+                void                            getControl                  (ControlRec* control) const;
+                void                            setCurrent                  (CurrentRec const& current);
+                void                            setMonitor                  (MonitorRec const& monitor);
+                void                            cleanSession                (ir::IRXTime const& time);
+                tgs::TGSError                   openConfig                  (void);
                 tgs::TGSError                   openDatabase                (void);
+                tgs::TGSError                   openPlugin                  (void);
                 tgs::TGSError                   openDevice                  (void);
                 tgs::TGSError                   openNetwork                 (void);
+                void                            closeConfig                 (void);
                 void                            closeDatabase               (void);
+                void                            closePlugin                 (void);
                 void                            closeDevice                 (void);
                 void                            closeNetwork                (void);
+                void                            switchTransceiver           (ModeTransceiverEnum mode);
+                void                            switchTNC                   (ModeTNCEnum mode, std::string const& callsign);
+                void                            operateSession              (ir::IRXTime const& time);
+                tgs::TGSError                   operateRotator              (ir::IRXTime const& time, double azimuth, double elevation);
+                tgs::TGSError                   operateTransceiver          (ir::IRXTime const& time, double sender, double receiver);
+                tgs::TGSError                   operateTNC                  (ir::IRXTime const& time, std::string const& command);
+                void                            operateLog                  (ir::IRXTime const& time, int norad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info);
+                void                            resetRotator                (void);
+                void                            resetTransceiver            (void);
+                void                            resetTNC                    (void);
+        static  void                            resetSession                (SessionRec* session);
+        static  void                            resetControl                (ControlRec* control);
+        static  void                            resetCurrent                (ControlRec const& control, CurrentRec* current);
+        static  void                            resetState                  (ControlRec const& control, StateRec* state);
+        static  void                            resetMonitor                (MonitorRec* monitor);
+        static  void                            resetCommand                (CommandRec* command);
         static  int                             setWorkspace                (void);
+        static  tgs::TGSError                   xmlReadText                 (tinyxml2::XMLElement const* parent, std::string const& tag, std::string* result);
+        static  tgs::TGSError                   xmlReadInteger              (tinyxml2::XMLElement const* parent, std::string const& tag, int* result);
+        static  tgs::TGSError                   xmlReadDouble               (tinyxml2::XMLElement const* parent, std::string const& tag, double* result);
     private:
                                                 artsatd                     (artsatd const&);
                 artsatd&                        operator=                   (artsatd const&);
 };
-
-/*public static */inline ASDDeviceSatellite& artsatd::getSatellite(void)
-{
-    return getInstance()._satellite;
-}
 
 /*public static */inline ASDDeviceRotator& artsatd::getRotator(void)
 {

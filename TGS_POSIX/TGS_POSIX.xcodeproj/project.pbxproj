@@ -8,22 +8,42 @@
 
 /* Begin PBXBuildFile section */
 		C33A9C1C1722725C00F7CE70 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33A9C1B1722725C00F7CE70 /* main.cpp */; };
-		C3D19E11177FFAB8006BEE07 /* TGSDeviceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DDD177FFAB8006BEE07 /* TGSDeviceInterface.cpp */; };
-		C3D19E12177FFAB8006BEE07 /* TGSDeviceLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DDF177FFAB8006BEE07 /* TGSDeviceLoader.cpp */; };
-		C3D19E13177FFAB8006BEE07 /* TGSDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE1177FFAB8006BEE07 /* TGSDeviceManager.cpp */; };
-		C3D19E14177FFAB8006BEE07 /* TGSError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE3177FFAB8006BEE07 /* TGSError.cpp */; };
-		C3D19E15177FFAB8006BEE07 /* TGSRotatorGS232B.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE5177FFAB8006BEE07 /* TGSRotatorGS232B.cpp */; };
-		C3D19E16177FFAB8006BEE07 /* TGSRotatorInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE7177FFAB8006BEE07 /* TGSRotatorInterface.cpp */; };
-		C3D19E17177FFAB8006BEE07 /* TGSSatelliteInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DE9177FFAB8006BEE07 /* TGSSatelliteInterface.cpp */; };
-		C3D19E18177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DEB177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp */; };
-		C3D19E19177FFAB8006BEE07 /* TGSSerial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DED177FFAB8006BEE07 /* TGSSerial.cpp */; };
-		C3D19E1A177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DEF177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp */; };
-		C3D19E1B177FFAB8006BEE07 /* TGSTNCInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF1177FFAB8006BEE07 /* TGSTNCInterface.cpp */; };
-		C3D19E1C177FFAB8006BEE07 /* TGSTNCTNC555.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF3177FFAB8006BEE07 /* TGSTNCTNC555.cpp */; };
-		C3D19E1D177FFAB8006BEE07 /* TGSTransceiverCIV.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF5177FFAB8006BEE07 /* TGSTransceiverCIV.cpp */; };
-		C3D19E1E177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF7177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp */; };
-		C3D19E1F177FFAB8006BEE07 /* TGSTransceiverInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19DF9177FFAB8006BEE07 /* TGSTransceiverInterface.cpp */; };
-		C3D19E21177FFAB8006BEE07 /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D19E0D177FFAB8006BEE07 /* tinyxml2.cpp */; };
+		C35DCB0118D8B892003370D0 /* IRXTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA7918D8B892003370D0 /* IRXTime.cpp */; };
+		C35DCB0218D8B892003370D0 /* IRXTimeDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA7B18D8B892003370D0 /* IRXTimeDiff.cpp */; };
+		C35DCB0318D8B892003370D0 /* TGSDeviceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8118D8B892003370D0 /* TGSDeviceInterface.cpp */; };
+		C35DCB0418D8B892003370D0 /* TGSDeviceLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8318D8B892003370D0 /* TGSDeviceLoader.cpp */; };
+		C35DCB0518D8B892003370D0 /* TGSDeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8518D8B892003370D0 /* TGSDeviceManager.cpp */; };
+		C35DCB0618D8B892003370D0 /* TGSRotatorGS232B.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8718D8B892003370D0 /* TGSRotatorGS232B.cpp */; };
+		C35DCB0718D8B892003370D0 /* TGSRotatorInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8918D8B892003370D0 /* TGSRotatorInterface.cpp */; };
+		C35DCB0818D8B892003370D0 /* TGSSerial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8B18D8B892003370D0 /* TGSSerial.cpp */; };
+		C35DCB0918D8B892003370D0 /* TGSTNCInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8D18D8B892003370D0 /* TGSTNCInterface.cpp */; };
+		C35DCB0A18D8B892003370D0 /* TGSTNCTNC555.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA8F18D8B892003370D0 /* TGSTNCTNC555.cpp */; };
+		C35DCB0B18D8B892003370D0 /* TGSTransceiverCIV.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA9118D8B892003370D0 /* TGSTransceiverCIV.cpp */; };
+		C35DCB0C18D8B892003370D0 /* TGSTransceiverIC9100.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA9318D8B892003370D0 /* TGSTransceiverIC9100.cpp */; };
+		C35DCB0D18D8B892003370D0 /* TGSTransceiverInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCA9518D8B892003370D0 /* TGSTransceiverInterface.cpp */; };
+		C35DCB0F18D8B892003370D0 /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAA818D8B892003370D0 /* tinyxml2.cpp */; };
+		C35DCB1118D8B892003370D0 /* cEci.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAB018D8B892003370D0 /* cEci.cpp */; };
+		C35DCB1218D8B892003370D0 /* cJulian.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAB218D8B892003370D0 /* cJulian.cpp */; };
+		C35DCB1318D8B892003370D0 /* coord.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAB418D8B892003370D0 /* coord.cpp */; };
+		C35DCB1418D8B892003370D0 /* cSite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAB918D8B892003370D0 /* cSite.cpp */; };
+		C35DCB1518D8B892003370D0 /* cTLE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCABB18D8B892003370D0 /* cTLE.cpp */; };
+		C35DCB1618D8B892003370D0 /* cVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCABD18D8B892003370D0 /* cVector.cpp */; };
+		C35DCB1718D8B892003370D0 /* globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAC018D8B892003370D0 /* globals.cpp */; };
+		C35DCB1818D8B892003370D0 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAC318D8B892003370D0 /* stdafx.cpp */; };
+		C35DCB1918D8B892003370D0 /* cNoradBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAC618D8B892003370D0 /* cNoradBase.cpp */; };
+		C35DCB1A18D8B892003370D0 /* cNoradSDP4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAC818D8B892003370D0 /* cNoradSDP4.cpp */; };
+		C35DCB1B18D8B892003370D0 /* cNoradSGP4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCACA18D8B892003370D0 /* cNoradSGP4.cpp */; };
+		C35DCB1C18D8B892003370D0 /* cOrbit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCACC18D8B892003370D0 /* cOrbit.cpp */; };
+		C35DCB1D18D8B892003370D0 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAD118D8B892003370D0 /* stdafx.cpp */; };
+		C35DCB2018D8B892003370D0 /* TGSOrbitInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCADE18D8B892003370D0 /* TGSOrbitInterface.cpp */; };
+		C35DCB2118D8B892003370D0 /* TGSOrbitTLE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAE018D8B892003370D0 /* TGSOrbitTLE.cpp */; };
+		C35DCB2218D8B892003370D0 /* TGSPhysicsDatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAE218D8B892003370D0 /* TGSPhysicsDatabase.cpp */; };
+		C35DCB2318D8B892003370D0 /* TGSPhysicsProcessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAE418D8B892003370D0 /* TGSPhysicsProcessor.cpp */; };
+		C35DCB2518D8B892003370D0 /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAE818D8B892003370D0 /* sqlite3.c */; };
+		C35DCB2618D8B892003370D0 /* TGSDatabaseInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAEB18D8B892003370D0 /* TGSDatabaseInterface.cpp */; };
+		C35DCB2718D8B892003370D0 /* TGSError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAED18D8B892003370D0 /* TGSError.cpp */; };
+		C35DCB2818D8B892003370D0 /* TGSTelemetryINVADER.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAEF18D8B892003370D0 /* TGSTelemetryINVADER.cpp */; };
+		C35DCB2918D8B892003370D0 /* TGSType.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C35DCAF118D8B892003370D0 /* TGSType.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,39 +61,82 @@
 /* Begin PBXFileReference section */
 		C33A9C181722725C00F7CE70 /* TGS_POSIX */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TGS_POSIX; sourceTree = BUILT_PRODUCTS_DIR; };
 		C33A9C1B1722725C00F7CE70 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		C3D19DDD177FFAB8006BEE07 /* TGSDeviceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceInterface.cpp; sourceTree = "<group>"; };
-		C3D19DDE177FFAB8006BEE07 /* TGSDeviceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceInterface.h; sourceTree = "<group>"; };
-		C3D19DDF177FFAB8006BEE07 /* TGSDeviceLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceLoader.cpp; sourceTree = "<group>"; };
-		C3D19DE0177FFAB8006BEE07 /* TGSDeviceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceLoader.h; sourceTree = "<group>"; };
-		C3D19DE1177FFAB8006BEE07 /* TGSDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceManager.cpp; sourceTree = "<group>"; };
-		C3D19DE2177FFAB8006BEE07 /* TGSDeviceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceManager.h; sourceTree = "<group>"; };
-		C3D19DE3177FFAB8006BEE07 /* TGSError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSError.cpp; sourceTree = "<group>"; };
-		C3D19DE4177FFAB8006BEE07 /* TGSError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSError.h; sourceTree = "<group>"; };
-		C3D19DE5177FFAB8006BEE07 /* TGSRotatorGS232B.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorGS232B.cpp; sourceTree = "<group>"; };
-		C3D19DE6177FFAB8006BEE07 /* TGSRotatorGS232B.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSRotatorGS232B.h; sourceTree = "<group>"; };
-		C3D19DE7177FFAB8006BEE07 /* TGSRotatorInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorInterface.cpp; sourceTree = "<group>"; };
-		C3D19DE8177FFAB8006BEE07 /* TGSRotatorInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSRotatorInterface.h; sourceTree = "<group>"; };
-		C3D19DE9177FFAB8006BEE07 /* TGSSatelliteInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSatelliteInterface.cpp; sourceTree = "<group>"; };
-		C3D19DEA177FFAB8006BEE07 /* TGSSatelliteInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSatelliteInterface.h; sourceTree = "<group>"; };
-		C3D19DEB177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSatelliteINVADER.cpp; sourceTree = "<group>"; };
-		C3D19DEC177FFAB8006BEE07 /* TGSSatelliteINVADER.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSatelliteINVADER.h; sourceTree = "<group>"; };
-		C3D19DED177FFAB8006BEE07 /* TGSSerial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSerial.cpp; sourceTree = "<group>"; };
-		C3D19DEE177FFAB8006BEE07 /* TGSSerial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSerial.h; sourceTree = "<group>"; };
-		C3D19DEF177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTelemetryINVADER.cpp; sourceTree = "<group>"; };
-		C3D19DF0177FFAB8006BEE07 /* TGSTelemetryINVADER.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTelemetryINVADER.h; sourceTree = "<group>"; };
-		C3D19DF1177FFAB8006BEE07 /* TGSTNCInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCInterface.cpp; sourceTree = "<group>"; };
-		C3D19DF2177FFAB8006BEE07 /* TGSTNCInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTNCInterface.h; sourceTree = "<group>"; };
-		C3D19DF3177FFAB8006BEE07 /* TGSTNCTNC555.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCTNC555.cpp; sourceTree = "<group>"; };
-		C3D19DF4177FFAB8006BEE07 /* TGSTNCTNC555.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTNCTNC555.h; sourceTree = "<group>"; };
-		C3D19DF5177FFAB8006BEE07 /* TGSTransceiverCIV.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverCIV.cpp; sourceTree = "<group>"; };
-		C3D19DF6177FFAB8006BEE07 /* TGSTransceiverCIV.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverCIV.h; sourceTree = "<group>"; };
-		C3D19DF7177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverIC9100.cpp; sourceTree = "<group>"; };
-		C3D19DF8177FFAB8006BEE07 /* TGSTransceiverIC9100.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverIC9100.h; sourceTree = "<group>"; };
-		C3D19DF9177FFAB8006BEE07 /* TGSTransceiverInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverInterface.cpp; sourceTree = "<group>"; };
-		C3D19DFA177FFAB8006BEE07 /* TGSTransceiverInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverInterface.h; sourceTree = "<group>"; };
-		C3D19DFB177FFAB8006BEE07 /* TGSType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSType.h; sourceTree = "<group>"; };
-		C3D19E0D177FFAB8006BEE07 /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxml2.cpp; sourceTree = "<group>"; };
-		C3D19E0E177FFAB8006BEE07 /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyxml2.h; sourceTree = "<group>"; };
+		C35DCA7918D8B892003370D0 /* IRXTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IRXTime.cpp; sourceTree = "<group>"; };
+		C35DCA7A18D8B892003370D0 /* IRXTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRXTime.h; sourceTree = "<group>"; };
+		C35DCA7B18D8B892003370D0 /* IRXTimeDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IRXTimeDiff.cpp; sourceTree = "<group>"; };
+		C35DCA7C18D8B892003370D0 /* IRXTimeDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRXTimeDiff.h; sourceTree = "<group>"; };
+		C35DCA7D18D8B892003370D0 /* IRXTimeType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRXTimeType.h; sourceTree = "<group>"; };
+		C35DCA8118D8B892003370D0 /* TGSDeviceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceInterface.cpp; sourceTree = "<group>"; };
+		C35DCA8218D8B892003370D0 /* TGSDeviceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceInterface.h; sourceTree = "<group>"; };
+		C35DCA8318D8B892003370D0 /* TGSDeviceLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceLoader.cpp; sourceTree = "<group>"; };
+		C35DCA8418D8B892003370D0 /* TGSDeviceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceLoader.h; sourceTree = "<group>"; };
+		C35DCA8518D8B892003370D0 /* TGSDeviceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDeviceManager.cpp; sourceTree = "<group>"; };
+		C35DCA8618D8B892003370D0 /* TGSDeviceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDeviceManager.h; sourceTree = "<group>"; };
+		C35DCA8718D8B892003370D0 /* TGSRotatorGS232B.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorGS232B.cpp; sourceTree = "<group>"; };
+		C35DCA8818D8B892003370D0 /* TGSRotatorGS232B.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSRotatorGS232B.h; sourceTree = "<group>"; };
+		C35DCA8918D8B892003370D0 /* TGSRotatorInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSRotatorInterface.cpp; sourceTree = "<group>"; };
+		C35DCA8A18D8B892003370D0 /* TGSRotatorInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSRotatorInterface.h; sourceTree = "<group>"; };
+		C35DCA8B18D8B892003370D0 /* TGSSerial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSSerial.cpp; sourceTree = "<group>"; };
+		C35DCA8C18D8B892003370D0 /* TGSSerial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSSerial.h; sourceTree = "<group>"; };
+		C35DCA8D18D8B892003370D0 /* TGSTNCInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCInterface.cpp; sourceTree = "<group>"; };
+		C35DCA8E18D8B892003370D0 /* TGSTNCInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTNCInterface.h; sourceTree = "<group>"; };
+		C35DCA8F18D8B892003370D0 /* TGSTNCTNC555.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTNCTNC555.cpp; sourceTree = "<group>"; };
+		C35DCA9018D8B892003370D0 /* TGSTNCTNC555.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTNCTNC555.h; sourceTree = "<group>"; };
+		C35DCA9118D8B892003370D0 /* TGSTransceiverCIV.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverCIV.cpp; sourceTree = "<group>"; };
+		C35DCA9218D8B892003370D0 /* TGSTransceiverCIV.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverCIV.h; sourceTree = "<group>"; };
+		C35DCA9318D8B892003370D0 /* TGSTransceiverIC9100.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverIC9100.cpp; sourceTree = "<group>"; };
+		C35DCA9418D8B892003370D0 /* TGSTransceiverIC9100.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverIC9100.h; sourceTree = "<group>"; };
+		C35DCA9518D8B892003370D0 /* TGSTransceiverInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTransceiverInterface.cpp; sourceTree = "<group>"; };
+		C35DCA9618D8B892003370D0 /* TGSTransceiverInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTransceiverInterface.h; sourceTree = "<group>"; };
+		C35DCAA818D8B892003370D0 /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxml2.cpp; sourceTree = "<group>"; };
+		C35DCAA918D8B892003370D0 /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyxml2.h; sourceTree = "<group>"; };
+		C35DCAB018D8B892003370D0 /* cEci.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cEci.cpp; sourceTree = "<group>"; };
+		C35DCAB118D8B892003370D0 /* cEci.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cEci.h; sourceTree = "<group>"; };
+		C35DCAB218D8B892003370D0 /* cJulian.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cJulian.cpp; sourceTree = "<group>"; };
+		C35DCAB318D8B892003370D0 /* cJulian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cJulian.h; sourceTree = "<group>"; };
+		C35DCAB418D8B892003370D0 /* coord.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = coord.cpp; sourceTree = "<group>"; };
+		C35DCAB518D8B892003370D0 /* coord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = coord.h; sourceTree = "<group>"; };
+		C35DCAB818D8B892003370D0 /* coreLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = coreLib.h; sourceTree = "<group>"; };
+		C35DCAB918D8B892003370D0 /* cSite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cSite.cpp; sourceTree = "<group>"; };
+		C35DCABA18D8B892003370D0 /* cSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cSite.h; sourceTree = "<group>"; };
+		C35DCABB18D8B892003370D0 /* cTLE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cTLE.cpp; sourceTree = "<group>"; };
+		C35DCABC18D8B892003370D0 /* cTLE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cTLE.h; sourceTree = "<group>"; };
+		C35DCABD18D8B892003370D0 /* cVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cVector.cpp; sourceTree = "<group>"; };
+		C35DCABE18D8B892003370D0 /* cVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cVector.h; sourceTree = "<group>"; };
+		C35DCABF18D8B892003370D0 /* exceptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exceptions.h; sourceTree = "<group>"; };
+		C35DCAC018D8B892003370D0 /* globals.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = globals.cpp; sourceTree = "<group>"; };
+		C35DCAC118D8B892003370D0 /* globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = globals.h; sourceTree = "<group>"; };
+		C35DCAC318D8B892003370D0 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		C35DCAC418D8B892003370D0 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		C35DCAC618D8B892003370D0 /* cNoradBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cNoradBase.cpp; sourceTree = "<group>"; };
+		C35DCAC718D8B892003370D0 /* cNoradBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cNoradBase.h; sourceTree = "<group>"; };
+		C35DCAC818D8B892003370D0 /* cNoradSDP4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cNoradSDP4.cpp; sourceTree = "<group>"; };
+		C35DCAC918D8B892003370D0 /* cNoradSDP4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cNoradSDP4.h; sourceTree = "<group>"; };
+		C35DCACA18D8B892003370D0 /* cNoradSGP4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cNoradSGP4.cpp; sourceTree = "<group>"; };
+		C35DCACB18D8B892003370D0 /* cNoradSGP4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cNoradSGP4.h; sourceTree = "<group>"; };
+		C35DCACC18D8B892003370D0 /* cOrbit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cOrbit.cpp; sourceTree = "<group>"; };
+		C35DCACD18D8B892003370D0 /* cOrbit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cOrbit.h; sourceTree = "<group>"; };
+		C35DCAD118D8B892003370D0 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		C35DCAD218D8B892003370D0 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		C35DCADE18D8B892003370D0 /* TGSOrbitInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSOrbitInterface.cpp; sourceTree = "<group>"; };
+		C35DCADF18D8B892003370D0 /* TGSOrbitInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSOrbitInterface.h; sourceTree = "<group>"; };
+		C35DCAE018D8B892003370D0 /* TGSOrbitTLE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSOrbitTLE.cpp; sourceTree = "<group>"; };
+		C35DCAE118D8B892003370D0 /* TGSOrbitTLE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSOrbitTLE.h; sourceTree = "<group>"; };
+		C35DCAE218D8B892003370D0 /* TGSPhysicsDatabase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSPhysicsDatabase.cpp; sourceTree = "<group>"; };
+		C35DCAE318D8B892003370D0 /* TGSPhysicsDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSPhysicsDatabase.h; sourceTree = "<group>"; };
+		C35DCAE418D8B892003370D0 /* TGSPhysicsProcessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSPhysicsProcessor.cpp; sourceTree = "<group>"; };
+		C35DCAE518D8B892003370D0 /* TGSPhysicsProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSPhysicsProcessor.h; sourceTree = "<group>"; };
+		C35DCAE818D8B892003370D0 /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqlite3.c; sourceTree = "<group>"; };
+		C35DCAE918D8B892003370D0 /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlite3.h; sourceTree = "<group>"; };
+		C35DCAEA18D8B892003370D0 /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlite3ext.h; sourceTree = "<group>"; };
+		C35DCAEB18D8B892003370D0 /* TGSDatabaseInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSDatabaseInterface.cpp; sourceTree = "<group>"; };
+		C35DCAEC18D8B892003370D0 /* TGSDatabaseInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSDatabaseInterface.h; sourceTree = "<group>"; };
+		C35DCAED18D8B892003370D0 /* TGSError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSError.cpp; sourceTree = "<group>"; };
+		C35DCAEE18D8B892003370D0 /* TGSError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSError.h; sourceTree = "<group>"; };
+		C35DCAEF18D8B892003370D0 /* TGSTelemetryINVADER.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSTelemetryINVADER.cpp; sourceTree = "<group>"; };
+		C35DCAF018D8B892003370D0 /* TGSTelemetryINVADER.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSTelemetryINVADER.h; sourceTree = "<group>"; };
+		C35DCAF118D8B892003370D0 /* TGSType.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TGSType.cpp; sourceTree = "<group>"; };
+		C35DCAF218D8B892003370D0 /* TGSType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TGSType.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,66 +178,189 @@
 		C33A9C24172272C200F7CE70 /* libs */ = {
 			isa = PBXGroup;
 			children = (
-				C3D19DDB177FFAB8006BEE07 /* TGS */,
+				C35DCA5418D8B892003370D0 /* IRX */,
+				C35DCA7E18D8B892003370D0 /* TGS */,
 			);
 			name = libs;
 			path = ../common/libs;
 			sourceTree = "<group>";
 		};
-		C3D19DDB177FFAB8006BEE07 /* TGS */ = {
+		C35DCA5418D8B892003370D0 /* IRX */ = {
 			isa = PBXGroup;
 			children = (
-				C3D19DDC177FFAB8006BEE07 /* src */,
+				C35DCA7718D8B892003370D0 /* IRXTime */,
 			);
-			path = TGS;
+			path = IRX;
 			sourceTree = "<group>";
 		};
-		C3D19DDC177FFAB8006BEE07 /* src */ = {
+		C35DCA7718D8B892003370D0 /* IRXTime */ = {
 			isa = PBXGroup;
 			children = (
-				C3D19DDD177FFAB8006BEE07 /* TGSDeviceInterface.cpp */,
-				C3D19DDE177FFAB8006BEE07 /* TGSDeviceInterface.h */,
-				C3D19DDF177FFAB8006BEE07 /* TGSDeviceLoader.cpp */,
-				C3D19DE0177FFAB8006BEE07 /* TGSDeviceLoader.h */,
-				C3D19DE1177FFAB8006BEE07 /* TGSDeviceManager.cpp */,
-				C3D19DE2177FFAB8006BEE07 /* TGSDeviceManager.h */,
-				C3D19DE3177FFAB8006BEE07 /* TGSError.cpp */,
-				C3D19DE4177FFAB8006BEE07 /* TGSError.h */,
-				C3D19DE5177FFAB8006BEE07 /* TGSRotatorGS232B.cpp */,
-				C3D19DE6177FFAB8006BEE07 /* TGSRotatorGS232B.h */,
-				C3D19DE7177FFAB8006BEE07 /* TGSRotatorInterface.cpp */,
-				C3D19DE8177FFAB8006BEE07 /* TGSRotatorInterface.h */,
-				C3D19DE9177FFAB8006BEE07 /* TGSSatelliteInterface.cpp */,
-				C3D19DEA177FFAB8006BEE07 /* TGSSatelliteInterface.h */,
-				C3D19DEB177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp */,
-				C3D19DEC177FFAB8006BEE07 /* TGSSatelliteINVADER.h */,
-				C3D19DED177FFAB8006BEE07 /* TGSSerial.cpp */,
-				C3D19DEE177FFAB8006BEE07 /* TGSSerial.h */,
-				C3D19DEF177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp */,
-				C3D19DF0177FFAB8006BEE07 /* TGSTelemetryINVADER.h */,
-				C3D19DF1177FFAB8006BEE07 /* TGSTNCInterface.cpp */,
-				C3D19DF2177FFAB8006BEE07 /* TGSTNCInterface.h */,
-				C3D19DF3177FFAB8006BEE07 /* TGSTNCTNC555.cpp */,
-				C3D19DF4177FFAB8006BEE07 /* TGSTNCTNC555.h */,
-				C3D19DF5177FFAB8006BEE07 /* TGSTransceiverCIV.cpp */,
-				C3D19DF6177FFAB8006BEE07 /* TGSTransceiverCIV.h */,
-				C3D19DF7177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp */,
-				C3D19DF8177FFAB8006BEE07 /* TGSTransceiverIC9100.h */,
-				C3D19DF9177FFAB8006BEE07 /* TGSTransceiverInterface.cpp */,
-				C3D19DFA177FFAB8006BEE07 /* TGSTransceiverInterface.h */,
-				C3D19DFB177FFAB8006BEE07 /* TGSType.h */,
-				C3D19DFC177FFAB8006BEE07 /* tinyxml2 */,
+				C35DCA7818D8B892003370D0 /* src */,
+			);
+			path = IRXTime;
+			sourceTree = "<group>";
+		};
+		C35DCA7818D8B892003370D0 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCA7918D8B892003370D0 /* IRXTime.cpp */,
+				C35DCA7A18D8B892003370D0 /* IRXTime.h */,
+				C35DCA7B18D8B892003370D0 /* IRXTimeDiff.cpp */,
+				C35DCA7C18D8B892003370D0 /* IRXTimeDiff.h */,
+				C35DCA7D18D8B892003370D0 /* IRXTimeType.h */,
 			);
 			path = src;
 			sourceTree = "<group>";
 		};
-		C3D19DFC177FFAB8006BEE07 /* tinyxml2 */ = {
+		C35DCA7E18D8B892003370D0 /* TGS */ = {
 			isa = PBXGroup;
 			children = (
-				C3D19E0D177FFAB8006BEE07 /* tinyxml2.cpp */,
-				C3D19E0E177FFAB8006BEE07 /* tinyxml2.h */,
+				C35DCA7F18D8B892003370D0 /* src */,
+			);
+			path = TGS;
+			sourceTree = "<group>";
+		};
+		C35DCA7F18D8B892003370D0 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCA8018D8B892003370D0 /* device */,
+				C35DCAAC18D8B892003370D0 /* physics */,
+				C35DCAE618D8B892003370D0 /* sqlite */,
+				C35DCAEB18D8B892003370D0 /* TGSDatabaseInterface.cpp */,
+				C35DCAEC18D8B892003370D0 /* TGSDatabaseInterface.h */,
+				C35DCAED18D8B892003370D0 /* TGSError.cpp */,
+				C35DCAEE18D8B892003370D0 /* TGSError.h */,
+				C35DCAEF18D8B892003370D0 /* TGSTelemetryINVADER.cpp */,
+				C35DCAF018D8B892003370D0 /* TGSTelemetryINVADER.h */,
+				C35DCAF118D8B892003370D0 /* TGSType.cpp */,
+				C35DCAF218D8B892003370D0 /* TGSType.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		C35DCA8018D8B892003370D0 /* device */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCA8118D8B892003370D0 /* TGSDeviceInterface.cpp */,
+				C35DCA8218D8B892003370D0 /* TGSDeviceInterface.h */,
+				C35DCA8318D8B892003370D0 /* TGSDeviceLoader.cpp */,
+				C35DCA8418D8B892003370D0 /* TGSDeviceLoader.h */,
+				C35DCA8518D8B892003370D0 /* TGSDeviceManager.cpp */,
+				C35DCA8618D8B892003370D0 /* TGSDeviceManager.h */,
+				C35DCA8718D8B892003370D0 /* TGSRotatorGS232B.cpp */,
+				C35DCA8818D8B892003370D0 /* TGSRotatorGS232B.h */,
+				C35DCA8918D8B892003370D0 /* TGSRotatorInterface.cpp */,
+				C35DCA8A18D8B892003370D0 /* TGSRotatorInterface.h */,
+				C35DCA8B18D8B892003370D0 /* TGSSerial.cpp */,
+				C35DCA8C18D8B892003370D0 /* TGSSerial.h */,
+				C35DCA8D18D8B892003370D0 /* TGSTNCInterface.cpp */,
+				C35DCA8E18D8B892003370D0 /* TGSTNCInterface.h */,
+				C35DCA8F18D8B892003370D0 /* TGSTNCTNC555.cpp */,
+				C35DCA9018D8B892003370D0 /* TGSTNCTNC555.h */,
+				C35DCA9118D8B892003370D0 /* TGSTransceiverCIV.cpp */,
+				C35DCA9218D8B892003370D0 /* TGSTransceiverCIV.h */,
+				C35DCA9318D8B892003370D0 /* TGSTransceiverIC9100.cpp */,
+				C35DCA9418D8B892003370D0 /* TGSTransceiverIC9100.h */,
+				C35DCA9518D8B892003370D0 /* TGSTransceiverInterface.cpp */,
+				C35DCA9618D8B892003370D0 /* TGSTransceiverInterface.h */,
+				C35DCA9718D8B892003370D0 /* tinyxml2 */,
+			);
+			path = device;
+			sourceTree = "<group>";
+		};
+		C35DCA9718D8B892003370D0 /* tinyxml2 */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAA818D8B892003370D0 /* tinyxml2.cpp */,
+				C35DCAA918D8B892003370D0 /* tinyxml2.h */,
 			);
 			path = tinyxml2;
+			sourceTree = "<group>";
+		};
+		C35DCAAC18D8B892003370D0 /* physics */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAAD18D8B892003370D0 /* cppOrbitTools */,
+				C35DCADE18D8B892003370D0 /* TGSOrbitInterface.cpp */,
+				C35DCADF18D8B892003370D0 /* TGSOrbitInterface.h */,
+				C35DCAE018D8B892003370D0 /* TGSOrbitTLE.cpp */,
+				C35DCAE118D8B892003370D0 /* TGSOrbitTLE.h */,
+				C35DCAE218D8B892003370D0 /* TGSPhysicsDatabase.cpp */,
+				C35DCAE318D8B892003370D0 /* TGSPhysicsDatabase.h */,
+				C35DCAE418D8B892003370D0 /* TGSPhysicsProcessor.cpp */,
+				C35DCAE518D8B892003370D0 /* TGSPhysicsProcessor.h */,
+			);
+			path = physics;
+			sourceTree = "<group>";
+		};
+		C35DCAAD18D8B892003370D0 /* cppOrbitTools */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAAE18D8B892003370D0 /* orbitTools */,
+			);
+			path = cppOrbitTools;
+			sourceTree = "<group>";
+		};
+		C35DCAAE18D8B892003370D0 /* orbitTools */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAAF18D8B892003370D0 /* core */,
+				C35DCAC518D8B892003370D0 /* orbit */,
+			);
+			path = orbitTools;
+			sourceTree = "<group>";
+		};
+		C35DCAAF18D8B892003370D0 /* core */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAB018D8B892003370D0 /* cEci.cpp */,
+				C35DCAB118D8B892003370D0 /* cEci.h */,
+				C35DCAB218D8B892003370D0 /* cJulian.cpp */,
+				C35DCAB318D8B892003370D0 /* cJulian.h */,
+				C35DCAB418D8B892003370D0 /* coord.cpp */,
+				C35DCAB518D8B892003370D0 /* coord.h */,
+				C35DCAB818D8B892003370D0 /* coreLib.h */,
+				C35DCAB918D8B892003370D0 /* cSite.cpp */,
+				C35DCABA18D8B892003370D0 /* cSite.h */,
+				C35DCABB18D8B892003370D0 /* cTLE.cpp */,
+				C35DCABC18D8B892003370D0 /* cTLE.h */,
+				C35DCABD18D8B892003370D0 /* cVector.cpp */,
+				C35DCABE18D8B892003370D0 /* cVector.h */,
+				C35DCABF18D8B892003370D0 /* exceptions.h */,
+				C35DCAC018D8B892003370D0 /* globals.cpp */,
+				C35DCAC118D8B892003370D0 /* globals.h */,
+				C35DCAC318D8B892003370D0 /* stdafx.cpp */,
+				C35DCAC418D8B892003370D0 /* stdafx.h */,
+			);
+			path = core;
+			sourceTree = "<group>";
+		};
+		C35DCAC518D8B892003370D0 /* orbit */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAC618D8B892003370D0 /* cNoradBase.cpp */,
+				C35DCAC718D8B892003370D0 /* cNoradBase.h */,
+				C35DCAC818D8B892003370D0 /* cNoradSDP4.cpp */,
+				C35DCAC918D8B892003370D0 /* cNoradSDP4.h */,
+				C35DCACA18D8B892003370D0 /* cNoradSGP4.cpp */,
+				C35DCACB18D8B892003370D0 /* cNoradSGP4.h */,
+				C35DCACC18D8B892003370D0 /* cOrbit.cpp */,
+				C35DCACD18D8B892003370D0 /* cOrbit.h */,
+				C35DCAD118D8B892003370D0 /* stdafx.cpp */,
+				C35DCAD218D8B892003370D0 /* stdafx.h */,
+			);
+			path = orbit;
+			sourceTree = "<group>";
+		};
+		C35DCAE618D8B892003370D0 /* sqlite */ = {
+			isa = PBXGroup;
+			children = (
+				C35DCAE818D8B892003370D0 /* sqlite3.c */,
+				C35DCAE918D8B892003370D0 /* sqlite3.h */,
+				C35DCAEA18D8B892003370D0 /* sqlite3ext.h */,
+			);
+			path = sqlite;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -229,22 +415,42 @@
 			buildActionMask = 2147483647;
 			files = (
 				C33A9C1C1722725C00F7CE70 /* main.cpp in Sources */,
-				C3D19E11177FFAB8006BEE07 /* TGSDeviceInterface.cpp in Sources */,
-				C3D19E12177FFAB8006BEE07 /* TGSDeviceLoader.cpp in Sources */,
-				C3D19E13177FFAB8006BEE07 /* TGSDeviceManager.cpp in Sources */,
-				C3D19E14177FFAB8006BEE07 /* TGSError.cpp in Sources */,
-				C3D19E15177FFAB8006BEE07 /* TGSRotatorGS232B.cpp in Sources */,
-				C3D19E16177FFAB8006BEE07 /* TGSRotatorInterface.cpp in Sources */,
-				C3D19E17177FFAB8006BEE07 /* TGSSatelliteInterface.cpp in Sources */,
-				C3D19E18177FFAB8006BEE07 /* TGSSatelliteINVADER.cpp in Sources */,
-				C3D19E19177FFAB8006BEE07 /* TGSSerial.cpp in Sources */,
-				C3D19E1A177FFAB8006BEE07 /* TGSTelemetryINVADER.cpp in Sources */,
-				C3D19E1B177FFAB8006BEE07 /* TGSTNCInterface.cpp in Sources */,
-				C3D19E1C177FFAB8006BEE07 /* TGSTNCTNC555.cpp in Sources */,
-				C3D19E1D177FFAB8006BEE07 /* TGSTransceiverCIV.cpp in Sources */,
-				C3D19E1E177FFAB8006BEE07 /* TGSTransceiverIC9100.cpp in Sources */,
-				C3D19E1F177FFAB8006BEE07 /* TGSTransceiverInterface.cpp in Sources */,
-				C3D19E21177FFAB8006BEE07 /* tinyxml2.cpp in Sources */,
+				C35DCB0118D8B892003370D0 /* IRXTime.cpp in Sources */,
+				C35DCB0218D8B892003370D0 /* IRXTimeDiff.cpp in Sources */,
+				C35DCB0318D8B892003370D0 /* TGSDeviceInterface.cpp in Sources */,
+				C35DCB0418D8B892003370D0 /* TGSDeviceLoader.cpp in Sources */,
+				C35DCB0518D8B892003370D0 /* TGSDeviceManager.cpp in Sources */,
+				C35DCB0618D8B892003370D0 /* TGSRotatorGS232B.cpp in Sources */,
+				C35DCB0718D8B892003370D0 /* TGSRotatorInterface.cpp in Sources */,
+				C35DCB0818D8B892003370D0 /* TGSSerial.cpp in Sources */,
+				C35DCB0918D8B892003370D0 /* TGSTNCInterface.cpp in Sources */,
+				C35DCB0A18D8B892003370D0 /* TGSTNCTNC555.cpp in Sources */,
+				C35DCB0B18D8B892003370D0 /* TGSTransceiverCIV.cpp in Sources */,
+				C35DCB0C18D8B892003370D0 /* TGSTransceiverIC9100.cpp in Sources */,
+				C35DCB0D18D8B892003370D0 /* TGSTransceiverInterface.cpp in Sources */,
+				C35DCB0F18D8B892003370D0 /* tinyxml2.cpp in Sources */,
+				C35DCB1118D8B892003370D0 /* cEci.cpp in Sources */,
+				C35DCB1218D8B892003370D0 /* cJulian.cpp in Sources */,
+				C35DCB1318D8B892003370D0 /* coord.cpp in Sources */,
+				C35DCB1418D8B892003370D0 /* cSite.cpp in Sources */,
+				C35DCB1518D8B892003370D0 /* cTLE.cpp in Sources */,
+				C35DCB1618D8B892003370D0 /* cVector.cpp in Sources */,
+				C35DCB1718D8B892003370D0 /* globals.cpp in Sources */,
+				C35DCB1818D8B892003370D0 /* stdafx.cpp in Sources */,
+				C35DCB1918D8B892003370D0 /* cNoradBase.cpp in Sources */,
+				C35DCB1A18D8B892003370D0 /* cNoradSDP4.cpp in Sources */,
+				C35DCB1B18D8B892003370D0 /* cNoradSGP4.cpp in Sources */,
+				C35DCB1C18D8B892003370D0 /* cOrbit.cpp in Sources */,
+				C35DCB1D18D8B892003370D0 /* stdafx.cpp in Sources */,
+				C35DCB2018D8B892003370D0 /* TGSOrbitInterface.cpp in Sources */,
+				C35DCB2118D8B892003370D0 /* TGSOrbitTLE.cpp in Sources */,
+				C35DCB2218D8B892003370D0 /* TGSPhysicsDatabase.cpp in Sources */,
+				C35DCB2318D8B892003370D0 /* TGSPhysicsProcessor.cpp in Sources */,
+				C35DCB2518D8B892003370D0 /* sqlite3.c in Sources */,
+				C35DCB2618D8B892003370D0 /* TGSDatabaseInterface.cpp in Sources */,
+				C35DCB2718D8B892003370D0 /* TGSError.cpp in Sources */,
+				C35DCB2818D8B892003370D0 /* TGSTelemetryINVADER.cpp in Sources */,
+				C35DCB2918D8B892003370D0 /* TGSType.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSDatabaseInterface.cpp
 **
@@ -63,13 +63,19 @@ namespace tgs {
     return (_database != NULL);
 }
 
-/*public virtual */TGSError TGSDatabaseInterface::open(std::string const& file)
+/*public virtual */TGSError TGSDatabaseInterface::open(std::string const& file, int timeout)
 {
     TGSError error(TGSERROR_OK);
     
     if (_database == NULL) {
         if (sqlite3_open_v2(file.c_str(), &_database, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) == SQLITE_OK) {
-            _statement = NULL;
+            if (sqlite3_busy_timeout(_database, timeout) == SQLITE_OK) {
+                _statement = NULL;
+            }
+            else {
+                std::cerr << "database busy timeout error [" << sqlite3_errmsg(_database) << "]" << std::endl;
+                error = TGSERROR_FAILED;
+            }
         }
         else {
             std::cerr << "database open error [" << sqlite3_errmsg(_database) << "]" << std::endl;
@@ -105,7 +111,7 @@ namespace tgs {
 
 /*public */TGSError TGSDatabaseInterface::begin(void)
 {
-    return execute("BEGIN;");
+    return execute("BEGIN EXCLUSIVE;");
 }
 
 /*public */void TGSDatabaseInterface::end(void)
@@ -145,13 +151,13 @@ namespace tgs {
     return error;
 }
 
-/*protected */TGSError TGSDatabaseInterface::update(std::string const& table, char const* (*format)[2], unsigned int length, int primary, std::string const& condition, ...)
+/*protected */TGSError TGSDatabaseInterface::update(std::string const& table, char const* (*format)[2], unsigned int length, int primary, va_ref<std::string const> condition, ...)
 {
     va_list ap;
     TGSError error(TGSERROR_OK);
     
     va_start(ap, condition);
-    error = update(table, format, length, primary, condition, ap);
+    error = update(table, format, length, primary, static_cast<std::string const&>(condition), ap);
     va_end(ap);
     return error;
 }
@@ -230,13 +236,13 @@ namespace tgs {
     return error;
 }
 
-/*protected */TGSError TGSDatabaseInterface::remove(std::string const& table, char const* (*format)[2], std::string const& condition, ...)
+/*protected */TGSError TGSDatabaseInterface::remove(std::string const& table, char const* (*format)[2], va_ref<std::string const> condition, ...)
 {
     va_list ap;
     TGSError error(TGSERROR_OK);
     
     va_start(ap, condition);
-    error = remove(table, format, condition, ap);
+    error = remove(table, format, static_cast<std::string const&>(condition), ap);
     va_end(ap);
     return error;
 }
@@ -286,13 +292,13 @@ namespace tgs {
     return error;
 }
 
-/*protected */TGSError TGSDatabaseInterface::select(std::string const& table, std::string const& query, char const* (*format)[2], std::string const& condition, ...)
+/*protected */TGSError TGSDatabaseInterface::select(std::string const& table, std::string const& query, char const* (*format)[2], va_ref<std::string const> condition, ...)
 {
     va_list ap;
     TGSError error(TGSERROR_OK);
     
     va_start(ap, condition);
-    error = select(table, query, format, condition, ap);
+    error = select(table, query, format, static_cast<std::string const&>(condition), ap);
     va_end(ap);
     return error;
 }

@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDDeviceTransceiver.cpp
 **
@@ -47,124 +47,53 @@
 #include "ASDDeviceTransceiver.h"
 #include "artsatd.h"
 
-#define UPDATE_INTERVAL                         (33)
-#define SYNCHRONIZE_DIVISION                    (6)
+/*public */ASDDeviceTransceiver::ASDDeviceTransceiver(void)
+{
+    _data.frequencySender = -1;
+    _data.frequencyReceiver = -1;
+    _update = false;
+}
+
+/*public virtual */ASDDeviceTransceiver::~ASDDeviceTransceiver(void)
+{
+    close();
+}
 
 /*public */ASDDeviceTransceiver::DataRec ASDDeviceTransceiver::getData(void) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_data);
-    
+    boost::unique_lock<boost::shared_mutex> wlock(_mutex);
     _update = false;
     return _data;
 }
 
 /*public */bool ASDDeviceTransceiver::hasUpdate(void) const
 {
-    bool result(false);
-    
-    if (_device != NULL) {
-        _mutex_data.lock();
-        result = _update;
-        _mutex_data.unlock();
-    }
-    return result;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex);
+    return _update;
 }
 
-/*public */tgs::TGSError ASDDeviceTransceiver::open(boost::shared_ptr<tgs::TGSTransceiverInterface> const& device)
+/*protected virtual */void ASDDeviceTransceiver::update(ptr_type device)
 {
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    close();
-    if (device != NULL) {
-        _device = device;
-        _data.frequencySender = 0;
-        _data.frequencyReceiver = 0;
-        _update = false;
-        update();
-        synchronize();
-        try {
-            _thread = boost::thread(boost::bind(&ASDDeviceTransceiver::thread, this));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
-            error = tgs::TGSERROR_FAILED;
-        }
-        if (error != tgs::TGSERROR_OK) {
-            close();
-        }
-    }
-    else {
-        error = tgs::TGSERROR_INVALID_PARAM;
-    }
-    return error;
-}
-
-/*public */void ASDDeviceTransceiver::close(void)
-{
-    _thread.interrupt();
-    try {
-        _thread.join();
-    }
-    catch (...) {
-    }
-    _device.reset();
-    return;
-}
-
-/*private */void ASDDeviceTransceiver::thread(void)
-{
-    int count;
-    
-    count = 0;
-    while (!boost::this_thread::interruption_requested()) {
-        try {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(UPDATE_INTERVAL));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread sleep error [%s]", e.what());
-            break;
-        }
-        update();
-        if (++count >= SYNCHRONIZE_DIVISION) {
-            synchronize();
-            count = 0;
-        }
-    }
-    return;
-}
-
-/*private */void ASDDeviceTransceiver::update(void)
-{
-    _mutex_device.lock();
-    _device->update();
-    _mutex_device.unlock();
-    return;
-}
-
-/*private */void ASDDeviceTransceiver::synchronize(void)
-{
-    bool valid;
     DataRec data;
     tgs::TGSError error;
     
-    valid = false;
-    _mutex_device.lock();
-    if (_device->isValid()) {
-        valid = true;
-        data = _data;
-        if ((error = _device->getFrequencySender(&data.frequencySender)) != tgs::TGSERROR_OK) {
-            artsatd::getInstance().log(LOG_ERR, "TGSTransceiverInterface getFrequencySender error [%s]", error.print().c_str());
-        }
-        if ((error = _device->getFrequencyReceiver(&data.frequencyReceiver)) != tgs::TGSERROR_OK) {
-            artsatd::getInstance().log(LOG_ERR, "TGSTransceiverInterface getFrequencyReceiver error [%s]", error.print().c_str());
-        }
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex);
+    data = _data;
+    rlock.unlock();
+    if ((error = device->getFrequencySender(&data.frequencySender)) == tgs::TGSERROR_NO_RESULT) {
+        data.frequencySender = -1;
     }
-    _mutex_device.unlock();
-    if (valid) {
-        _mutex_data.lock();
-        _data = data;
-        _update = true;
-        _mutex_data.unlock();
+    else if (error != tgs::TGSERROR_OK) {
+        artsatd::getInstance().log(LOG_WARNING, "TGSTransceiverInterface getFrequencySender error [%s]", error.print().c_str());
     }
+    if ((error = device->getFrequencyReceiver(&data.frequencyReceiver)) == tgs::TGSERROR_NO_RESULT) {
+        data.frequencyReceiver = -1;
+    }
+    else if (error != tgs::TGSERROR_OK) {
+        artsatd::getInstance().log(LOG_WARNING, "TGSTransceiverInterface getFrequencyReceiver error [%s]", error.print().c_str());
+    }
+    boost::unique_lock<boost::shared_mutex> wlock(_mutex);
+    _data = data;
+    _update = true;
     return;
 }

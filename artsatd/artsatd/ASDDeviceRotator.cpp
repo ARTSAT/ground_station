@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDDeviceRotator.cpp
 **
@@ -47,121 +47,44 @@
 #include "ASDDeviceRotator.h"
 #include "artsatd.h"
 
-#define UPDATE_INTERVAL                         (33)
-#define SYNCHRONIZE_DIVISION                    (6)
+/*public */ASDDeviceRotator::ASDDeviceRotator(void)
+{
+    _data.azimuth = -1;
+    _data.elevation = -1;
+    _update = false;
+}
+
+/*public virtual */ASDDeviceRotator::~ASDDeviceRotator(void)
+{
+    close();
+}
 
 /*public */ASDDeviceRotator::DataRec ASDDeviceRotator::getData(void) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_data);
-    
+    boost::unique_lock<boost::shared_mutex> wlock(_mutex);
     _update = false;
     return _data;
 }
 
 /*public */bool ASDDeviceRotator::hasUpdate(void) const
 {
-    bool result(false);
-    
-    if (_device != NULL) {
-        _mutex_data.lock();
-        result = _update;
-        _mutex_data.unlock();
-    }
-    return result;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex);
+    return _update;
 }
 
-/*public */tgs::TGSError ASDDeviceRotator::open(boost::shared_ptr<tgs::TGSRotatorInterface> const& device)
+/*protected virtual */void ASDDeviceRotator::update(ptr_type device)
 {
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    close();
-    if (device != NULL) {
-        _device = device;
-        _data.azimuth = 0;
-        _data.elevation = 0;
-        _update = false;
-        update();
-        synchronize();
-        try {
-            _thread = boost::thread(boost::bind(&ASDDeviceRotator::thread, this));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
-            error = tgs::TGSERROR_FAILED;
-        }
-        if (error != tgs::TGSERROR_OK) {
-            close();
-        }
-    }
-    else {
-        error = tgs::TGSERROR_INVALID_PARAM;
-    }
-    return error;
-}
-
-/*public */void ASDDeviceRotator::close(void)
-{
-    _thread.interrupt();
-    try {
-        _thread.join();
-    }
-    catch (...) {
-    }
-    _device.reset();
-    return;
-}
-
-/*private */void ASDDeviceRotator::thread(void)
-{
-    int count;
-    
-    count = 0;
-    while (!boost::this_thread::interruption_requested()) {
-        try {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(UPDATE_INTERVAL));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread sleep error [%s]", e.what());
-            break;
-        }
-        update();
-        if (++count >= SYNCHRONIZE_DIVISION) {
-            synchronize();
-            count = 0;
-        }
-    }
-    return;
-}
-
-/*private */void ASDDeviceRotator::update(void)
-{
-    _mutex_device.lock();
-    _device->update();
-    _mutex_device.unlock();
-    return;
-}
-
-/*private */void ASDDeviceRotator::synchronize(void)
-{
-    bool valid;
     DataRec data;
     tgs::TGSError error;
     
-    valid = false;
-    _mutex_device.lock();
-    if (_device->isValid()) {
-        valid = true;
-        data = _data;
-        if ((error = _device->getAngle(&data.azimuth, &data.elevation)) != tgs::TGSERROR_OK) {
-            artsatd::getInstance().log(LOG_ERR, "TGSRotatorInterface getAngle error [%s]", error.print().c_str());
-        }
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex);
+    data = _data;
+    rlock.unlock();
+    if ((error = device->getAngle(&data.azimuth, &data.elevation)) != tgs::TGSERROR_OK) {
+        artsatd::getInstance().log(LOG_WARNING, "TGSRotatorInterface getAngle error [%s]", error.print().c_str());
     }
-    _mutex_device.unlock();
-    if (valid) {
-        _mutex_data.lock();
-        _data = data;
-        _update = true;
-        _mutex_data.unlock();
-    }
+    boost::unique_lock<boost::shared_mutex> wlock(_mutex);
+    _data = data;
+    _update = true;
     return;
 }

@@ -12,7 +12,7 @@
 **      E-mail      zap00365@nifty.com
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      artsatd.cpp
 **
@@ -45,25 +45,46 @@
 */
 
 #include "artsatd.h"
-#include <sys/stat.h>
-#include "TGSSatelliteINVADER.h"
+#include "ASDPluginINVADER.h"
 #include "TGSRotatorGS232B.h"
 #include "TGSTransceiverIC9100.h"
 #include "TGSTNCTNC555.h"
 #include "ASDTLEClientCelestrak.h"
 
-#define DATABASE_PHYSICS                        ("physics.db")
+#define PATH_WORKSPACE                          ("/etc")
+#define PATH_SERVER                             ("server")
+#define PATH_PLUGIN                             ("plugin")
+#define XML_CONFIG                              ("config.xml")
+#define XML_PLUGIN                              ("plugin.xml")
 #define XML_DEVICE                              ("device.xml")
 #define XML_NETWORK                             ("network.xml")
-#define SERVER_DATABASE_PORT                    ("16781")
-#define SERVER_DATABASE_LISTEN                  (1)
-#define SERVER_OPERATION_PORT                   ("16780")
-#define SERVER_OPERATION_LISTEN                 (4)
-#define OBSERVER_LATITUDE                       (35.610603)
-#define OBSERVER_LONGITUDE                      (139.351124)
-#define OBSERVER_ALTITUDE                       (0.148)
-#define OBSERVER_CALLSIGN                       ("JQ1ZKL")
-#define ELEVATION_THRESHOLD                     (-5.0)
+#define DATABASE_PHYSICS                        ("physics.db")
+#define DEFAULT_SERVER_DATABASE_PORT            ("16781")
+#define DEFAULT_SERVER_DATABASE_LISTEN          (1)
+#define DEFAULT_SERVER_OPERATION_PORT           ("16780")
+#define DEFAULT_SERVER_OPERATION_LISTEN         (4)
+#define DEFAULT_SESSION_MAXIMUM                 (16)
+#define DEFAULT_SESSION_TIMEOUT                 (300)
+#define DEFAULT_OBSERVER_CALLSIGN               ("JQ1ZKL")
+#define DEFAULT_OBSERVER_LATITUDE               (35.610603)
+#define DEFAULT_OBSERVER_LONGITUDE              (139.351124)
+#define DEFAULT_OBSERVER_ALTITUDE               (0.160)
+#define DEFAULT_CW_TEST_AZIMUTH                 (0)
+#define DEFAULT_CW_TEST_ELEVATION               (90)
+#define DEFAULT_FM_TEST_AZIMUTH                 (0)
+#define DEFAULT_FM_TEST_ELEVATION               (90)
+#define DEFAULT_ALGORITHM_LOOKAHEAD             (1)
+#define DEFAULT_INTERVAL_SESSION                (1)
+#define DEFAULT_INTERVAL_ROTATOR                (1)
+#define DEFAULT_INTERVAL_TRANSCEIVER            (1)
+#define DEFAULT_INTERVAL_TNC                    (1)
+#define DEFAULT_INTERVAL_LOG                    (10)
+#define LOOP_INTERVAL                           (250000)
+//<<<
+#define ROTATOR_MIN_AZIMUTH                     (0.0)
+#define ROTATOR_MAX_AZIMUTH                     (450.0)
+#define ROTATOR_DEG_PER_SEC                     (6.0)
+//>>>
 
 IRXDAEMON_STATIC(&artsatd::getInstance())
 
@@ -83,173 +104,474 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return s_instance;
 }
 
-/*public */tgs::TGSError artsatd::setActive(bool param)
+/*public */void artsatd::getSession(std::string const& session, int* owner, bool* exclusive, std::string* host, int* online) const
+{
+    int rstown(0);
+    bool rstecl(false);
+    std::string rsthst;
+    
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+    if (!_session.owner.empty()) {
+        rstown = (_session.owner == session) ? (+1) : (-1);
+        rstecl = _session.exclusive;
+        rsthst = _session.host;
+    }
+    if (online != NULL) {
+        *online = _session.id.size();
+    }
+    rlock.unlock();
+    if (owner != NULL) {
+        *owner = rstown;
+    }
+    if (exclusive != NULL) {
+        *exclusive = rstecl;
+    }
+    if (host != NULL) {
+        *host = rsthst;
+    }
+    return;
+}
+
+/*public */tgs::TGSError artsatd::setManualRotator(std::string const& session, bool manual)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    _mutex_state.lock();
-    _state.active = param;
-    _mutex_state.unlock();
-    return error;
-}
-
-/*public */bool artsatd::getActive(void) const
-{
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
-    
-    return _state.active;
-}
-
-/*public */tgs::TGSError artsatd::setManualSatellite(bool param)
-{
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    _mutex_state.lock();
-    _state.manualSatellite = param;
-    _mutex_state.unlock();
-    return error;
-}
-
-/*public */bool artsatd::getManualSatellite(void) const
-{
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
-    
-    return _state.manualSatellite;
-}
-
-/*public */tgs::TGSError artsatd::setManualRotator(bool param)
-{
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    _mutex_state.lock();
-    _state.manualRotator = param;
-    _mutex_state.unlock();
+    if (!session.empty()) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+        if (_session.owner == session) {
+            boost::unique_lock<boost::shared_mutex> wlock(_mutex_control);
+            _control.manualRotator = manual;
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
     return error;
 }
 
 /*public */bool artsatd::getManualRotator(void) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
-    
-    return _state.manualRotator;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
+    return _control.manualRotator;
 }
 
-/*public */tgs::TGSError artsatd::setManualTransceiver(bool param)
+/*public */tgs::TGSError artsatd::setManualTransceiver(std::string const& session, bool manual)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    _mutex_state.lock();
-    _state.manualTransceiver = param;
-    _mutex_state.unlock();
+    if (!session.empty()) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+        if (_session.owner == session) {
+            boost::unique_lock<boost::shared_mutex> wlock(_mutex_control);
+            _control.manualTransceiver = manual;
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
     return error;
 }
 
 /*public */bool artsatd::getManualTransceiver(void) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
-    
-    return _state.manualTransceiver;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
+    return _control.manualTransceiver;
 }
 
-/*public */tgs::TGSError artsatd::setManualTNC(bool param)
+/*public */tgs::TGSError artsatd::setManualTNC(std::string const& session, bool manual)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    _mutex_state.lock();
-    _state.manualTnc = param;
-    _mutex_state.unlock();
+    if (!session.empty()) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+        if (_session.owner == session) {
+            boost::unique_lock<boost::shared_mutex> wlock(_mutex_control);
+            _control.manualTNC = manual;
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
     return error;
 }
 
 /*public */bool artsatd::getManualTNC(void) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
-    
-    return _state.manualTnc;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
+    return _control.manualTNC;
 }
 
-/*public */tgs::TGSError artsatd::setMode(std::string const& param)
+/*public */tgs::TGSError artsatd::setNORAD(std::string const& session, std::string const& query)
+{
+    tgs::TGSPhysicsDatabase database;
+    std::vector<tgs::TGSPhysicsDatabase::FieldRec> field;
+    std::vector<tgs::TGSPhysicsDatabase::FieldRec>::const_iterator it;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (query.empty()) {
+        error = setNORAD(session, -1);
+    }
+    else if (query.size() <= 5 && boost::all(query, boost::is_digit())) {
+        error = setNORAD(session, boost::lexical_cast<int>(query));
+    }
+    else if ((error = database.open(DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
+        if ((error = database.getFieldByName(query, &field)) == tgs::TGSERROR_OK) {
+            if (field.size() > 0) {
+                for (it = field.begin(); it != field.end(); ++it) {
+                    if (it->name == query) {
+                        break;
+                    }
+                }
+                error = setNORAD(session, (it != field.end()) ? (it->norad) : (field.front().norad));
+            }
+            else {
+                error = tgs::TGSERROR_NO_RESULT;
+            }
+        }
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::setNORAD(std::string const& session, int norad)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    _mutex_state.lock();
-    _state.mode = param;
-    _mutex_state.unlock();
+    if (!session.empty()) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+        if (_session.owner == session) {
+            boost::unique_lock<boost::shared_mutex> wlock(_mutex_control);
+            _control.norad = (norad >= 0) ? (norad) : (-1);
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */int artsatd::getNORAD(void) const
+{
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
+    return _control.norad;
+}
+
+/*public */tgs::TGSError artsatd::setMode(std::string const& session, std::string const& mode)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty()) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+        if (_session.owner == session) {
+            boost::unique_lock<boost::shared_mutex> wlock(_mutex_control);
+            if (mode == "CW") {
+                _control.mode = MODE_CW;
+            }
+            else if (mode == "CW_TEST") {
+                _control.mode = MODE_CW_TEST;
+            }
+            else if (mode == "FM") {
+                _control.mode = MODE_FM;
+            }
+            else if (mode == "FM_TEST") {
+                _control.mode = MODE_FM_TEST;
+            }
+            else {
+                _control.mode = MODE_LIMIT;
+            }
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
     return error;
 }
 
 /*public */std::string artsatd::getMode(void) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
+    std::string result;
     
-    return _state.mode;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
+    switch (_control.mode) {
+        case MODE_CW:
+            result = "CW";
+            break;
+        case MODE_CW_TEST:
+            result = "CW_TEST";
+            break;
+        case MODE_FM:
+            result = "FM";
+            break;
+        case MODE_FM_TEST:
+            result = "FM_TEST";
+            break;
+        default:
+            // nop
+            break;
+    }
+    return result;
 }
 
-/*public */tgs::TGSError artsatd::setNorad(int param)
+/*public */ir::IRXTime artsatd::getTime(void) const
 {
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    _mutex_state.lock();
-    _state.norad = param;
-    _mutex_state.unlock();
-    return error;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_current);
+    return _current.time;
 }
 
-/*public */int artsatd::getNorad(void) const
+/*public */boost::shared_ptr<ASDPluginInterface> artsatd::getPlugin(int norad) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_state);
+    std::map<int, boost::shared_ptr<ASDPluginInterface> >::const_iterator it;
+    boost::shared_ptr<ASDPluginInterface> result;
     
-    return _state.norad;
+    if (norad >= 0) {
+        if ((it = _plugin.find(norad)) != _plugin.end()) {
+            result = it->second;
+        }
+    }
+    return result;
 }
 
-/*public */double artsatd::getAngleAzimuth(void) const
+/*public */void artsatd::getObserverCallsign(std::string* callsign) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_monitor);
-    
-    return (_monitor.field.norad >= 0) ? (_monitor.azimuth) : (NAN);
+    if (callsign != NULL) {
+        *callsign = _config.observerCallsign;
+    }
+    return;
 }
 
-/*public */double artsatd::getAngleElevation(void) const
+/*public */void artsatd::getObserverPosition(double* latitude, double* longitude, double* altitude) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_monitor);
-    
-    return (_monitor.field.norad >= 0) ? (_monitor.elevation) : (NAN);
+    if (latitude != NULL) {
+        *latitude = _config.observerLatitude;
+    }
+    if (longitude != NULL) {
+        *longitude = _config.observerLongitude;
+    }
+    if (altitude != NULL) {
+        *altitude = _config.observerAltitude;
+    }
+    return;
 }
 
-/*public */double artsatd::getFrequencyBeacon(void) const
+/*public */void artsatd::getSatellitePosition(double* latitude, double* longitude, double* altitude) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_monitor);
-    
-    return (_monitor.field.norad >= 0) ? (_monitor.beacon) : (NAN);
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (latitude != NULL) {
+        *latitude = _monitor.latitude;
+    }
+    if (longitude != NULL) {
+        *longitude = _monitor.longitude;
+    }
+    if (altitude != NULL) {
+        *altitude = _monitor.altitude;
+    }
+    return;
 }
 
-/*public */double artsatd::getFrequencySender(void) const
+/*public */void artsatd::getSatelliteDirection(double* azimuth, double* elevation) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_monitor);
-    
-    return (_monitor.field.norad >= 0) ? (_monitor.sender) : (NAN);
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (azimuth != NULL) {
+        *azimuth = _monitor.azimuth;
+    }
+    if (elevation != NULL) {
+        *elevation = _monitor.elevation;
+    }
+    return;
 }
 
-/*public */double artsatd::getFrequencyReceiver(void) const
+/*public */void artsatd::getSatelliteFrequency(double* beacon, double* sender, double* receiver) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_monitor);
-    
-    return (_monitor.field.norad >= 0) ? (_monitor.receiver) : (NAN);
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (beacon != NULL) {
+        *beacon = _monitor.beacon;
+    }
+    if (sender != NULL) {
+        *sender = _monitor.sender;
+    }
+    if (receiver != NULL) {
+        *receiver = _monitor.receiver;
+    }
+    return;
 }
 
-/*public */std::string artsatd::getError(void) const
+/*public */void artsatd::getSatelliteDopplerShift(double* sender, double* receiver) const
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_monitor);
-    
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (sender != NULL) {
+        *sender = _monitor.dopplerSender;
+    }
+    if (receiver != NULL) {
+        *receiver = _monitor.dopplerReceiver;
+    }
+    return;
+}
+
+/*public */void artsatd::getSatelliteAOSLOS(ir::IRXTime* aos, ir::IRXTime* los) const
+{
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (aos != NULL) {
+        *aos = _monitor.aos;
+    }
+    if (los != NULL) {
+        *los = _monitor.los;
+    }
+    return;
+}
+
+/*public */void artsatd::getSatelliteMEL(double* mel) const
+{
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (mel != NULL) {
+        *mel = _monitor.mel;
+    }
+    return;
+}
+
+/*public */void artsatd::getRotatorStart(ir::IRXTime* start) const
+{
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
+    if (start != NULL) {
+        *start = _monitor.start;
+    }
+    return;
+}
+
+/*public */tgs::TGSError artsatd::getError(void) const
+{
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     return _monitor.error;
 }
 
-/*public */void artsatd::queueCommand(std::string const& param)
+/*public */tgs::TGSError artsatd::requestSession(std::string* session, bool* update)
 {
-    boost::lock_guard<boost::mutex> guard(_mutex_queue);
+    ir::IRXTime time;
+    std::map<std::string, ir::IRXTime>::const_iterator it;
+    std::string string;
+    bool flag;
+    tgs::TGSError error(tgs::TGSERROR_OK);
     
-    _queue.push_back(param);
-    return;
+    if (session != NULL) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_current);
+        time = _current.time;
+        rlock.unlock();
+        flag = false;
+        boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_session);
+        if ((it = _session.id.find(*session)) != _session.id.end()) {
+            string = it->first;
+        }
+        else if (_session.id.size() < _config.sessionMaximum) {
+            do {
+                string = (boost::format("%08x%08x") % time.asTime_t() % _session.random()).str();
+            } while (_session.id.find(string) != _session.id.end());
+            flag = true;
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_STATE;
+        }
+        if (error == tgs::TGSERROR_OK) {
+            boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+            _session.id[string] = time;
+        }
+        ulock.unlock();
+        if (error == tgs::TGSERROR_OK) {
+            *session = string;
+            if (update != NULL) {
+                *update = flag;
+            }
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::controlSession(std::string const& session, bool owner, std::string const& host)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty()) {
+        boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_session);
+        if (_session.owner == session) {
+            boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+            if (owner) {
+                _session.host = host;
+            }
+            else {
+                _session.owner.clear();
+            }
+        }
+        else if (_session.owner.empty() || !_session.exclusive) {
+            if (owner) {
+                boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+                _session.owner = session;
+                _session.exclusive = false;
+                _session.host = host;
+            }
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::excludeSession(std::string const& session, bool exclusive)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty()) {
+        boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_session);
+        if (_session.owner == session) {
+            boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+            _session.exclusive = exclusive;
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::requestCommand(std::string const& session, std::string const& command)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty() && !command.empty()) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
+        if (_session.owner == session) {
+            boost::unique_lock<boost::shared_mutex> wlock(_mutex_command);
+            _command.queue.push_back(command);
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
 }
 
 /*private virtual */int artsatd::usage(int argc, char const* argv[])
@@ -263,39 +585,58 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     int result(EXIT_SUCCESS);
     
     if ((result = setWorkspace()) == EXIT_SUCCESS) {
-        if ((error = openDatabase()) == tgs::TGSERROR_OK) {
-            if ((error = openDevice()) == tgs::TGSERROR_OK) {
-                if ((error = _control.orbit.setObserverPosition(OBSERVER_LATITUDE, OBSERVER_LONGITUDE, OBSERVER_ALTITUDE)) == tgs::TGSERROR_OK) {
-                    _session.id = 0;
-                    _session.exclusive = false;
-                    _state.active = true;
-                    _state.manualSatellite = false;
-                    _state.manualRotator = false;
-                    _state.manualTransceiver = false;
-                    _state.manualTnc = false;
-                    _state.mode = "";
-                    _state.norad = -1;
-                    _control.mode = _state.mode;
-                    _control.field.norad = _state.norad;
-                    _monitor.field.norad = _state.norad;
-                    _monitor.error = error.print();
-                    if ((error = openNetwork()) != tgs::TGSERROR_OK) {
-                        log(LOG_ERR, "can't initialize network [%s]", error.print().c_str());
+        if ((error = openConfig()) == tgs::TGSERROR_OK) {
+            if ((error = openDatabase()) == tgs::TGSERROR_OK) {
+                if ((error = openPlugin()) == tgs::TGSERROR_OK) {
+                    if ((error = openDevice()) == tgs::TGSERROR_OK) {
+                        //<<<
+                        if ((error = _passFactory.setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
+                            ASDRotationSolver::RotatorSpec rotator = {
+                                ROTATOR_MIN_AZIMUTH,
+                                ROTATOR_MAX_AZIMUTH,
+                                ROTATOR_DEG_PER_SEC
+                            };
+                            error = _rotationSolver.setRotaterSpec(rotator);
+                        }
+                        if (error != tgs::TGSERROR_OK) {
+                            log(LOG_ERR, "can't initialize pass simulator [%s]", error.print().c_str());
+                            return EX_UNAVAILABLE;
+                        }
+                        //>>>
+                        if ((error = _state.orbit.setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
+                            resetSession(&_session);
+                            resetControl(&_control);
+                            resetCurrent(_control, &_current);
+                            resetState(_control, &_state);
+                            resetMonitor(&_monitor);
+                            resetCommand(&_command);
+                            if ((error = openNetwork()) != tgs::TGSERROR_OK) {
+                                log(LOG_ERR, "can't initialize network [%s]", error.print().c_str());
+                                result = EX_UNAVAILABLE;
+                            }
+                        }
+                        else {
+                            log(LOG_ERR, "can't initialize orbit simulator [%s]", error.print().c_str());
+                            result = EX_UNAVAILABLE;
+                        }
+                    }
+                    else {
+                        log(LOG_ERR, "can't initialize device [%s]", error.print().c_str());
                         result = EX_UNAVAILABLE;
                     }
                 }
                 else {
-                    log(LOG_ERR, "can't initialize orbit simulator [%s]", error.print().c_str());
+                    log(LOG_ERR, "can't initialize plugin [%s]", error.print().c_str());
                     result = EX_UNAVAILABLE;
                 }
             }
             else {
-                log(LOG_ERR, "can't initialize device [%s]", error.print().c_str());
+                log(LOG_ERR, "can't initialize database [%s]", error.print().c_str());
                 result = EX_UNAVAILABLE;
             }
         }
         else {
-            log(LOG_ERR, "can't initialize database [%s]", error.print().c_str());
+            log(LOG_ERR, "can't initialize config [%s]", error.print().c_str());
             result = EX_UNAVAILABLE;
         }
     }
@@ -309,244 +650,171 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 {
     closeNetwork();
     closeDevice();
+    closePlugin();
     closeDatabase();
+    closeConfig();
     return;
 }
 
 /*private virtual */void artsatd::loop(void)
 {
-    ir::IRXTime now(ir::IRXTime::currentTime());
-    StateRec state;
+    ControlRec control;
+    CurrentRec current;
     MonitorRec monitor;
     bool expire;
-    tgs::TGSPhysicsDatabase::FieldRec field;
     double azimuth;
     double elevation;
+    double beacon;
     double sender;
     double receiver;
-    std::string command;
-    tgs::TGSError warning;
-    tgs::TGSError error(tgs::TGSERROR_OK);
     
-    _mutex_state.lock();
-    state = _state;
-    _mutex_state.unlock();
-    monitor.field.norad = -1;
+    getControl(&control);
+    resetCurrent(control, &current);
+    resetMonitor(&monitor);
+    operateSession(current.time);
+    if (control.manualRotator != _state.manualRotator) {
+        resetRotator();
+        _state.manualRotator = control.manualRotator;
+    }
+    if (control.manualTransceiver != _state.manualTransceiver) {
+        switchTransceiver(MODETRANSCEIVER_LIMIT);
+        resetTransceiver();
+        _state.manualTransceiver = control.manualTransceiver;
+    }
+    if (control.manualTNC != _state.manualTNC) {
+        switchTNC(MODETNC_LIMIT, "");
+        resetTNC();
+        _state.manualTNC = control.manualTNC;
+    }
     expire = false;
-    if (state.norad >= 0) {
-        if (state.norad != _control.field.norad) {
-            expire = true;
-        }
-        if (_physics.hasUpdate(state.norad)) {
+    if (control.norad != _state.field.norad) {
+        expire = true;
+        _state.field.norad = control.norad;
+    }
+    if (_state.field.norad >= 0) {
+        if (_database.hasUpdate(_state.field.norad)) {
             expire = true;
         }
         if (expire) {
-            _control.field.norad = -1;
-            if ((error = _physics.getField(state.norad, &field)) == tgs::TGSERROR_OK) {
-                if ((error = _control.orbit.setOrbitData(field.tle)) == tgs::TGSERROR_OK) {
-                    _control.field = field;
-                    _control.azimuth = NAN;
-                    _control.elevation = NAN;
-                    _control.beacon = NAN;
-                    _control.sender = NAN;
-                    _control.receiver = NAN;
-                }
-            }
-        }
-    }
-    else if (_control.field.norad != -1) {
-        expire = true;
-        _control.field.norad = -1;
-    }
-    if (expire || state.mode != _control.mode) {
-        if (state.mode == "CW") {
-            if (state.active && !state.manualTnc) {
-                if ((warning = _tnc->selectModeCommand()) != tgs::TGSERROR_OK) {
-                    log(LOG_WARNING, "TNC operation error [%s]", warning.print().c_str());
-                }
-            }
-            if (state.active && !state.manualTransceiver) {
-                if ((warning = _transceiver->selectModeBeacon()) != tgs::TGSERROR_OK) {
-                    log(LOG_WARNING, "Transceiver operation error [%s]", warning.print().c_str());
-                }
-            }
-        }
-        else if (state.mode == "FM") {
-            if (state.active && !state.manualTransceiver) {
-                if ((warning = _transceiver->selectModeCommunication()) != tgs::TGSERROR_OK) {
-                    log(LOG_WARNING, "Transceiver operation error [%s]", warning.print().c_str());
-                }
-            }
-            if (state.active && !state.manualTnc) {
-                if ((warning = _tnc->setPacketMode(OBSERVER_CALLSIGN, (_control.field.norad >= 0) ? (_control.field.callsign) : (OBSERVER_CALLSIGN))) == tgs::TGSERROR_OK) {
-                    if ((warning = _tnc->selectModeConverse()) != tgs::TGSERROR_OK) {
-                        log(LOG_WARNING, "TNC operation error [%s]", warning.print().c_str());
+            if ((monitor.error = _database.getField(_state.field.norad, &_state.field)) == tgs::TGSERROR_OK) {
+                if ((monitor.error = _state.orbit.setOrbitData(_state.field.tle)) == tgs::TGSERROR_OK) {
+                    if ((monitor.error = _passFactory.setOrbitData(_state.field.tle)) == tgs::TGSERROR_OK) {
+                        resetRotator();
+                        resetTransceiver();
+                        resetTNC();
                     }
                 }
-                else {
-                    log(LOG_WARNING, "TNC operation error [%s]", warning.print().c_str());
-                }
+            }
+            if (monitor.error != tgs::TGSERROR_OK) {
+                _state.field.norad = -1;
             }
         }
-        _control.mode = state.mode;
     }
-    if (error == tgs::TGSERROR_OK) {
-        if (_control.field.norad >= 0) {
-            if ((error = _control.orbit.setTargetTime(now)) == tgs::TGSERROR_OK) {
-                if ((error = _control.orbit.getSatelliteDirection(&azimuth, &elevation)) == tgs::TGSERROR_OK) {
-                    if ((error = _control.orbit.getDopplerRatio(&sender, &receiver)) == tgs::TGSERROR_OK) {
-                        monitor.field = _control.field;
-                        monitor.azimuth = azimuth;
-                        monitor.elevation = elevation;
-                        monitor.beacon = (_control.field.beacon.frequency + _control.field.beacon.drift) * receiver;
-                        monitor.sender = (_control.field.sender.frequency + _control.field.sender.drift) * sender;
-                        monitor.receiver = (_control.field.receiver.frequency + _control.field.receiver.drift) * receiver;
-                        if (0.0 <= azimuth && azimuth <= 360.0) {
-                            if (ELEVATION_THRESHOLD <= elevation && elevation <= 90.0) {
-                                if (elevation < 0.0) {
-                                    elevation = 0.0;
-                                }
-                                if (azimuth != _control.azimuth || elevation != _control.elevation) {
-                                    if (state.active && !state.manualRotator) {
-                                        if ((warning = _rotator->rotateTo(azimuth, elevation)) != tgs::TGSERROR_OK) {
-                                            log(LOG_WARNING, "Rotate operation error [%s]", warning.print().c_str());
-                                        }
-                                    }
-                                    _control.azimuth = azimuth;
-                                    _control.elevation = elevation;
-                                }
-                                if (state.mode == "CW") {
-                                    if (monitor.beacon != _control.beacon) {
-                                        if (state.active && !state.manualTransceiver) {
-                                            if ((warning = _transceiver->setFrequencyReceiver(monitor.beacon)) != tgs::TGSERROR_OK) {
-                                                log(LOG_WARNING, "Transceiver operation error [%s]", warning.print().c_str());
-                                            }
-                                        }
-                                        _control.beacon = monitor.beacon;
-                                    }
-                                }
-                                else if (state.mode == "FM") {
-                                    if (monitor.sender != _control.sender || monitor.receiver != _control.receiver) {
-                                        if (state.active && !state.manualTransceiver) {
-                                            if ((warning = _transceiver->setFrequencySender(monitor.sender)) != tgs::TGSERROR_OK) {
-                                                log(LOG_WARNING, "Transceiver operation error [%s]", warning.print().c_str());
-                                            }
-                                            if ((warning = _transceiver->setFrequencyReceiver(monitor.receiver)) != tgs::TGSERROR_OK) {
-                                                log(LOG_WARNING, "Transceiver operation error [%s]", warning.print().c_str());
-                                            }
-                                        }
-                                        _control.sender = monitor.sender;
-                                        _control.receiver = monitor.receiver;
-                                    }
-                                    _mutex_queue.lock();
-                                    if (_queue.size() > 0) {
-                                        command = _queue.front();
-                                        _queue.pop_front();
-                                    }
-                                    _mutex_queue.unlock();
-                                    if (!command.empty()) {
-                                        if (state.active && !state.manualTnc) {
-                                            log(LOG_NOTICE, "TNC [%s]", command.c_str());
-                                            if ((warning = _tnc->sendPacket(command + " ")) != tgs::TGSERROR_OK) {
-                                                log(LOG_WARNING, "TNC operation error [%s]", warning.print().c_str());
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+    if (control.mode != _state.mode) {
+        resetTransceiver();
+        resetTNC();
+        _state.mode = control.mode;
+    }
+    switch (_state.mode) {
+        case MODE_CW:
+        case MODE_CW_TEST:
+            if (!_state.manualTransceiver) {
+                switchTransceiver(MODETRANSCEIVER_BEACON);
+            }
+            if (!_state.manualTNC) {
+                switchTNC(MODETNC_COMMAND, "");
+            }
+            break;
+        case MODE_FM:
+        case MODE_FM_TEST:
+            if (!_state.manualTransceiver) {
+                switchTransceiver(MODETRANSCEIVER_COMMUNICATION);
+            }
+            if (!_state.manualTNC) {
+                switchTNC(MODETNC_CONVERSE, (_state.field.norad >= 0) ? (_state.field.callsign) : (_config.observerCallsign));
+            }
+            break;
+        default:
+            // nop
+            break;
+    }
+    if (_state.field.norad >= 0) {
+        azimuth = NAN;
+        elevation = NAN;
+        beacon = NAN;
+        sender = NAN;
+        receiver = NAN;
+        if ((monitor.error = _state.orbit.setTargetTime(current.time + ir::IRXTimeDiff(_config.algorithmLookahead))) == tgs::TGSERROR_OK) {
+            if ((monitor.error = _state.orbit.getSatellitePosition(&monitor.latitude, &monitor.longitude, &monitor.altitude)) == tgs::TGSERROR_OK) {
+                if ((monitor.error = _state.orbit.getSatelliteDirection(&monitor.azimuth, &monitor.elevation)) == tgs::TGSERROR_OK) {
+                    if ((monitor.error = _state.orbit.getDopplerRatio(&monitor.dopplerSender, &monitor.dopplerReceiver)) == tgs::TGSERROR_OK) {
+                        monitor.beacon = (_state.field.beacon.frequency + _state.field.beacon.drift) * monitor.dopplerReceiver;
+                        monitor.sender = (_state.field.sender.frequency + _state.field.sender.drift) * monitor.dopplerSender;
+                        monitor.receiver = (_state.field.receiver.frequency + _state.field.receiver.drift) * monitor.dopplerReceiver;
+                        switch (_state.mode) {
+                            case MODE_CW_TEST:
+                            case MODE_FM_TEST:
+                                beacon = _state.field.beacon.frequency;
+                                sender = _state.field.sender.frequency;
+                                receiver = _state.field.receiver.frequency;
+                                break;
+                            default:
+                                beacon = monitor.beacon;
+                                sender = monitor.sender;
+                                receiver = monitor.receiver;
+                                break;
                         }
-                        log(LOG_NOTICE, "NORAD = %05d mode = %s [aZ = %lf, aE = %lf] [fB = %lf, fS = %lf, fR = %lf]", state.norad, state.mode.c_str(), monitor.azimuth, monitor.elevation, monitor.beacon, monitor.sender, monitor.receiver);
-                    }
-                }
-            }
-        }
-    }
-    monitor.error = error.print();
-    _mutex_monitor.lock();
-    _monitor = monitor;
-    _mutex_monitor.unlock();
-    usleep(200000);
-    return;
-}
-
-/*private virtual */void artsatd::syslog(int priority, char const* format, va_list ap)
-{
-    static boost::mutex s_mutex;
-    boost::lock_guard<boost::mutex> guard(s_mutex);
-    
-    super::syslog(priority, format, ap);
-    return;
-}
-
-/*private virtual */void artsatd::onNotifyReceivePacket(std::string const& packet)
-{
-    //static boost::mutex s_mutex;
-    //boost::lock_guard<boost::mutex> guard(s_mutex);
-    
-    std::string hex;
-    char temp[256];
-    int i;
-    
-    snprintf(temp, sizeof(temp), "%ld", packet.size());
-    std::cout << "packet received [" + packet + "], size = " + temp << std::endl;
-    
-    for (i = 0; i < packet.size(); ++i) {
-        snprintf(temp, sizeof(temp), "%02x", (unsigned char)packet[i]);
-        hex += temp;
-        if (i % 10 == 9) {
-            hex += "\n";
-        }
-        else {
-            hex += " ";
-        }
-    }
-    std::cout << hex << std::endl;
-    return;
-}
-
-/*private */tgs::TGSError artsatd::openDatabase(void)
-{
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    closeDatabase();
-    error = _physics.open(DATABASE_PHYSICS);
-    if (error != tgs::TGSERROR_OK) {
-        closeDatabase();
-    }
-    return error;
-}
-
-/*private */tgs::TGSError artsatd::openDevice(void)
-{
-    boost::shared_ptr<tgs::TGSSatelliteINVADER> satellite;
-    boost::shared_ptr<tgs::TGSRotatorGS232B> rotator;
-    boost::shared_ptr<tgs::TGSTransceiverIC9100> transceiver;
-    boost::shared_ptr<tgs::TGSTNCTNC555> tnc;
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    closeDevice();
-    satellite.reset(new(std::nothrow) tgs::TGSSatelliteINVADER);
-    if (satellite != NULL) {
-        rotator.reset(new(std::nothrow) tgs::TGSRotatorGS232B);
-        if (rotator != NULL) {
-            transceiver.reset(new(std::nothrow) tgs::TGSTransceiverIC9100);
-            if (transceiver != NULL) {
-                if ((error = transceiver->connect(&_civ)) == tgs::TGSERROR_OK) {
-                    tnc.reset(new(std::nothrow) tgs::TGSTNCTNC555);
-                    if (tnc != NULL) {
-                        tnc->setNotifier(this);
-                        if ((error = _loader.append(satellite.get(), "satellite")) == tgs::TGSERROR_OK) {
-                            if ((error = _loader.append(rotator.get(), "rotator")) == tgs::TGSERROR_OK) {
-                                if ((error = _loader.append(&_civ, "civ")) == tgs::TGSERROR_OK) {
-                                    if ((error = _loader.append(transceiver.get(), "transceiver")) == tgs::TGSERROR_OK) {
-                                        if ((error = _loader.append(tnc.get(), "tnc")) == tgs::TGSERROR_OK) {
-                                            if ((error = _loader.open(XML_DEVICE)) == tgs::TGSERROR_OK) {
-                                                if ((error = _satellite.open(satellite)) == tgs::TGSERROR_OK) {
-                                                    if ((error = _rotator.open(rotator)) == tgs::TGSERROR_OK) {
-                                                        if ((error = _transceiver.open(transceiver)) == tgs::TGSERROR_OK) {
-                                                            error = _tnc.open(tnc);
+                        if ((monitor.error = _passFactory.getNearestPass(&_pass, current.time, _rotationSolver)) == tgs::TGSERROR_OK) {
+                            if ((monitor.error = _pass.getAOSTime(&monitor.aos)) == tgs::TGSERROR_OK) {
+                                if ((monitor.error = _pass.getLOSTime(&monitor.los)) == tgs::TGSERROR_OK) {
+                                    if ((monitor.error = _pass.getMEL(&monitor.mel)) == tgs::TGSERROR_OK) {
+                                        if ((monitor.error = _pass.getRotationStartTime(&monitor.start)) == tgs::TGSERROR_OK) {
+                                            switch (_state.mode) {
+                                                case MODE_CW_TEST:
+                                                    azimuth = _config.cwTestAzimuth;
+                                                    elevation = _config.cwTestElevation;
+                                                    break;
+                                                case MODE_FM_TEST:
+                                                    azimuth = _config.fmTestAzimuth;
+                                                    elevation = _config.fmTestElevation;
+                                                    break;
+                                                default:
+                                                    monitor.error = _pass.getRotatorDirection((monitor.aos <= current.time && current.time <= monitor.los - ir::IRXTimeDiff(_config.algorithmLookahead)) ? (current.time + ir::IRXTimeDiff(_config.algorithmLookahead)) : (monitor.aos), &azimuth, &elevation);
+                                                    break;
+                                            }
+                                            if (monitor.error == tgs::TGSERROR_OK) {
+                                                switch (_state.mode) {
+                                                    case MODE_CW:
+                                                    case MODE_CW_TEST:
+                                                        if (!_state.manualRotator) {
+                                                            operateRotator(current.time, azimuth, elevation);
                                                         }
-                                                    }
+                                                        if (!_state.manualTransceiver) {
+                                                            operateTransceiver(current.time, NAN, beacon);
+                                                        }
+                                                        break;
+                                                    case MODE_FM:
+                                                    case MODE_FM_TEST:
+                                                        if (!_state.manualRotator) {
+                                                            operateRotator(current.time, azimuth, elevation);
+                                                        }
+                                                        if (!_state.manualTransceiver) {
+                                                            operateTransceiver(current.time, sender, receiver);
+                                                        }
+                                                        if (!_state.manualTNC) {
+                                                            boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_command);
+                                                            if (_command.queue.size() > 0) {
+                                                                if (operateTNC(current.time, _command.queue.front()) == tgs::TGSERROR_OK) {
+                                                                    boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+                                                                    _command.queue.pop_front();
+                                                                }
+                                                            }
+                                                        }
+                                                        break;
+                                                    default:
+                                                        boost::unique_lock<boost::shared_mutex> wlock(_mutex_command);
+                                                        _command.queue.clear();
+                                                        break;
                                                 }
                                             }
                                         }
@@ -555,13 +823,306 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                             }
                         }
                     }
+                }
+            }
+        }
+        operateLog(current.time, _state.field.norad, _state.mode, azimuth, elevation, beacon, sender, receiver, monitor.error);
+    }
+    setCurrent(current);
+    setMonitor(monitor);
+    usleep(LOOP_INTERVAL);
+    return;
+}
+
+/*private virtual */void artsatd::syslog(int priority, char const* format, va_list ap)
+{
+    static boost::mutex s_mutex;
+    
+    boost::unique_lock<boost::mutex> lock(s_mutex);
+    super::syslog(priority, format, ap);
+    return;
+}
+
+/*private virtual */void artsatd::onNotifyReceivePacket(std::string const& packet)
+{
+    bool handle;
+    std::map<int, boost::shared_ptr<ASDPluginInterface> >::const_iterator it;
+    
+    log(LOG_NOTICE, "TNC: packet receive [%s]", packet.c_str());
+    handle = false;
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_current);
+    if (_current.norad >= 0) {
+        if ((it = _plugin.find(_current.norad)) != _plugin.end()) {
+            handle = it->second->receive(packet);
+        }
+    }
+    for (it = _plugin.begin(); it != _plugin.end() && !handle; ++it) {
+        if (_current.norad < 0 || it->first != _current.norad) {
+            handle = it->second->receive(packet);
+        }
+    }
+    return;
+}
+
+/*private */void artsatd::getControl(ControlRec* control) const
+{
+    boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
+    *control = _control;
+    return;
+}
+
+/*private */void artsatd::setCurrent(CurrentRec const& current)
+{
+    boost::unique_lock<boost::shared_mutex> wlock(_mutex_current);
+    _current = current;
+    return;
+}
+
+/*private */void artsatd::setMonitor(MonitorRec const& monitor)
+{
+    boost::unique_lock<boost::shared_mutex> wlock(_mutex_monitor);
+    _monitor = monitor;
+    return;
+}
+
+/*private */void artsatd::cleanSession(ir::IRXTime const& time)
+{
+    std::map<std::string, ir::IRXTime>::const_iterator it;
+    
+    boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_session);
+    for (it = _session.id.begin(); it != _session.id.end(); ) {
+        if (time >= it->second + ir::IRXTimeDiff(_config.sessionTimeout)) {
+            boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+            if (_session.owner == it->first) {
+                _session.owner.clear();
+            }
+            _session.id.erase(it++);
+        }
+        else {
+            ++it;
+        }
+    }
+    return;
+}
+
+/*private */tgs::TGSError artsatd::openConfig(void)
+{
+    tinyxml2::XMLDocument xml;
+    tinyxml2::XMLElement const* root;
+    tinyxml2::XMLElement const* type;
+    tinyxml2::XMLElement const* element;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    closeConfig();
+    _config.serverDatabasePort = DEFAULT_SERVER_DATABASE_PORT;
+    _config.serverDatabaseListen = DEFAULT_SERVER_DATABASE_LISTEN;
+    _config.serverOperationPort = DEFAULT_SERVER_OPERATION_PORT;
+    _config.serverOperationListen = DEFAULT_SERVER_OPERATION_LISTEN;
+    _config.sessionMaximum = DEFAULT_SESSION_MAXIMUM;
+    _config.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+    _config.observerCallsign = DEFAULT_OBSERVER_CALLSIGN;
+    _config.observerLatitude = DEFAULT_OBSERVER_LATITUDE;
+    _config.observerLongitude = DEFAULT_OBSERVER_LONGITUDE;
+    _config.observerAltitude = DEFAULT_OBSERVER_ALTITUDE;
+    _config.cwTestAzimuth = DEFAULT_CW_TEST_AZIMUTH;
+    _config.cwTestElevation = DEFAULT_CW_TEST_ELEVATION;
+    _config.fmTestAzimuth = DEFAULT_FM_TEST_AZIMUTH;
+    _config.fmTestElevation = DEFAULT_FM_TEST_ELEVATION;
+    _config.algorithmLookahead = DEFAULT_ALGORITHM_LOOKAHEAD;
+    _config.intervalSession = DEFAULT_INTERVAL_SESSION;
+    _config.intervalRotator = DEFAULT_INTERVAL_ROTATOR;
+    _config.intervalTransceiver = DEFAULT_INTERVAL_TRANSCEIVER;
+    _config.intervalTNC = DEFAULT_INTERVAL_TNC;
+    _config.intervalLog = DEFAULT_INTERVAL_LOG;
+    switch (xml.LoadFile(XML_CONFIG)) {
+        case tinyxml2::XML_NO_ERROR:
+            if ((root = xml.FirstChildElement("config")) != NULL) {
+                if ((type = root->FirstChildElement("server")) != NULL) {
+                    if ((element = type->FirstChildElement("database")) != NULL) {
+                        xmlReadText(element, "port", &_config.serverDatabasePort);
+                        xmlReadInteger(element, "listen", &_config.serverDatabaseListen);
+                    }
+                    if ((element = type->FirstChildElement("operation")) != NULL) {
+                        xmlReadText(element, "port", &_config.serverOperationPort);
+                        xmlReadInteger(element, "listen", &_config.serverOperationListen);
+                    }
+                }
+                if ((type = root->FirstChildElement("session")) != NULL) {
+                    xmlReadInteger(type, "maximum", &_config.sessionMaximum);
+                    xmlReadInteger(type, "timeout", &_config.sessionTimeout);
+                }
+                if ((type = root->FirstChildElement("observer")) != NULL) {
+                    xmlReadText(type, "callsign", &_config.observerCallsign);
+                    xmlReadDouble(type, "latitude", &_config.observerLatitude);
+                    xmlReadDouble(type, "longitude", &_config.observerLongitude);
+                    xmlReadDouble(type, "altitude", &_config.observerAltitude);
+                }
+                if ((type = root->FirstChildElement("cw")) != NULL) {
+                    if ((element = type->FirstChildElement("test")) != NULL) {
+                        xmlReadInteger(element, "azimuth", &_config.cwTestAzimuth);
+                        xmlReadInteger(element, "elevation", &_config.cwTestElevation);
+                    }
+                }
+                if ((type = root->FirstChildElement("fm")) != NULL) {
+                    if ((element = type->FirstChildElement("test")) != NULL) {
+                        xmlReadInteger(element, "azimuth", &_config.fmTestAzimuth);
+                        xmlReadInteger(element, "elevation", &_config.fmTestElevation);
+                    }
+                }
+                if ((type = root->FirstChildElement("algorithm")) != NULL) {
+                    xmlReadInteger(type, "lookahead", &_config.algorithmLookahead);
+                }
+                if ((type = root->FirstChildElement("interval")) != NULL) {
+                    xmlReadInteger(type, "session", &_config.intervalSession);
+                    xmlReadInteger(type, "rotator", &_config.intervalRotator);
+                    xmlReadInteger(type, "transceiver", &_config.intervalTransceiver);
+                    xmlReadInteger(type, "tnc", &_config.intervalTNC);
+                    xmlReadInteger(type, "log", &_config.intervalLog);
+                }
+            }
+            break;
+        case tinyxml2::XML_ERROR_FILE_NOT_FOUND:
+            // nop
+            break;
+        default:
+            error = tgs::TGSERROR_FAILED;
+            break;
+    }
+    log(LOG_NOTICE, "CONFIG: Server Database Port    [%s]", _config.serverDatabasePort.c_str());
+    log(LOG_NOTICE, "CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
+    log(LOG_NOTICE, "CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
+    log(LOG_NOTICE, "CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
+    log(LOG_NOTICE, "CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
+    log(LOG_NOTICE, "CONFIG: Session Timeout         [%d]", _config.sessionTimeout);
+    log(LOG_NOTICE, "CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
+    log(LOG_NOTICE, "CONFIG: Observer Latitude       [%lf]", _config.observerLatitude);
+    log(LOG_NOTICE, "CONFIG: Observer Longitude      [%lf]", _config.observerLongitude);
+    log(LOG_NOTICE, "CONFIG: Observer Altitude       [%lf]", _config.observerAltitude);
+    log(LOG_NOTICE, "CONFIG: CW Test Azimuth         [%d]", _config.cwTestAzimuth);
+    log(LOG_NOTICE, "CONFIG: CW Test Elevation       [%d]", _config.cwTestElevation);
+    log(LOG_NOTICE, "CONFIG: FM Test Azimuth         [%d]", _config.fmTestAzimuth);
+    log(LOG_NOTICE, "CONFIG: FM Test Elevation       [%d]", _config.fmTestElevation);
+    log(LOG_NOTICE, "CONFIG: Algorithm Lookahead     [%d]", _config.algorithmLookahead);
+    log(LOG_NOTICE, "CONFIG: Interval Session        [%d]", _config.intervalSession);
+    log(LOG_NOTICE, "CONFIG: Interval Rotator        [%d]", _config.intervalRotator);
+    log(LOG_NOTICE, "CONFIG: Interval Transceiver    [%d]", _config.intervalTransceiver);
+    log(LOG_NOTICE, "CONFIG: Interval TNC            [%d]", _config.intervalTNC);
+    log(LOG_NOTICE, "CONFIG: Interval Log            [%d]", _config.intervalLog);
+    if (error != tgs::TGSERROR_OK) {
+        closeConfig();
+    }
+    return error;
+}
+
+/*private */tgs::TGSError artsatd::openDatabase(void)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    closeDatabase();
+    error = _database.open(DATABASE_PHYSICS);
+    if (error != tgs::TGSERROR_OK) {
+        closeDatabase();
+    }
+    return error;
+}
+
+/*private */tgs::TGSError artsatd::openPlugin(void)
+{
+    tinyxml2::XMLDocument xml;
+    tinyxml2::XMLElement const* root;
+    tinyxml2::XMLElement const* type;
+    std::string name;
+    boost::shared_ptr<ASDPluginInterface> plugin;
+    std::string file;
+    int norad;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    closePlugin();
+    switch (xml.LoadFile(XML_PLUGIN)) {
+        case tinyxml2::XML_NO_ERROR:
+            if ((root = xml.FirstChildElement("plugin")) != NULL) {
+                for (type = root->FirstChildElement(); type != NULL; type = type->NextSiblingElement()) {
+                    name = type->Name();
+                    if (name == "ASDPluginINVADER") {
+                        plugin.reset(new(std::nothrow) ASDPluginINVADER);
+                    }
                     else {
-                        error = tgs::TGSERROR_NO_MEMORY;
+                        name.clear();
+                    }
+                    if (!name.empty()) {
+                        if (plugin != NULL) {
+                            if ((error = xmlReadInteger(type, "norad", &norad)) == tgs::TGSERROR_OK) {
+                                xmlReadText(type, "file", &file);
+                                log(LOG_NOTICE, "PLUGIN: Type  [%s]", name.c_str());
+                                log(LOG_NOTICE, "PLUGIN: File  [%s]", file.c_str());
+                                log(LOG_NOTICE, "PLUGIN: NORAD [%d]", norad);
+                                if (!file.empty()) {
+                                    name  = PATH_SERVER;
+                                    name += "/";
+                                    name += PATH_PLUGIN;
+                                    name += "/";
+                                    file = name + file;
+                                }
+                                if ((error = plugin->open(file)) == tgs::TGSERROR_OK) {
+                                    _plugin[norad] = plugin;
+                                }
+                            }
+                        }
+                        else {
+                            error = tgs::TGSERROR_NO_MEMORY;
+                        }
                     }
                 }
             }
-            else {
-                error = tgs::TGSERROR_NO_MEMORY;
+            break;
+        case tinyxml2::XML_ERROR_FILE_NOT_FOUND:
+            // nop
+            break;
+        default:
+            error = tgs::TGSERROR_FAILED;
+            break;
+    }
+    if (error != tgs::TGSERROR_OK) {
+        closePlugin();
+    }
+    return error;
+}
+
+/*private */tgs::TGSError artsatd::openDevice(void)
+{
+    boost::shared_ptr<tgs::TGSRotatorGS232B> rotator;
+    boost::shared_ptr<tgs::TGSTransceiverIC9100> transceiver;
+    boost::shared_ptr<tgs::TGSTNCTNC555> tnc;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    closeDevice();
+    rotator.reset(new(std::nothrow) tgs::TGSRotatorGS232B);
+    if (rotator != NULL) {
+        transceiver.reset(new(std::nothrow) tgs::TGSTransceiverIC9100);
+        if (transceiver != NULL) {
+            if ((error = transceiver->connect(&_civ)) == tgs::TGSERROR_OK) {
+                tnc.reset(new(std::nothrow) tgs::TGSTNCTNC555);
+                if (tnc != NULL) {
+                    tnc->setNotifier(this);
+                    if ((error = _loader.append(rotator.get(), "rotator")) == tgs::TGSERROR_OK) {
+                        if ((error = _loader.append(&_civ, "civ")) == tgs::TGSERROR_OK) {
+                            if ((error = _loader.append(transceiver.get(), "transceiver")) == tgs::TGSERROR_OK) {
+                                if ((error = _loader.append(tnc.get(), "tnc")) == tgs::TGSERROR_OK) {
+                                    if ((error = _loader.open(XML_DEVICE)) == tgs::TGSERROR_OK) {
+                                        if ((error = _rotator.open(rotator)) == tgs::TGSERROR_OK) {
+                                            if ((error = _transceiver.open(transceiver)) == tgs::TGSERROR_OK) {
+                                                error = _tnc.open(tnc);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    error = tgs::TGSERROR_NO_MEMORY;
+                }
             }
         }
         else {
@@ -585,7 +1146,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     tinyxml2::XMLElement const* element;
     std::string name;
     boost::shared_ptr<ASDTLEClientInterface> client;
-    std::vector<std::string> site;
+    std::vector<std::string> url;
     int interval;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
@@ -595,7 +1156,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             if ((root = xml.FirstChildElement("network")) != NULL) {
                 for (type = root->FirstChildElement(); type != NULL; type = type->NextSiblingElement()) {
                     name = type->Name();
-                    if (name == "celestrak") {
+                    if (name == "ASDTLEClientCelestrak") {
                         client.reset(new(std::nothrow) ASDTLEClientCelestrak);
                     }
                     else {
@@ -603,29 +1164,19 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     }
                     if (!name.empty()) {
                         if (client != NULL) {
-                            if ((element = type->FirstChildElement("interval")) != NULL) {
-                                if (!element->NoChildren()) {
-                                    if (element->QueryIntText(&interval) == tinyxml2::XML_NO_ERROR) {
-                                        site.clear();
-                                        for (element = type->FirstChildElement("site"); element != NULL; element = element->NextSiblingElement("site")) {
-                                            if (!element->NoChildren()) {
-                                                site.push_back(element->GetText());
-                                            }
-                                        }
-                                        if ((error = client->open(DATABASE_PHYSICS, site, interval)) == tgs::TGSERROR_OK) {
-                                            _clientTle.push_back(client);
-                                        }
-                                    }
-                                    else {
-                                        error = tgs::TGSERROR_INVALID_FORMAT;
+                            if ((error = xmlReadInteger(type, "interval", &interval)) == tgs::TGSERROR_OK) {
+                                log(LOG_NOTICE, "NETWORK: Site     [%s]", name.c_str());
+                                url.clear();
+                                for (element = type->FirstChildElement("url"); element != NULL; element = element->NextSiblingElement("url")) {
+                                    if (!element->NoChildren()) {
+                                        url.push_back(element->GetText());
+                                        log(LOG_NOTICE, "NETWORK: URL      [%s]", url.back().c_str());
                                     }
                                 }
-                                else {
-                                    error = tgs::TGSERROR_INVALID_FORMAT;
+                                log(LOG_NOTICE, "NETWORK: Interval [%d]", interval);
+                                if ((error = client->open(DATABASE_PHYSICS, url, interval)) == tgs::TGSERROR_OK) {
+                                    _clientTle.push_back(client);
                                 }
-                            }
-                            else {
-                                error = tgs::TGSERROR_INVALID_FORMAT;
                             }
                         }
                         else {
@@ -633,9 +1184,6 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                         }
                     }
                 }
-            }
-            else {
-                error = tgs::TGSERROR_INVALID_FORMAT;
             }
             break;
         case tinyxml2::XML_ERROR_FILE_NOT_FOUND:
@@ -646,11 +1194,11 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             break;
     }
     if (error == tgs::TGSERROR_OK) {
-        if ((error = _serverDatabase.open(SERVER_DATABASE_PORT, SERVER_DATABASE_LISTEN)) == tgs::TGSERROR_OK) {
-            if ((error = _serverOperation.open(SERVER_OPERATION_PORT, SERVER_OPERATION_LISTEN)) == tgs::TGSERROR_OK) {
-                _serverDatabase.setNotifier(&_replierDatabase);
-                _replierOperation.setDatabase(DATABASE_PHYSICS);
+        if ((error = _replierOperation.open(PATH_SERVER, DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
+            _serverDatabase.setNotifier(&_replierDatabase);
+            if ((error = _serverDatabase.open(_config.serverDatabasePort, _config.serverDatabaseListen)) == tgs::TGSERROR_OK) {
                 _serverOperation.setNotifier(&_replierOperation);
+                error = _serverOperation.open(_config.serverOperationPort, _config.serverOperationListen);
             }
         }
     }
@@ -660,9 +1208,20 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return error;
 }
 
+/*private */void artsatd::closeConfig(void)
+{
+    return;
+}
+
 /*private */void artsatd::closeDatabase(void)
 {
-    _physics.close();
+    _database.close();
+    return;
+}
+
+/*private */void artsatd::closePlugin(void)
+{
+    _plugin.clear();
     return;
 }
 
@@ -672,7 +1231,6 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     _transceiver.close();
     _civ.close();
     _rotator.close();
-    _satellite.close();
     _loader.clear();
     return;
 }
@@ -681,7 +1239,306 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 {
     _serverOperation.close();
     _serverDatabase.close();
+    _replierOperation.close();
     _clientTle.clear();
+    return;
+}
+
+/*private */void artsatd::switchTransceiver(ModeTransceiverEnum mode)
+{
+    tgs::TGSError error;
+    
+    if (mode != _state.modeTransceiver) {
+        error = tgs::TGSERROR_OK;
+        if (_transceiver->isValid()) {
+            switch (mode) {
+                case MODETRANSCEIVER_BEACON:
+                    error = _transceiver->selectModeBeacon();
+                    break;
+                case MODETRANSCEIVER_COMMUNICATION:
+                    error = _transceiver->selectModeCommunication();
+                    break;
+                default:
+                    // nop
+                    break;
+            }
+            if (error != tgs::TGSERROR_OK) {
+                log(LOG_WARNING, "can't switch transceiver mode [%s]", error.print().c_str());
+            }
+        }
+        if (error == tgs::TGSERROR_OK) {
+            _state.modeTransceiver = mode;
+        }
+    }
+    return;
+}
+
+/*private */void artsatd::switchTNC(ModeTNCEnum mode, std::string const& callsign)
+{
+    tgs::TGSError error;
+    
+    if (mode != _state.modeTNC || callsign != _state.callsign) {
+        error = tgs::TGSERROR_OK;
+        if (_tnc->isValid()) {
+            switch (mode) {
+                case MODETNC_COMMAND:
+                    error = _tnc->selectModeCommand();
+                    break;
+                case MODETNC_CONVERSE:
+                    if ((error = _tnc->selectModeCommand()) == tgs::TGSERROR_OK) {
+                        if ((error = _tnc->setPacketMode(_config.observerCallsign, callsign)) == tgs::TGSERROR_OK) {
+                            error = _tnc->selectModeConverse();
+                        }
+                    }
+                    break;
+                default:
+                    // nop
+                    break;
+            }
+            if (error != tgs::TGSERROR_OK) {
+                log(LOG_WARNING, "can't switch tnc mode [%s]", error.print().c_str());
+            }
+        }
+        if (error == tgs::TGSERROR_OK) {
+            _state.modeTNC = mode;
+            _state.callsign = callsign;
+        }
+    }
+    return;
+}
+
+/*private */void artsatd::operateSession(ir::IRXTime const& time)
+{
+    if (time >= _state.timeSession + ir::IRXTimeDiff(_config.intervalSession)) {
+        cleanSession(time);
+        _state.timeSession = time;
+    }
+    return;
+}
+
+/*private */tgs::TGSError artsatd::operateRotator(ir::IRXTime const& time, double azimuth, double elevation)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (time >= _state.timeRotator + ir::IRXTimeDiff(_config.intervalRotator)) {
+        if (!std::isnan(azimuth) && !std::isnan(elevation)) {
+            if (std::round(azimuth) != std::round(_state.azimuth) || std::round(elevation) != std::round(_state.elevation)) {
+                if (_rotator->isValid()) {
+                    if ((error = _rotator->rotateTo(std::round(azimuth), std::round(elevation))) != tgs::TGSERROR_OK) {
+                        log(LOG_WARNING, "can't operate rotator angle [%s]", error.print().c_str());
+                    }
+                }
+                if (error == tgs::TGSERROR_OK) {
+                    _state.azimuth = azimuth;
+                    _state.elevation = elevation;
+                }
+            }
+        }
+        if (error == tgs::TGSERROR_OK) {
+            _state.timeRotator = time;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_WAIT_RESULT;
+    }
+    return error;
+}
+
+/*private */tgs::TGSError artsatd::operateTransceiver(ir::IRXTime const& time, double sender, double receiver)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (time >= _state.timeTransceiver + ir::IRXTimeDiff(_config.intervalTransceiver)) {
+        if (!std::isnan(sender)) {
+            if (std::round(sender) != std::round(_state.sender)) {
+                if (_transceiver->isValid()) {
+                    if ((error = _transceiver->setFrequencySender(std::round(sender))) != tgs::TGSERROR_OK) {
+                        log(LOG_WARNING, "can't operate transceiver sender frequency [%s]", error.print().c_str());
+                    }
+                }
+                if (error == tgs::TGSERROR_OK) {
+                    _state.sender = sender;
+                }
+            }
+        }
+        if (error == tgs::TGSERROR_OK) {
+            if (!std::isnan(receiver)) {
+                if (std::round(receiver) != std::round(_state.receiver)) {
+                    if (_transceiver->isValid()) {
+                        if ((error = _transceiver->setFrequencyReceiver(std::round(receiver))) != tgs::TGSERROR_OK) {
+                            log(LOG_WARNING, "can't operate transceiver receiver frequency [%s]", error.print().c_str());
+                        }
+                    }
+                    if (error == tgs::TGSERROR_OK) {
+                        _state.receiver = receiver;
+                    }
+                }
+            }
+        }
+        if (error == tgs::TGSERROR_OK) {
+            _state.timeTransceiver = time;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_WAIT_RESULT;
+    }
+    return error;
+}
+
+/*private */tgs::TGSError artsatd::operateTNC(ir::IRXTime const& time, std::string const& command)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (time >= _state.timeTNC + ir::IRXTimeDiff(_config.intervalTNC)) {
+        if (!command.empty()) {
+            log(LOG_NOTICE, "TNC: packet send [%s]", command.c_str());
+            if (_tnc->isValid()) {
+                if ((error = _tnc->sendPacket(command + " ")) != tgs::TGSERROR_OK) {
+                    log(LOG_WARNING, "can't operate tnc packet [%s]", error.print().c_str());
+                }
+            }
+        }
+        if (error == tgs::TGSERROR_OK) {
+            _state.timeTNC = time;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_WAIT_RESULT;
+    }
+    return error;
+}
+
+/*private */void artsatd::operateLog(ir::IRXTime const& time, int norad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info)
+{
+    std::string string;
+    
+    if (time >= _state.timeLog + ir::IRXTimeDiff(_config.intervalLog)) {
+        if (!_rotator->isValid()) {
+            log(LOG_NOTICE, "rotator is offline");
+        }
+        if (!_transceiver->isValid()) {
+            log(LOG_NOTICE, "transceiver is offline");
+        }
+        if (!_tnc->isValid()) {
+            log(LOG_NOTICE, "tnc is offline");
+        }
+        switch (mode) {
+            case MODE_CW:
+                string = "CW";
+                break;
+            case MODE_CW_TEST:
+                string = "CW_TEST";
+                break;
+            case MODE_FM:
+                string = "FM";
+                break;
+            case MODE_FM_TEST:
+                string = "FM_TEST";
+                break;
+            default:
+                string = "NOOP";
+                break;
+        }
+        log(LOG_INFO, "NORAD: %05d, Mode: %-7s [A %7.3lf, E %+7.3lf, B %10.6lf, S %10.6lf, R %10.6lf], Error: %s", norad, string.c_str(), azimuth, elevation, beacon / 1000000.0, sender / 1000000.0, receiver / 1000000.0, info.print().c_str());
+        _state.timeLog = time;
+    }
+    return;
+}
+
+/*private */void artsatd::resetRotator(void)
+{
+    _state.timeRotator.set(0);
+    _state.azimuth = NAN;
+    _state.elevation = NAN;
+    return;
+}
+
+/*private */void artsatd::resetTransceiver(void)
+{
+    _state.timeTransceiver.set(0);
+    _state.sender = NAN;
+    _state.receiver = NAN;
+    return;
+}
+
+/*private */void artsatd::resetTNC(void)
+{
+    _state.timeTNC.set(0);
+    return;
+}
+
+/*private static */void artsatd::resetSession(SessionRec* session)
+{
+    session->id.clear();
+    session->owner.clear();
+    session->random.seed(ir::IRXTime::currentUTCTime().asTime_t());
+    return;
+}
+
+/*private static */void artsatd::resetControl(ControlRec* control)
+{
+    control->manualRotator = false;
+    control->manualTransceiver = false;
+    control->manualTNC = false;
+    control->norad = -1;
+    control->mode = MODE_LIMIT;
+    return;
+}
+
+/*private static */void artsatd::resetCurrent(ControlRec const& control, CurrentRec* current)
+{
+    current->norad = control.norad;
+    current->time = ir::IRXTime::currentTime();
+    return;
+}
+
+/*private static */void artsatd::resetState(ControlRec const& control, StateRec* state)
+{
+    state->manualRotator = control.manualRotator;
+    state->manualTransceiver = control.manualTransceiver;
+    state->manualTNC = control.manualTNC;
+    state->field.norad = control.norad;
+    state->mode = control.mode;
+    state->modeTransceiver = MODETRANSCEIVER_LIMIT;
+    state->modeTNC = MODETNC_LIMIT;
+    state->callsign.clear();
+    state->timeSession.set(0);
+    state->timeRotator.set(0);
+    state->azimuth = NAN;
+    state->elevation = NAN;
+    state->timeTransceiver.set(0);
+    state->sender = NAN;
+    state->receiver = NAN;
+    state->timeTNC.set(0);
+    state->timeLog.set(0);
+    return;
+}
+
+/*private static */void artsatd::resetMonitor(MonitorRec* monitor)
+{
+    monitor->latitude = NAN;
+    monitor->longitude = NAN;
+    monitor->altitude = NAN;
+    monitor->azimuth = NAN;
+    monitor->elevation = NAN;
+    monitor->beacon = NAN;
+    monitor->sender = NAN;
+    monitor->receiver = NAN;
+    monitor->dopplerSender = NAN;
+    monitor->dopplerReceiver = NAN;
+    //<<<
+    monitor->aos.set(0);
+    monitor->los.set(0);
+    monitor->mel = NAN;
+    monitor->start.set(0);
+    //>>>
+    monitor->error = tgs::TGSERROR_OK;
+    return;
+}
+
+/*private static */void artsatd::resetCommand(CommandRec* command)
+{
+    command->queue.clear();
     return;
 }
 
@@ -690,7 +1547,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     std::string path;
     int result(EXIT_SUCCESS);
     
-    path = "/etc/";
+    path  = PATH_WORKSPACE;
+    path += "/";
     path += getprogname();
     if (mkdir(path.c_str(), 0755) != 0) {
         if (errno != EEXIST) {
@@ -703,4 +1561,73 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         }
     }
     return result;
+}
+
+/*private static */tgs::TGSError artsatd::xmlReadText(tinyxml2::XMLElement const* parent, std::string const& tag, std::string* result)
+{
+    tinyxml2::XMLElement const* element;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((element = parent->FirstChildElement(tag.c_str())) != NULL) {
+        if (!element->NoChildren()) {
+            *result = element->GetText();
+        }
+        else {
+            error = tgs::TGSERROR_NO_RESULT;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_NO_RESULT;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError artsatd::xmlReadInteger(tinyxml2::XMLElement const* parent, std::string const& tag, int* result)
+{
+    tinyxml2::XMLElement const* element;
+    int value;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((element = parent->FirstChildElement(tag.c_str())) != NULL) {
+        if (!element->NoChildren()) {
+            if (element->QueryIntText(&value) == tinyxml2::XML_NO_ERROR) {
+                *result = value;
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_FORMAT;
+            }
+        }
+        else {
+            error = tgs::TGSERROR_NO_RESULT;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_NO_RESULT;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError artsatd::xmlReadDouble(tinyxml2::XMLElement const* parent, std::string const& tag, double* result)
+{
+    tinyxml2::XMLElement const* element;
+    double value;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((element = parent->FirstChildElement(tag.c_str())) != NULL) {
+        if (!element->NoChildren()) {
+            if (element->QueryDoubleText(&value) == tinyxml2::XML_NO_ERROR) {
+                *result = value;
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_FORMAT;
+            }
+        }
+        else {
+            error = tgs::TGSERROR_NO_RESULT;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_NO_RESULT;
+    }
+    return error;
 }

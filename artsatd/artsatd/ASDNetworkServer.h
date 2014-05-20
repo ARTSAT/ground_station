@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDNetworkServer.h
 **
@@ -48,6 +48,30 @@
 #define __ASD_NETWORKSERVER_H
 
 #include "TGSType.h"
+#include "IRXTime.h"
+
+namespace insensitive {
+template <class T>
+struct less : public std::less<T> {
+};
+template <>
+struct less<std::string> : public std::binary_function<std::string, std::string, bool> {
+    bool operator()(std::string const& lhs, std::string const& rhs) const
+    {
+        return boost::ilexicographical_compare(lhs, rhs);
+    }
+};
+template <>
+struct less<std::wstring> : public std::binary_function<std::wstring, std::wstring, bool> {
+    bool operator()(std::wstring const& lhs, std::wstring const& rhs) const
+    {
+        return boost::ilexicographical_compare(lhs, rhs);
+    }
+};
+template <class K, class V, class C = less<K>, class A = std::allocator<std::pair<K const, V> > >
+struct map : public std::map<K, V, C, A> {
+};
+}
 
 namespace boost { namespace network { namespace http {
 template <class T>
@@ -55,17 +79,45 @@ class server;
 }}}
 
 class ASDNetworkServer {
-    public:
-        class Notifier {
-            protected:
-                virtual tgs::TGSError           onRequest                   (std::string const& path, std::map<std::string, std::string>& query, int* status, std::string* response);
-                virtual tgs::TGSError           onJsonRpcRequest            (std::string const& body, int* status, std::string* response);
-            friend      class                   ASDNetworkServer;
-        };
     private:
         class Responder;
         typedef boost::network::http::server<Responder>
                                                 Server;
+    public:
+        class Notifier {
+            public:
+                struct RequestRec {
+                    std::string                 host;
+                    std::string                 path;
+                    insensitive::map<std::string, std::string>
+                                                query;
+                    insensitive::map<std::string, std::string>
+                                                cookie;
+                    std::string                 content;
+                };
+                struct ResponseRec {
+                    int                         status;
+                    insensitive::map<std::string, std::string>
+                                                header;
+                    std::string                 content;
+                };
+            protected:
+                typedef Server                  Server;
+            
+            public:
+                static  void                    setCookie                   (std::string const& name, std::string const& value, ResponseRec* response);
+                static  void                    setCookie                   (std::string const& name, std::string const& value, std::string const& domain, std::string const& path, bool secure, ResponseRec* response);
+                static  void                    setCookie                   (std::string const& name, std::string const& value, unsigned int age, ResponseRec* response);
+                static  void                    setCookie                   (std::string const& name, std::string const& value, unsigned int age, std::string const& domain, std::string const& path, bool secure, ResponseRec* response);
+                static  void                    setCookie                   (std::string const& name, std::string const& value, ir::IRXTime const& expire, ResponseRec* response);
+                static  void                    setCookie                   (std::string const& name, std::string const& value, ir::IRXTime const& expire, std::string const& domain, std::string const& path, bool secure, ResponseRec* response);
+                static  void                    replyStatus                 (Server::response::status_type code, ResponseRec* response);
+            protected:
+                virtual tgs::TGSError           onRequest                   (RequestRec const& request, ResponseRec* response);
+            private:
+                static  void                    setCookie                   (std::string const& name, std::string const& value, unsigned int const* age, ir::IRXTime const* expire, std::string const& domain, std::string const& path, bool secure, ResponseRec* response);
+            friend      class                   ASDNetworkServer;
+        };
     
     private:
                 boost::scoped_ptr<Responder>    _responder;
@@ -95,6 +147,42 @@ class ASDNetworkServer {
 /*public */inline ASDNetworkServer::Notifier* ASDNetworkServer::getNotifier(void) const
 {
     return _notifier;
+}
+
+/*public static */inline void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, ResponseRec* response)
+{
+    setCookie(name, value, NULL, NULL, "", "", false, response);
+    return;
+}
+
+/*public static */inline void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, std::string const& domain, std::string const& path, bool secure, ResponseRec* response)
+{
+    setCookie(name, value, NULL, NULL, domain, path, secure, response);
+    return;
+}
+
+/*public static */inline void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, unsigned int age, ResponseRec* response)
+{
+    setCookie(name, value, &age, NULL, "", "", false, response);
+    return;
+}
+
+/*public static */inline void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, unsigned int age, std::string const& domain, std::string const& path, bool secure, ResponseRec* response)
+{
+    setCookie(name, value, &age, NULL, domain, path, secure, response);
+    return;
+}
+
+/*public static */inline void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, ir::IRXTime const& expire, ResponseRec* response)
+{
+    setCookie(name, value, NULL, &expire, "", "", false, response);
+    return;
+}
+
+/*public static */inline void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, ir::IRXTime const& expire, std::string const& domain, std::string const& path, bool secure, ResponseRec* response)
+{
+    setCookie(name, value, NULL, &expire, domain, path, secure, response);
+    return;
 }
 
 #endif

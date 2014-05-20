@@ -1,0 +1,169 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+body {
+    margin: 8px 12px;
+    color: #cccccc;
+    background-color: #222222;
+    font-family: 'Helvetica', 'Lucida Grande', 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'Osaka', 'メイリオ', 'Meiryo', 'ＭＳ Ｐゴシック', 'MS P Gothic', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: left;
+}
+a {
+    outline: none;
+    text-decoration: none;
+}
+a:link {
+    color: #cccccc;
+}
+a:visited {
+    color: #cccccc;
+}
+a:hover {
+    color: #66ff22;
+}
+a:active {
+    color: #ff4488;
+}
+hr {
+    margin: 4px 0px;
+    border: none;
+    height: 3px;
+    background-color: #88ffcc;
+}
+table {
+    margin: 4px 0px;
+    border-spacing: 8px 2px;
+    width: 100%;
+    background-color: #444444;
+    text-align: right;
+    white-space: nowrap;
+}
+th:last-child,
+td:last-child {
+    width: 100%;
+}
+input,
+select {
+    margin: 0px 4px;
+}
+iframe {
+    border: none;
+    width: 100%;
+    overflow: hidden;
+}
+iframe.hardware {
+    height: 52px;
+}
+iframe.orbital {
+    height: 121px;
+}
+iframe.webcam {
+    position: absolute;
+    margin-top: -240px;
+    margin-left: -320px;
+    top: 50%;
+    left: 50%;
+    width: 640px;
+    height: 480px;
+    background-color: #0000ff;
+}
+copyright {
+    color: #444444;
+    font-size: 10px;
+}
+audio {
+    position: absolute;
+    margin-top: -12px;
+    margin-left: -120px;
+    top: 50%;
+    left: 50%;
+    width: 240px;
+    height: 24px;
+}
+div#header {
+    float: left;
+}
+div#download {
+    float: right;
+}
+div#hardware,
+div#database,
+div#status,
+div#control {
+    margin: 4px 0px;
+}
+div#hardware table {
+    background-color: #222222;
+    text-align: center;
+}
+div#control table {
+    background-color: #333333;
+}
+div#control th,
+div#control td {
+    padding: 2px 4px;
+}
+div#control th:last-child,
+div#control td:last-child {
+    text-align: left;
+}
+div.space {
+    height: 12px;
+    clear: both;
+}
+div.stretch {
+    display: table;
+    width: 100%;
+}
+div.error {
+    margin: 4px 0px;
+    padding: 1px 4px;
+    color: #ffffff;
+    background-color: #ff0000;
+}
+span.button {
+    display: inline-block;
+    margin: 0px 4px;
+    border-style: solid;
+    border-width: 1px;
+    width: 96px;
+    text-align: center;
+}
+span.ok {
+    color: #00ff00;
+    background-color: #226622;
+}
+span.ng {
+    color: #ff0000;
+    background-color: #662222;
+}
+td.normal {
+    background-color: #446644;
+}
+td.telemetry {
+    background-color: #446666;
+}
+td.mission {
+    background-color: #444466;
+}
+td.critical {
+    background-color: #664444;
+}
+.left {
+    text-align: left;
+}
+.red {
+    color: #ff0000;
+}
+.green {
+    color: #00ff00;
+}
+.cyan {
+    color: #88ffff;
+}
+.magenta {
+    color: #ff88ff;
+}

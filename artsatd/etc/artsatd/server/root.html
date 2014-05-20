@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" type="text/css" href="default.css" />
+        <title>ARTSAT TamabiGS</title>
+    </head>
+    <body>
+        <h1>ARTSAT TamabiGS 4.1</h1>
+        <hr />
+        <div id="header">
+            <i>The first ART satellite in the world.</i> <a href="http://artsat.jp" target="_blank">[ official site ]</a> <a href="http://www.facebook.com/artsat" target="_blank">[ facebook ]</a> <a href="http://twitter.com/INVADER_ARTSAT" target="_blank">[ twitter ]</a>
+        </div>
+        <div id="download">
+            TamabiGS.app <a href="http://artsat.idd.tamabi.ac.jp:16788/TamabiGS.app.zip">[ download for Mac ]</a>
+        </div>
+        <div class="space"></div>
+        <div class="stretch">
+            <form action="" method="get">
+                <input type="submit" name="session" value="reload" /><input class="<!PM />" type="submit" name="session" value="session" <!_DP /> /><input class="<!EX />" type="submit" name="session" value="exclusive" <!_DF /> /> <!SI />
+            </form>
+            <![ESS />
+            <div class="error">Session error <!ES /></div>
+            <!]ESS />
+            <div class="space"></div>
+            <div id="hardware">
+                <div>
+                    <b>Observer Hardware</b> <a href="?shrink=hardware">[ <!HW /> ]</a> :<![HWF /> <span class="button <!HR />">Rotator</span><span class="button <!HT />">Transceiver</span><span class="button <!HM />">TNC</span><!]HWF />
+                </div>
+                <![HWT />
+                <table>
+                    <tr>
+                        <td><span class="button <!HR />">Rotator</span></td>
+                        <td><span class="button <!HT />">Transceiver</span></td>
+                        <td><span class="button <!HM />">TNC</span></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <form action="" method="get">
+                                <input type="hidden" name="manual" value="rotator" />
+                                <input class="<!MR />" type="submit" name="" value="manual" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="hidden" name="manual" value="transceiver" />
+                                <input class="<!MT />" type="submit" name="" value="manual" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="hidden" name="manual" value="tnc" />
+                                <input class="<!MM />" type="submit" name="" value="manual" <!_DF /> />
+                            </form>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><a href="webcam.html" target="webcam">[ webcam ]</a></td>
+                        <td><a href="streaming.html" target="streaming">[ streaming ]</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <![EHW />
+                <div class="error">Hardware error <!EH /></div>
+                <!]EHW />
+                <iframe class="hardware" src="hardware.html" seamless></iframe>
+                <div class="space"></div>
+                <!]HWT />
+            </div>
+            <div id="database">
+                <form action="" method="get">
+                    <b>Satellite Database</b> <a href="?shrink=database">[ <!DB /> ]</a> : <input type="text" size="24" maxlength="24" name="norad" value="<!ND />" <!_RO /> /><input type="submit" name="" value="update" <!_DF /> /> <a href="database.html" target="database">[ database ]</a>
+                </form>
+                <![EDB />
+                <div class="error">Database error <!ED /></div>
+                <!]EDB />
+                <![DBT />
+                <table>
+                    <tr>
+                        <th class="left">Name</th>
+                        <th class="left" colspan="10"><!NM /></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th class="left">Callsign</th>
+                        <th>Beacon Mode</th>
+                        <th>Beacon Frequency</th>
+                        <th>Beacon Drift</th>
+                        <th>Sender Mode</th>
+                        <th>Sender Frequency</th>
+                        <th>Sender Drift</th>
+                        <th>Receiver Mode</th>
+                        <th>Receiver Frequency</th>
+                        <th>Receiver Drift</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td class="left"><pre><!CS /></pre></td>
+                        <td><pre><!BM /></pre></td>
+                        <td><pre><!BF /></pre></td>
+                        <td><pre><!BD /></pre></td>
+                        <td><pre><!SM /></pre></td>
+                        <td><pre><!SF /></pre></td>
+                        <td><pre><!SD /></pre></td>
+                        <td><pre><!RM /></pre></td>
+                        <td><pre><!RF /></pre></td>
+                        <td><pre><!RD /></pre></td>
+                        <td><pre>    </pre></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <th class="left">TLE</th>
+                        <td class="left"><pre>[ Last check <!TU /> ]</pre></td>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td class="left" colspan="2"><pre><!TL /></pre></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <div class="space"></div>
+                <!]DBT />
+            </div>
+            <div id="status">
+                <div>
+                    <b>Satellite Status</b> <a href="?shrink=status">[ <!ST /> ]</a> :
+                </div>
+                <![STT />
+                <iframe class="orbital" src="orbital.html" seamless></iframe>
+                <div class="space"></div>
+                <!]STT />
+            </div>
+            <div id="control">
+                <form action="" method="get">
+                    <b>Operation Control</b> <a href="?shrink=control">[ <!CN /> ]</a> : <input class="<!CW />" type="submit" name="mode" value="CW" <!_DF /> /><input class="<!FM />" type="submit" name="mode" value="FM" <!_DF /> /><input class="<!NO />" type="submit" name="mode" value="NOOP" <!_DF /> />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="<!CW_TEST />" type="submit" name="mode" value="CW_TEST" <!_DF /> /><input class="<!FM_TEST />" type="submit" name="mode" value="FM_TEST" <!_DF /> />
+                </form>
+                <![ECN />
+                <div class="error">Control error <!EC /></div>
+                <!]ECN />
+                <![CNT />
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Command</th>
+                    </tr>
+                    <!CD />
+                </table>
+                <!]CNT />
+            </div>
+        </div>
+        <div class="space"></div>
+        <div>
+            <copyright>Copyright (C) 2013 - 2014 ARTSAT Project. All Rights Reserved. Written by HORIGUCHI Junshi, HASHIMOTO Ron.</copyright>
+        </div>
+    </body>
+</html>

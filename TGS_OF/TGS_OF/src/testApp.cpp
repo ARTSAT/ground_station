@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2013 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -46,7 +46,6 @@
 
 #include "testApp.h"
 #include "TGSDeviceLoader.h"
-#include "TGSSatelliteINVADER.h"
 #include "TGSRotatorGS232B.h"
 #include "TGSTransceiverCIV.h"
 #include "TGSTransceiverIC9100.h"
@@ -58,25 +57,22 @@ using namespace tgs;
 //--------------------------------------------------------------
 void testApp::setup(){
     TGSDeviceLoader loader;
-    TGSSatelliteINVADER satellite;
     TGSRotatorGS232B rotator;
     TGSTransceiverCIV civ;
     TGSTransceiverIC9100 transceiver;
     TGSTNCTNC555 tnc;
     TGSError error(TGSERROR_OK);
     
-    if ((error = loader.append(&satellite, "satellite")) == TGSERROR_OK) {
-        if ((error = loader.append(&rotator, "rotator")) == TGSERROR_OK) {
-            if ((error = loader.append(&civ, "civ")) == TGSERROR_OK) {
-                if ((error = loader.append(&transceiver, "transceiver")) == TGSERROR_OK) {
-                    if ((error = loader.append(&tnc, "tnc")) == TGSERROR_OK) {
-                        if ((error = loader.open("usbserial.xml")) == TGSERROR_OK) {
-                            if ((error = transceiver.connect(&civ)) == TGSERROR_OK) {
-                                loader.update();
-                                transceiver.disconnect();
-                            }
-                            loader.close();
+    if ((error = loader.append(&rotator, "rotator")) == TGSERROR_OK) {
+        if ((error = loader.append(&civ, "civ")) == TGSERROR_OK) {
+            if ((error = loader.append(&transceiver, "transceiver")) == TGSERROR_OK) {
+                if ((error = loader.append(&tnc, "tnc")) == TGSERROR_OK) {
+                    if ((error = loader.open(ofToDataPath("device.xml"))) == TGSERROR_OK) {
+                        if ((error = transceiver.connect(&civ)) == TGSERROR_OK) {
+                            loader.update();
+                            transceiver.disconnect();
                         }
+                        loader.close();
                     }
                 }
             }

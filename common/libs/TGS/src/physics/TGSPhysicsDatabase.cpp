@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSPhysicsDatabase.cpp
 **
@@ -240,7 +240,7 @@ static  char const*         g_hasUpdate[][2] = {
                         if ((error = print("%Q", &epoch, epoch.c_str())) == TGSERROR_OK) {
                             tle.GetField(Zeptomoby::OrbitTools::cTle::FLD_NORADNUM, Zeptomoby::OrbitTools::cTle::U_NATIVE, &norad);
                             if ((error = update(TABLE_PHYSICS, g_setOrbitData, lengthof(g_setOrbitData), 0, "AND epoch<" + epoch, norad.c_str(), name.c_str(), epoch.c_str(), one.c_str(), two.c_str(), 1)) == TGSERROR_OK) {
-                                error = update(TABLE_PHYSICS, g_setOrbitTime, lengthof(g_setOrbitTime), 0, "", norad.c_str(), time.format(TIME_FORMAT).c_str());
+                                error = update(TABLE_PHYSICS, g_setOrbitTime, lengthof(g_setOrbitTime), 0, std::string(""), norad.c_str(), time.format(TIME_FORMAT).c_str());
                             }
                         }
                     }
@@ -276,7 +276,7 @@ static  char const*         g_hasUpdate[][2] = {
                     error = buildQuery(string, &g_getOrbitData[4], 1, &string);
                 }
                 if (error == TGSERROR_OK) {
-                    if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], "", norad)) == TGSERROR_OK) {
+                    if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], std::string(""), norad)) == TGSERROR_OK) {
                         if ((error = step()) == TGSERROR_WAIT_RESULT) {
                             if ((error = readText(0, &name)) == TGSERROR_OK) {
                                 if ((error = readText(1, &one)) == TGSERROR_OK) {
@@ -324,7 +324,7 @@ static  char const*         g_hasUpdate[][2] = {
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
             if ((error = buildQuery("", &g_field[0], 15, &string)) == TGSERROR_OK) {
-                if ((error = select(TABLE_PHYSICS, string, &g_field[0], "", norad)) == TGSERROR_OK) {
+                if ((error = select(TABLE_PHYSICS, string, &g_field[0], std::string(""), norad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
                         if ((error = readField(0, &field)) == TGSERROR_OK) {
                             *result = field;
@@ -390,14 +390,14 @@ static  char const*         g_hasUpdate[][2] = {
     return getField("%" + callsign + "%", 2, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getNoradByName(std::string const& name, std::vector<int>* result)
+/*public */TGSError TGSPhysicsDatabase::getNORADByName(std::string const& name, std::vector<int>* result)
 {
-    return getNorad("%" + name + "%", 1, result);
+    return getNORAD("%" + name + "%", 1, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getNoradByCallsign(std::string const& callsign, std::vector<int>* result)
+/*public */TGSError TGSPhysicsDatabase::getNORADByCallsign(std::string const& callsign, std::vector<int>* result)
 {
-    return getNorad("%" + callsign + "%", 2, result);
+    return getNORAD("%" + callsign + "%", 2, result);
 }
 
 /*public */bool TGSPhysicsDatabase::hasUpdate(int norad)
@@ -406,25 +406,27 @@ static  char const*         g_hasUpdate[][2] = {
     TGSError error;
     bool result(false);
     
-    if (select(TABLE_PHYSICS, g_hasUpdate[1][0], &g_hasUpdate[0], "", norad) == TGSERROR_OK) {
+    if (select(TABLE_PHYSICS, g_hasUpdate[1][0], &g_hasUpdate[0], std::string(""), norad) == TGSERROR_OK) {
         if (step() == TGSERROR_WAIT_RESULT) {
             if ((error = readInteger(0, &value)) == TGSERROR_OK) {
                 result = !!value;
             }
             while (step() == TGSERROR_WAIT_RESULT);
             if (error == TGSERROR_OK) {
-                update(TABLE_PHYSICS, g_hasUpdate, lengthof(g_hasUpdate), 0, "", norad, 0);
+                if (result) {
+                    update(TABLE_PHYSICS, g_hasUpdate, lengthof(g_hasUpdate), 0, std::string(""), norad, 0);
+                }
             }
         }
     }
     return result;
 }
 
-/*public virtual */TGSError TGSPhysicsDatabase::open(std::string const& file)
+/*public virtual */TGSError TGSPhysicsDatabase::open(std::string const& file, int timeout)
 {
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::open(file)) == TGSERROR_OK) {
+    if ((error = super::open(file, timeout)) == TGSERROR_OK) {
         error = create(TABLE_PHYSICS, g_table, lengthof(g_table));
         if (error != TGSERROR_OK) {
             self::close();
@@ -441,7 +443,7 @@ static  char const*         g_hasUpdate[][2] = {
 
 /*private */TGSError TGSPhysicsDatabase::setText(int norad, char const* format[3][2], std::string const& param)
 {
-    return update(TABLE_PHYSICS, format, 3, 0, "", norad, param.c_str(), 1);
+    return update(TABLE_PHYSICS, format, 3, 0, std::string(""), norad, param.c_str(), 1);
 }
 
 /*private */TGSError TGSPhysicsDatabase::getText(int norad, char const* format[2][2], std::string* result)
@@ -449,7 +451,7 @@ static  char const*         g_hasUpdate[][2] = {
     TGSError error(TGSERROR_OK);
     
     if (result != NULL) {
-        if ((error = select(TABLE_PHYSICS, format[1][0], &format[0], "", norad)) == TGSERROR_OK) {
+        if ((error = select(TABLE_PHYSICS, format[1][0], &format[0], std::string(""), norad)) == TGSERROR_OK) {
             if ((error = step()) == TGSERROR_WAIT_RESULT) {
                 error = readText(0, result);
                 while (step() == TGSERROR_WAIT_RESULT);
@@ -467,7 +469,7 @@ static  char const*         g_hasUpdate[][2] = {
 
 /*private */TGSError TGSPhysicsDatabase::setRadio(int norad, char const* format[5][2], RadioRec const& param)
 {
-    return update(TABLE_PHYSICS, format, 5, 0, "", norad, param.mode.c_str(), param.frequency, param.drift, 1);
+    return update(TABLE_PHYSICS, format, 5, 0, std::string(""), norad, param.mode.c_str(), param.frequency, param.drift, 1);
 }
 
 /*private */TGSError TGSPhysicsDatabase::getRadio(int norad, char const* format[4][2], RadioRec* result)
@@ -479,7 +481,7 @@ static  char const*         g_hasUpdate[][2] = {
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
             if ((error = buildQuery("", &format[1], 3, &string)) == TGSERROR_OK) {
-                if ((error = select(TABLE_PHYSICS, string, &format[0], "", norad)) == TGSERROR_OK) {
+                if ((error = select(TABLE_PHYSICS, string, &format[0], std::string(""), norad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
                         if ((error = readText(0, &radio.mode)) == TGSERROR_OK) {
                             if ((error = readInteger(1, &radio.frequency)) == TGSERROR_OK) {
@@ -539,7 +541,7 @@ static  char const*         g_hasUpdate[][2] = {
     return error;
 }
 
-/*private */TGSError TGSPhysicsDatabase::getNorad(std::string const& key, int index, std::vector<int>* result)
+/*private */TGSError TGSPhysicsDatabase::getNORAD(std::string const& key, int index, std::vector<int>* result)
 {
     std::string condition;
     std::vector<int> vector;

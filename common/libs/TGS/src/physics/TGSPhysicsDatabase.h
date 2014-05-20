@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSPhysicsDatabase.h
 **
@@ -96,10 +96,10 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
                 TGSError                    getField                        (int limit, int offset, std::vector<FieldRec>* result);
                 TGSError                    getFieldByName                  (std::string const& name, std::vector<FieldRec>* result);
                 TGSError                    getFieldByCallsign              (std::string const& callsign, std::vector<FieldRec>* result);
-                TGSError                    getNoradByName                  (std::string const& name, std::vector<int>* result);
-                TGSError                    getNoradByCallsign              (std::string const& callsign, std::vector<int>* result);
+                TGSError                    getNORADByName                  (std::string const& name, std::vector<int>* result);
+                TGSError                    getNORADByCallsign              (std::string const& callsign, std::vector<int>* result);
                 bool                        hasUpdate                       (int norad);
-        virtual TGSError                    open                            (std::string const& file);
+        virtual TGSError                    open                            (std::string const& file, int timeout = 10000);
         virtual void                        close                           (void);
     private:
                 TGSError                    setText                         (int norad, char const* format[3][2], std::string const& param);
@@ -107,7 +107,7 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
                 TGSError                    setRadio                        (int norad, char const* format[5][2], RadioRec const& param);
                 TGSError                    getRadio                        (int norad, char const* format[4][2], RadioRec* result);
                 TGSError                    getField                        (std::string const& key, int index, std::vector<FieldRec>* result);
-                TGSError                    getNorad                        (std::string const& key, int index, std::vector<int>* result);
+                TGSError                    getNORAD                        (std::string const& key, int index, std::vector<int>* result);
                 TGSError                    readField                       (int column, FieldRec* result);
     private:
                                             TGSPhysicsDatabase              (TGSPhysicsDatabase const&);

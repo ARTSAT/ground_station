@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDTLEClientCelestrak.cpp
 **
@@ -57,6 +57,7 @@
 
 /*protected virtual */tgs::TGSError ASDTLEClientCelestrak::parse(std::string const& content, tgs::TGSPhysicsDatabase* database)
 {
+    ir::IRXTime time;
     std::string trim;
     std::vector<std::string> line;
     tgs::TLERec tle;
@@ -65,8 +66,8 @@
     
     if ((error = super::parse(content, database)) == tgs::TGSERROR_NO_SUPPORT) {
         error = tgs::TGSERROR_OK;
-        trim = content;
-        boost::trim(trim);
+        time = ir::IRXTime::currentUTCTime();
+        trim = boost::trim_copy(content);
         boost::split(line, trim, boost::is_any_of("\n"));
         if (line.size() % 3 == 0) {
             for (i = 0; i < line.size(); ++i) {
@@ -74,7 +75,7 @@
             }
             for (i = 0; i < line.size(); i += 3) {
                 if ((error = tgs::convert(line[i + 0], line[i + 1], line[i + 2], &tle)) == tgs::TGSERROR_OK) {
-                    error = database->setOrbitData(tle, ir::IRXTime::currentUTCTime());
+                    error = database->setOrbitData(tle, time);
                 }
                 if (error != tgs::TGSERROR_OK) {
                     break;

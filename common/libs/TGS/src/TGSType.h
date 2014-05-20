@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSType.h
 **
@@ -49,9 +49,9 @@
 
 namespace tgs {
 
-#define TGS_VERSION_MAJOR       (0)
+#define TGS_VERSION_MAJOR       (4)
 #define TGS_VERSION_MINOR       (0)
-#define TGS_VERSION_REVISION    (1)
+#define TGS_VERSION_REVISION    (0)
 
 #define lengthof(param)         (sizeof(param) / sizeof(param[0]))
 #define asciiesof(param)        (lengthof(param) - 1)
@@ -62,13 +62,42 @@ struct TLERec {
     char                        two[70];
 };
 
+template <typename T>
+class va_ref {
+    private:
+                T&              _ref;
+    
+    public:
+                                va_ref              (T& param);
+                                ~va_ref             (void);
+                                operator T&         (void) const;
+    private:
+                va_ref&         operator=           (va_ref const&);
+};
+
+template <typename T>
+/*public */inline va_ref<T>::va_ref(T& param) : _ref(param)
+{
+}
+
+template <typename T>
+/*public */inline va_ref<T>::~va_ref(void)
+{
+}
+
+template <typename T>
+/*public */inline va_ref<T>::operator T&(void) const
+{
+    return _ref;
+}
+
 }// end of namespace
 
 #include "TGSError.h"
 
 namespace tgs {
 
-extern  TGSError    convert     (std::string const& name, std::string const& one, std::string const& two, TLERec* result);
+extern  TGSError                convert             (std::string const& name, std::string const& one, std::string const& two, TLERec* result);
 
 }// end of namespace
 

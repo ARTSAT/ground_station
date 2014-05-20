@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDDeviceRotator.h
 **
@@ -47,92 +47,35 @@
 #ifndef __ASD_DEVICEROTATOR_H
 #define __ASD_DEVICEROTATOR_H
 
+#include "ASDDeviceInterface.h"
 #include "TGSRotatorInterface.h"
 
-class ASDDeviceRotator {
+class ASDDeviceRotator : public ASDDeviceInterface<tgs::TGSRotatorInterface> {
+    public:
+        typedef ASDDeviceRotator                self;
+        typedef ASDDeviceInterface              super;
+    
     public:
         struct DataRec {
             int                                 azimuth;
             int                                 elevation;
         };
-        class Operator {
-            private:
-                mutable ASDDeviceRotator const* _self;
-            
-            public:
-                                                ~Operator                   (void);
-                        tgs::TGSRotatorInterface*
-                                                operator->                  (void) const;
-            private:
-                explicit                        Operator                    (ASDDeviceRotator const* param);
-                                                Operator                    (Operator const& param);
-            private:
-                        Operator&               operator=                   (Operator const&);
-            friend      class                   ASDDeviceRotator;
-        };
     
     private:
-                boost::shared_ptr<tgs::TGSRotatorInterface>
-                                                _device;
-                boost::thread                   _thread;
                 DataRec                         _data;
         mutable bool                            _update;
-        mutable boost::mutex                    _mutex_device;
-        mutable boost::mutex                    _mutex_data;
+        mutable boost::shared_mutex             _mutex;
     
     public:
         explicit                                ASDDeviceRotator            (void);
-                                                ~ASDDeviceRotator           (void);
-                Operator                        operator->                  (void) const;
+        virtual                                 ~ASDDeviceRotator           (void);
                 DataRec                         getData                     (void) const;
                 bool                            hasUpdate                   (void) const;
-                tgs::TGSError                   open                        (boost::shared_ptr<tgs::TGSRotatorInterface> const& device);
-                void                            close                       (void);
-    private:
-                void                            thread                      (void);
-                void                            update                      (void);
-                void                            synchronize                 (void);
+    protected:
+        virtual void                            update                      (ptr_type device);
     private:
                                                 ASDDeviceRotator            (ASDDeviceRotator const&);
                 ASDDeviceRotator&               operator=                   (ASDDeviceRotator const&);
 };
-
-/*public */inline ASDDeviceRotator::ASDDeviceRotator(void)
-{
-}
-
-/*public */inline ASDDeviceRotator::~ASDDeviceRotator(void)
-{
-    close();
-}
-
-/*public */inline ASDDeviceRotator::Operator ASDDeviceRotator::operator->(void) const
-{
-    return Operator(this);
-}
-
-/*private */inline ASDDeviceRotator::Operator::Operator(ASDDeviceRotator const* param) : _self(param)
-{
-    if (_self != NULL) {
-        _self->_mutex_device.lock();
-    }
-}
-
-/*private */inline ASDDeviceRotator::Operator::Operator(Operator const& param) : _self(param._self)
-{
-    param._self = NULL;
-}
-
-/*public */inline ASDDeviceRotator::Operator::~Operator(void)
-{
-    if (_self != NULL) {
-        _self->_mutex_device.unlock();
-    }
-}
-
-/*public */inline tgs::TGSRotatorInterface* ASDDeviceRotator::Operator::operator->(void) const
-{
-    return _self->_device.get();
-}
 
 #endif

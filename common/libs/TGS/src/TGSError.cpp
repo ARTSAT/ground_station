@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSError.cpp
 **
@@ -76,6 +76,9 @@ namespace tgs {
             break;
         case TGSERROR_INVALID_FORMAT:
             snprintf(result, sizeof(result), "%d (TGSERROR_INVALID_FORMAT)", _error);
+            break;
+        case TGSERROR_INVALID_SESSION:
+            snprintf(result, sizeof(result), "%d (TGSERROR_INVALID_SESSION)", _error);
             break;
         case TGSERROR_WAIT_RESULT:
             snprintf(result, sizeof(result), "%d (TGSERROR_WAIT_RESULT)", _error);

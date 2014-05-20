@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSDatabaseInterface.h
 **
@@ -63,7 +63,7 @@ class TGSDatabaseInterface {
     public:
         virtual                             ~TGSDatabaseInterface           (void) = 0;
         virtual bool                        isValid                         (void) const;
-        virtual TGSError                    open                            (std::string const& file);
+        virtual TGSError                    open                            (std::string const& file, int timeout = 0);
         virtual void                        close                           (void);
                 TGSError                    begin                           (void);
                 void                        end                             (void);
@@ -71,13 +71,13 @@ class TGSDatabaseInterface {
     protected:
         explicit                            TGSDatabaseInterface            (void);
                 TGSError                    create                          (std::string const& table, char const* (*format)[2], unsigned int length);
-                TGSError                    update                          (std::string const& table, char const* (*format)[2], unsigned int length, int primary, std::string const& condition, ...);
+                TGSError                    update                          (std::string const& table, char const* (*format)[2], unsigned int length, int primary, va_ref<std::string const> condition, ...);
                 TGSError                    update                          (std::string const& table, char const* (*format)[2], unsigned int length, int primary, std::string const& condition, va_list ap);
-                TGSError                    remove                          (std::string const& table, char const* (*format)[2], std::string const& condition, ...);
+                TGSError                    remove                          (std::string const& table, char const* (*format)[2], va_ref<std::string const> condition, ...);
                 TGSError                    remove                          (std::string const& table, char const* (*format)[2], std::string const& condition, va_list ap);
                 TGSError                    countRow                        (std::string const& table, char const* (*format)[2], std::string const& condition, int* result, ...);
                 TGSError                    countRow                        (std::string const& table, char const* (*format)[2], std::string const& condition, int* result, va_list ap);
-                TGSError                    select                          (std::string const& table, std::string const& query, char const* (*format)[2], std::string const& condition, ...);
+                TGSError                    select                          (std::string const& table, std::string const& query, char const* (*format)[2], va_ref<std::string const> condition, ...);
                 TGSError                    select                          (std::string const& table, std::string const& query, char const* (*format)[2], std::string const& condition, va_list ap);
                 TGSError                    execute                         (std::string const& sql);
                 TGSError                    prepare                         (std::string const& sql);

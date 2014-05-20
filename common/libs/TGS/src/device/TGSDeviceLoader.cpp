@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSDeviceLoader.cpp
 **
@@ -93,12 +93,15 @@ namespace tgs {
 
 /*public */void TGSDeviceLoader::remove(TGSDeviceInterface* device)
 {
-    std::map<std::string, TGSDeviceInterface*>::iterator it;
+    std::map<std::string, TGSDeviceInterface*>::const_iterator it;
     
     if (device != NULL) {
-        for (it = _record.begin(); it != _record.end(); ++it) {
+        for (it = _record.begin(); it != _record.end(); ) {
             if (it->second == device) {
-                _record.erase(std::map<std::string, TGSDeviceInterface*>::iterator(it));
+                _record.erase(it++);
+            }
+            else {
+                ++it;
             }
         }
     }

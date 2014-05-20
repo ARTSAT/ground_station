@@ -12,7 +12,7 @@
 **      E-mail      zap00365@nifty.com
 **
 **      This source code is for Xcode.
-**      Xcode 4.2 (LLVM compiler 3.0)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      IRXTimeType.h
 **

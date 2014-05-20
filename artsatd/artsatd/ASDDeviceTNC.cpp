@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDDeviceTNC.cpp
 **
@@ -45,66 +45,3 @@
 */
 
 #include "ASDDeviceTNC.h"
-#include "artsatd.h"
-
-#define UPDATE_INTERVAL                         (33)
-
-/*public */tgs::TGSError ASDDeviceTNC::open(boost::shared_ptr<tgs::TGSTNCInterface> const& device)
-{
-    tgs::TGSError error(tgs::TGSERROR_OK);
-    
-    close();
-    if (device != NULL) {
-        _device = device;
-        update();
-        try {
-            _thread = boost::thread(boost::bind(&ASDDeviceTNC::thread, this));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
-            error = tgs::TGSERROR_FAILED;
-        }
-        if (error != tgs::TGSERROR_OK) {
-            close();
-        }
-    }
-    else {
-        error = tgs::TGSERROR_INVALID_PARAM;
-    }
-    return error;
-}
-
-/*public */void ASDDeviceTNC::close(void)
-{
-    _thread.interrupt();
-    try {
-        _thread.join();
-    }
-    catch (...) {
-    }
-    _device.reset();
-    return;
-}
-
-/*private */void ASDDeviceTNC::thread(void)
-{
-    while (!boost::this_thread::interruption_requested()) {
-        try {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(UPDATE_INTERVAL));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread sleep error [%s]", e.what());
-            break;
-        }
-        update();
-    }
-    return;
-}
-
-/*private */void ASDDeviceTNC::update(void)
-{
-    _mutex_device.lock();
-    _device->update();
-    _mutex_device.unlock();
-    return;
-}

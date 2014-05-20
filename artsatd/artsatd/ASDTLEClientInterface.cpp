@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDTLEClientInterface.cpp
 **
@@ -119,7 +119,7 @@
 /*private */void ASDTLEClientInterface::update(void)
 {
     std::vector<std::string>::const_iterator it;
-    boost::network::http::client client;
+    boost::network::http::client client(boost::network::http::client::options().follow_redirects(true).cache_resolved(true));
     boost::network::http::client::request request;
     boost::network::http::client::response response;
     int code;
@@ -138,16 +138,16 @@
                             _database.end();
                         }
                         if (error != tgs::TGSERROR_OK) {
-                            artsatd::getInstance().log(LOG_ERR, "TLE client parse error [%s] %s", error.print().c_str(), it->c_str());
+                            artsatd::getInstance().log(LOG_ERR, "tle client parse error [%s] %s", error.print().c_str(), it->c_str());
                         }
                         break;
                     default:
-                        artsatd::getInstance().log(LOG_ERR, "TLE client status error [%d] %s", code, it->c_str());
+                        artsatd::getInstance().log(LOG_ERR, "tle client status error [%d] %s", code, it->c_str());
                         break;
                 }
             }
             catch (std::exception& e) {
-                artsatd::getInstance().log(LOG_ERR, "TLE client connection error [%s] %s", e.what(), it->c_str());
+                artsatd::getInstance().log(LOG_ERR, "tle client connection error [%s] %s", e.what(), it->c_str());
             }
         }
     }

@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      TGSTNCTNC555.cpp
 **
@@ -143,7 +143,10 @@ namespace tgs {
     
     if ((error = super::selectModeCommand()) == TGSERROR_NO_SUPPORT) {
         poll();
-        error = write("\x03");
+        if ((error = write("\x03")) == TGSERROR_OK) {
+            usleep(100000);
+            flushRead();
+        }
     }
     return error;
 }
@@ -154,7 +157,9 @@ namespace tgs {
     
     if ((error = super::selectModeConverse()) == TGSERROR_NO_SUPPORT) {
         flushRead();
-        error = write("CONVERSE");
+        if ((error = write("CONVERSE")) == TGSERROR_OK) {
+            usleep(100000);
+        }
     }
     return error;
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <server>
+        <database>
+            <port>16781</port>
+            <listen>1</listen>
+        </database>
+        <operation>
+            <port>16780</port>
+            <listen>4</listen>
+        </operation>
+    </server>
+    <session>
+        <maximum>16</maximum>
+        <timeout>300</timeout>
+    </session>
+    <observer>
+        <callsign>JQ1ZKL</callsign>
+        <latitude>35.610603</latitude>
+        <longitude>139.351124</longitude>
+        <altitude>0.160</altitude>
+    </observer>
+    <cw>
+        <test>
+            <azimuth>0</azimuth>
+            <elevation>90</elevation>
+        </test>
+    </cw>
+    <fm>
+        <test>
+            <azimuth>0</azimuth>
+            <elevation>90</elevation>
+        </test>
+    </fm>
+    <algorithm>
+        <lookahead>1</lookahead>
+    </algorithm>
+    <interval>
+        <session>1</session>
+        <rotator>3</rotator>
+        <transceiver>0</transceiver>
+        <tnc>5</tnc>
+        <log>5</log>
+    </interval>
+</config>

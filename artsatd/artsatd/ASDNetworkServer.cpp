@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDNetworkServer.cpp
 **
@@ -64,8 +64,8 @@ struct key_value_sequence_mod
     {
         query =  pair >> *((spirit::qi::lit(';') | '&') >> pair);
         pair  =  key >> -('=' >> value);
-        key   =  spirit::qi::char_("a-zA-Z_0-9%+") >> *spirit::qi::char_("a-zA-Z_0-9/%+");
-        value = *spirit::qi::char_("a-zA-Z_0-9/%+");
+        key   =  spirit::qi::char_("a-zA-Z_") >> *spirit::qi::char_("a-zA-Z_0-9/%");
+        value = *spirit::qi::char_("a-zA-Z_0-9/%+*-.");
     }
     
     spirit::qi::rule<uri::const_iterator, Map()> query;
@@ -97,6 +97,12 @@ class ASDNetworkServer::Responder {
                 void                    operator()      (Server::request const& request, Server::response& response);
                 void                    log             (Server::string_type const& info);
     private:
+        static  void                    getURI          (Server::request::string_type const& destination, boost::network::uri::uri* result);
+        static  void                    getPath         (boost::network::uri::uri const& uri, std::string* result);
+        static  void                    getQuery        (boost::network::uri::uri const& uri, insensitive::map<std::string, std::string>* result);
+        static  void                    getCookie       (Server::request::vector_type const& header, insensitive::map<std::string, std::string>* result);
+        static  void                    mergeHeader     (insensitive::map<std::string, std::string> const& header, Server::response::headers_vector* result);
+    private:
                                         Responder       (Responder const&);
                 Responder&              operator=       (Responder const&);
 };
@@ -121,7 +127,7 @@ class ASDNetworkServer::Responder {
         _responder.reset(new(std::nothrow) Responder(this));
         if (_responder != NULL) {
             try {
-                _server.reset(new(std::nothrow) Server("0.0.0.0", port, *_responder, boost::network::http::_reuse_address = true));
+                _server.reset(new(std::nothrow) Server(Server::options(*_responder).address("0.0.0.0").port(port).reuse_address(true)));
                 if (_server != NULL) {
                     _thread.reset(new(std::nothrow) boost::thread_group);
                     if (_thread != NULL) {
@@ -185,18 +191,61 @@ class ASDNetworkServer::Responder {
     return;
 }
 
-/*protected virtual */tgs::TGSError ASDNetworkServer::Notifier::onRequest(std::string const& path, std::map<std::string, std::string>& query, int* status, std::string* response)
+/*public static */void ASDNetworkServer::Notifier::replyStatus(Server::response::status_type code, ResponseRec* response)
 {
-    *status = 501;
-    *response = "501 Not Implemented / ASDNetworkServer::Notifier::onRequest() is an abstract function.";
+    Server::response stock;
+    Server::response::headers_vector::const_iterator it;
+    
+    if (response != NULL) {
+        stock = Server::response::stock_reply(code);
+        response->status = stock.status;
+        for (it = stock.headers.begin(); it != stock.headers.end(); ++it) {
+            if (!boost::iequals(it->name, "Content-Length")) {
+                response->header[it->name] = it->value;
+            }
+        }
+        response->content = stock.content;
+    }
+    return;
+}
+
+/*protected virtual */tgs::TGSError ASDNetworkServer::Notifier::onRequest(RequestRec const& request, ResponseRec* response)
+{
+    replyStatus(Server::response::not_implemented, response);
     return tgs::TGSERROR_OK;
 }
 
-/*protected virtual */tgs::TGSError ASDNetworkServer::Notifier::onJsonRpcRequest(std::string const& body, int* status, std::string* response)
+/*private static */void ASDNetworkServer::Notifier::setCookie(std::string const& name, std::string const& value, unsigned int const* age, ir::IRXTime const* expire, std::string const& domain, std::string const& path, bool secure, ResponseRec* response)
 {
-    *status = 501;
-    *response = "501 Not Implemented / ASDNetworkServer::Notifier::onJsonRpcRequest() is an abstract function.";
-    return tgs::TGSERROR_OK;
+    std::string string;
+    
+    if (!name.empty() && response != NULL) {
+        string  = boost::replace_all_copy(boost::network::uri::encoded(name), "%20", "+");
+        string += "=";
+        string += boost::replace_all_copy(boost::network::uri::encoded(value), "%20", "+");
+        if (age != NULL) {
+            string += "; max-age=";
+            string += boost::lexical_cast<std::string>(*age);
+        }
+        if (expire != NULL) {
+            string += "; expires=";
+            string += expire->format("%Wek, %DD-%Mth-%YYYY %hh:%mm:%ss GMT");
+        }
+        if (!domain.empty()) {
+            string += "; domain=";
+            string += domain;
+        }
+        if (!path.empty()) {
+            string += "; path=";
+            string += path;
+        }
+        if (secure) {
+            string += "; secure";
+        }
+        string += ";";
+        response->header["Set-Cookie:" + name] = string;
+    }
+    return;
 }
 
 /*public */ASDNetworkServer::Responder::Responder(ASDNetworkServer const* param) : _server(param)
@@ -210,40 +259,30 @@ class ASDNetworkServer::Responder {
 /*public */void ASDNetworkServer::Responder::operator()(Server::request const& request, Server::response& response)
 {
     boost::network::uri::uri uri;
-    std::map<std::string, std::string> map;
-    std::map<std::string, std::string> query;
-    std::map<std::string, std::string>::const_iterator it;
-    std::string path;
-    int status;
-    std::string content;
+    Notifier::RequestRec input;
+    Notifier::ResponseRec output;
     tgs::TGSError error;
     
-    artsatd::getInstance().log(LOG_NOTICE, "server request [%s %s from %s]", request.method.c_str(), request.destination.c_str(), request.source.c_str());
     if (_server->getNotifier() != NULL) {
-        if (request.method == "GET" || request.method == "POST") {
-            uri = "http://localhost" + request.destination;
+        if (boost::iequals(method(request), "GET") || boost::iequals(method(request), "POST")) {
+            getURI(destination(request), &uri);
             if (uri.is_valid()) {
-                boost::network::uri::query_map_mod(uri, map);
-                for (it = map.begin(); it != map.end(); ++it) {
-                    query.insert(std::map<std::string, std::string>::value_type(
-                        boost::network::uri::decoded(boost::algorithm::replace_all_copy(it->first, "+", " ")),
-                        boost::network::uri::decoded(boost::algorithm::replace_all_copy(it->second, "+", " "))
-                    ));
-                }
-                path = boost::network::uri::decoded_path(uri);
+                input.host = source(request);
+                getPath(uri, &input.path);
+                getQuery(uri, &input.query);
+                getCookie(headers(request), &input.cookie);
+                input.content = body(request);
+                output.status = Server::response::ok;
+                output.header["Content-Type"] = "text/plain";
                 try {
-                    if (request.method == "POST" && request.destination == "/rpc.json") {
-                        error = _server->getNotifier()->onJsonRpcRequest(request.body, &status, &content);
-                    }
-                    else {
-                        error = _server->getNotifier()->onRequest(path, query, &status, &content);
-                    }
+                    error = _server->getNotifier()->onRequest(input, &output);
                 }
                 catch (...) {
                     error = tgs::TGSERROR_FAILED;
                 }
                 if (error == tgs::TGSERROR_OK) {
-                    response = Server::response::stock_reply(static_cast<Server::response::status_type>(status), content);
+                    response = Server::response::stock_reply(static_cast<Server::response::status_type>(output.status), output.content);
+                    mergeHeader(output.header, &response.headers);
                 }
                 else {
                     response = Server::response::stock_reply(Server::response::internal_server_error);
@@ -265,6 +304,77 @@ class ASDNetworkServer::Responder {
 
 /*public */void ASDNetworkServer::Responder::log(Server::string_type const& info)
 {
-    artsatd::getInstance().log(LOG_ERR, "server error [%s]", info.c_str());
+    artsatd::getInstance().log(LOG_ERR, "server internal error [%s]", info.c_str());
+    return;
+}
+
+/*private static */void ASDNetworkServer::Responder::getURI(Server::request::string_type const& destination, boost::network::uri::uri* result)
+{
+    *result = boost::network::uri::uri();
+    *result << boost::network::uri::scheme("http") << boost::network::uri::host("localhost") << boost::network::uri::path(destination);
+    return;
+}
+
+/*private static */void ASDNetworkServer::Responder::getPath(boost::network::uri::uri const& uri, std::string* result)
+{
+    *result = boost::network::uri::decoded_path(uri);
+    return;
+}
+
+/*private static */void ASDNetworkServer::Responder::getQuery(boost::network::uri::uri const& uri, insensitive::map<std::string, std::string>* result)
+{
+    insensitive::map<std::string, std::string> query;
+    insensitive::map<std::string, std::string>::const_iterator it;
+    
+    boost::network::uri::query_map_mod(uri, query);
+    result->clear();
+    for (it = query.begin(); it != query.end(); ++it) {
+        (*result)[boost::network::uri::decoded(boost::replace_all_copy(it->first, "+", "%20"))] = boost::network::uri::decoded(boost::replace_all_copy(it->second, "+", "%20"));
+    }
+    return;
+}
+
+/*private static */void ASDNetworkServer::Responder::getCookie(Server::request::vector_type const& header, insensitive::map<std::string, std::string>* result)
+{
+    Server::request::vector_type::const_iterator hit;
+    std::vector<std::string> cookie;
+    std::vector<std::string>::iterator cit;
+    int index;
+    
+    result->clear();
+    for (hit = header.begin(); hit != header.end(); ++hit) {
+        if (boost::iequals(hit->name, "Cookie")) {
+            boost::split(cookie, hit->value, boost::is_any_of(";"));
+            for (cit = cookie.begin(); cit != cookie.end(); ++cit) {
+                boost::trim(*cit);
+                if ((index = cit->find("=")) != std::string::npos) {
+                    (*result)[boost::network::uri::decoded(boost::replace_all_copy(cit->substr(0, index), "+", "%20"))] = boost::network::uri::decoded(boost::replace_all_copy(cit->substr(index + 1), "+", "%20"));
+                }
+            }
+        }
+    }
+    return;
+}
+
+/*private static */void ASDNetworkServer::Responder::mergeHeader(insensitive::map<std::string, std::string> const& header, Server::response::headers_vector* result)
+{
+    Server::response::headers_vector::iterator hit;
+    insensitive::map<std::string, std::string> copy;
+    insensitive::map<std::string, std::string>::const_iterator cit;
+    
+    copy = header;
+    for (hit = result->begin(); hit != result->end(); ++hit) {
+        if (!boost::iequals(hit->name, "Set-Cookie")) {
+            if ((cit = copy.find(hit->name)) != copy.end()) {
+                hit->value = cit->second;
+                copy.erase(cit);
+            }
+        }
+    }
+    for (cit = copy.begin(); cit != copy.end(); ++cit) {
+        result->push_back(Server::response_header());
+        result->back().name = cit->first.substr(0, cit->first.find(":"));
+        result->back().value = cit->second;
+    }
     return;
 }

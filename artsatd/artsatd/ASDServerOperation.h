@@ -12,7 +12,7 @@
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 4.6.2 (Apple LLVM compiler 4.2, LLVM GCC 4.2)
+**      Xcode 5.1.1 (Apple LLVM 5.1)
 **
 **      ASDServerOperation.h
 **
@@ -52,33 +52,56 @@
 
 class ASDServerOperation : public ASDNetworkServer::Notifier {
     private:
-                std::string                     _database;
+        struct CacheRec {
+            std::string                         mime;
+            std::string                         cache;
+            std::string                         content;
+            void          (ASDServerOperation::*function)                   (RequestRec const& request, ResponseRec* response);
+        };
+    
+    private:
+                insensitive::map<std::string, CacheRec>
+                                                _cache;
                 std::map<std::string, ASDServerRPC::Method>
-                                                _methods;
+                                                _method;
+                std::string                     _database;
     
     public:
         explicit                                ASDServerOperation          (void);
         virtual                                 ~ASDServerOperation         (void);
-                void                            setDatabase                 (std::string const& param);
-                std::string const&              getDatabase                 (void) const;
+                tgs::TGSError                   open                        (std::string const& skeleton, std::string const& database);
+                void                            close                       (void);
+                void                            replyRoot                   (RequestRec const& request, ResponseRec* response);
+                void                            replyHardware               (RequestRec const& request, ResponseRec* response);
+                void                            replyOrbital                (RequestRec const& request, ResponseRec* response);
+                void                            replyJSONRPC                (RequestRec const& request, ResponseRec* response);
     private:
-        virtual tgs::TGSError                   onRequest                   (std::string const& path, std::map<std::string, std::string>& query, int* status, std::string* response);
-        virtual tgs::TGSError                   onJsonRpcRequest            (std::string const& body, int* status, std::string* response);
-                void                            registerRpcMethod           (std::string const& name, ASDServerRPC::Method const& func);
+        virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
+        static  tgs::TGSError                   serializeCache              (std::string const& file, std::string* result);
+        static  void                            bindError                   (std::string const& name, tgs::TGSError error, std::string* category, std::string* message);
+        static  std::string                     colorizeSpan                (std::string const& color, std::string const& string);
+        static  std::string                     stringizeLatitude           (double param);
+        static  std::string                     stringizeLongitude          (double param);
+        static  std::string                     stringizeAltitude           (double param);
+        static  std::string                     stringizeAzimuth            (int param);
+        static  std::string                     stringizeAzimuth            (double param);
+        static  std::string                     stringizeElevation          (int param);
+        static  std::string                     stringizeElevation          (double param);
+        static  std::string                     stringizeNORAD              (int param);
+        static  std::string                     stringizeCallsign           (std::string const& param);
+        static  std::string                     stringizeMode               (std::string const& param);
+        static  std::string                     stringizeFrequency          (int param);
+        static  std::string                     stringizeFrequency          (double param);
+        static  std::string                     stringizeDrift              (int param);
+        static  std::string                     stringizeDopplerShift       (double param);
+        static  std::string                     stringizeTLE                (tgs::TLERec const& param);
+        static  std::string                     stringizeTime               (ir::IRXTime const& param);
+        static  std::string                     stringizeTimeDiff           (ir::IRXTimeDiff const& param);
+        static  std::string                     stringizeSession            (std::string const& param);
+        static  std::string                     stringizeOnline             (int param);
     private:
                                                 ASDServerOperation          (ASDServerOperation const&);
                 ASDServerOperation&             operator=                   (ASDServerOperation const&);
 };
-
-/*public */inline void ASDServerOperation::setDatabase(std::string const& param)
-{
-    _database = param;
-    return;
-}
-
-/*public */inline std::string const& ASDServerOperation::getDatabase(void) const
-{
-    return _database;
-}
 
 #endif
