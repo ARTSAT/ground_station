@@ -22,3 +22,6 @@ Then open artsatd/artsatd.xcodeproj and do compile it.<br />
 Access http://localhost:16780 with Safari.<br />
 <br />
 Have fun!<br />
+<br />
+Screen shots:<br />
+http://github.com/ARTSAT/ground_station/blob/master/artsatd/%7Escreenshot/invader_cw.png
