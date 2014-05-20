@@ -24,4 +24,7 @@ Access http://localhost:16780 with Safari.<br />
 Have fun!<br />
 <br />
 Screen shots:<br />
-http://github.com/ARTSAT/ground_station/blob/master/artsatd/%7Escreenshot/invader_cw.png
+http://github.com/ARTSAT/ground_station/blob/master/artsatd/%7Escreenshot/invader_cw.png<br />
+http://github.com/ARTSAT/ground_station/blob/master/artsatd/%7Escreenshot/invader_fm.png<br />
+http://github.com/ARTSAT/ground_station/blob/master/artsatd/%7Escreenshot/prism_fm.png<br />
+http://github.com/ARTSAT/ground_station/blob/master/artsatd/%7Escreenshot/webcam.png<br />
