@@ -377,13 +377,13 @@ static  MethodTableRec const                    g_method[] = {
                 }
                 boost::replace_first(response->content, "<!CS />", stringizeCallsign(field.callsign));
                 boost::replace_first(response->content, "<!BM />", stringizeMode(field.beacon.mode));
-                boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW_TEST") ? ("green") : (""), stringizeFrequency(field.beacon.frequency)));
+                boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW_TEST") ? ("green") : (""), stringizeFrequency(field.beacon.frequency, false)));
                 boost::replace_first(response->content, "<!BD />", stringizeDrift(field.beacon.drift));
                 boost::replace_first(response->content, "<!SM />", stringizeMode(field.sender.mode));
-                boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.sender.frequency)));
+                boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.sender.frequency, request.host != "127.0.0.1" && owner <= 0)));
                 boost::replace_first(response->content, "<!SD />", stringizeDrift(field.sender.drift));
                 boost::replace_first(response->content, "<!RM />", stringizeMode(field.receiver.mode));
-                boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency)));
+                boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency, false)));
                 boost::replace_first(response->content, "<!RD />", stringizeDrift(field.receiver.drift));
                 boost::replace_first(response->content, "<!TU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
                 boost::replace_first(response->content, "<!TL />", stringizeTLE(field.tle));
@@ -457,6 +457,7 @@ static  MethodTableRec const                    g_method[] = {
     if ((it = request.cookie.find(COOKIE_SESSION_ID)) != request.cookie.end()) {
         session = it->second;
     }
+    daemon.getSession(session, &owner, &exclusive, &session, &online);
     daemon.getObserverCallsign(&string);
     boost::replace_first(response->content, "<!CS />", stringizeCallsign(string));
     daemon.getObserverPosition(&x, &y, &z);
@@ -467,9 +468,8 @@ static  MethodTableRec const                    g_method[] = {
     boost::replace_first(response->content, "<!AZ />", colorizeSpan("cyan", stringizeAzimuth(rotator.azimuth)));
     boost::replace_first(response->content, "<!EL />", colorizeSpan("magenta", stringizeElevation(rotator.elevation)));
     transceiver = artsatd::getTransceiver().getData();
-    boost::replace_first(response->content, "<!SF />", stringizeFrequency(transceiver.frequencySender));
-    boost::replace_first(response->content, "<!RF />", stringizeFrequency(transceiver.frequencyReceiver));
-    daemon.getSession(session, &owner, &exclusive, &session, &online);
+    boost::replace_first(response->content, "<!SF />", stringizeFrequency(transceiver.frequencySender, request.host != "127.0.0.1" && owner <= 0));
+    boost::replace_first(response->content, "<!RF />", stringizeFrequency(transceiver.frequencyReceiver, false));
     session = stringizeSession(session);
     if (owner > 0) {
         session = colorizeSpan("green", session);
@@ -485,6 +485,9 @@ static  MethodTableRec const                    g_method[] = {
 /*public */void ASDServerOperation::replyOrbital(RequestRec const& request, ResponseRec* response)
 {
     artsatd& daemon(artsatd::getInstance());
+    insensitive::map<std::string, std::string>::const_iterator it;
+    std::string session;
+    int owner;
     std::string string;
     ir::IRXTime time;
     ir::IRXTime aos;
@@ -493,6 +496,10 @@ static  MethodTableRec const                    g_method[] = {
     double y;
     double z;
     
+    if ((it = request.cookie.find(COOKIE_SESSION_ID)) != request.cookie.end()) {
+        session = it->second;
+    }
+    daemon.getSession(session, &owner, NULL, NULL, NULL);
     daemon.getSatellitePosition(&x, &y, &z);
     boost::replace_first(response->content, "<!LT />", stringizeLatitude(x));
     boost::replace_first(response->content, "<!LN />", stringizeLongitude(y));
@@ -502,9 +509,9 @@ static  MethodTableRec const                    g_method[] = {
     boost::replace_first(response->content, "<!EL />", colorizeSpan("magenta", stringizeElevation(y)));
     string = daemon.getMode();
     daemon.getSatelliteFrequency(&x, &y, &z);
-    boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW") ? ("green") : (""), stringizeFrequency(x)));
-    boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(y)));
-    boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(z)));
+    boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW") ? ("green") : (""), stringizeFrequency(x, false)));
+    boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(y, request.host != "127.0.0.1" && owner <= 0)));
+    boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(z, false)));
     daemon.getSatelliteDopplerShift(&x, &y);
     boost::replace_first(response->content, "<!SD />", stringizeDopplerShift(x));
     boost::replace_first(response->content, "<!RD />", stringizeDopplerShift(y));
@@ -795,22 +802,30 @@ static  MethodTableRec const                    g_method[] = {
     return (!param.empty()) ? (param) : ("-");
 }
 
-/*private static */std::string ASDServerOperation::stringizeFrequency(int param)
+/*private static */std::string ASDServerOperation::stringizeFrequency(int param, bool secret)
 {
+    static boost::xpressive::sregex const s_secret(boost::xpressive::sregex::compile("[-0-9]"));
     std::string result("         -");
     
     if (param >= 0) {
         result = (boost::format("%10.6lf") % (param / 1000000.0)).str();
+        if (secret) {
+            result = boost::xpressive::regex_replace(result, s_secret, "*");
+        }
     }
     return result + " MHz";
 }
 
-/*private static */std::string ASDServerOperation::stringizeFrequency(double param)
+/*private static */std::string ASDServerOperation::stringizeFrequency(double param, bool secret)
 {
+    static boost::xpressive::sregex const s_secret(boost::xpressive::sregex::compile("[-0-9]"));
     std::string result("         -");
     
     if (!std::isnan(param)) {
         result = (boost::format("%10.6lf") % (param / 1000000.0)).str();
+        if (secret) {
+            result = boost::xpressive::regex_replace(result, s_secret, "*");
+        }
     }
     return result + " MHz";
 }

@@ -90,8 +90,8 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
         static  std::string                     stringizeNORAD              (int param);
         static  std::string                     stringizeCallsign           (std::string const& param);
         static  std::string                     stringizeMode               (std::string const& param);
-        static  std::string                     stringizeFrequency          (int param);
-        static  std::string                     stringizeFrequency          (double param);
+        static  std::string                     stringizeFrequency          (int param, bool secret);
+        static  std::string                     stringizeFrequency          (double param, bool secret);
         static  std::string                     stringizeDrift              (int param);
         static  std::string                     stringizeDopplerShift       (double param);
         static  std::string                     stringizeTLE                (tgs::TLERec const& param);
