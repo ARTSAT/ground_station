@@ -19,4 +19,6 @@ http://github.com/toolbits/boost_1_55_0_xcode510_universal<br />
 http://github.com/toolbits/cpp-netlib-0.11.0-final_xcode510_universal<br />
 <br />
 Then open artsatd/artsatd.xcodeproj and do compile it.<br />
+Access http://localhost:16780 with Safari.<br />
+<br />
 Have fun!<br />
