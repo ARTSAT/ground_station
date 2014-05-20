@@ -90,6 +90,7 @@ class TGSOrbitTLE : public TGSOrbitInterface {
         virtual TGSError                    getObserverPosition             (double* latitude, double* longitude, double* altitude) const;
         virtual TGSError                    getSatellitePosition            (double* latitude, double* longitude, double* altitude) const;
         virtual TGSError                    getSatelliteDirection           (double* azimuth, double* elevation) const;
+        virtual TGSError                    getSatelliteDistance            (double* distance) const;
         virtual TGSError                    getDopplerRatio                 (double* sender, double* receiver) const;
     private:
                 TGSError                    cacheSatellite                  (void) const;

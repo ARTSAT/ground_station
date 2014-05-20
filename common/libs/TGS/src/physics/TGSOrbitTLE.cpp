@@ -49,6 +49,7 @@
 using namespace std;
 #include "cOrbit.h"
 #include "cSite.h"
+#include "exceptions.h"
 
 namespace tgs {
 
@@ -282,6 +283,24 @@ namespace tgs {
     return error;
 }
 
+/*public virtual */TGSError TGSOrbitTLE::getSatelliteDistance(double* distance) const
+{
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::getSatelliteDistance(distance)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheSatellite()) == TGSERROR_OK) {
+            if ((error = cacheObserver()) == TGSERROR_OK) {
+                Zeptomoby::OrbitTools::cVector position(_oeci->Position());
+                position.Sub(_seci->Position());
+                if (distance != NULL) {
+                    *distance = position.Magnitude();
+                }
+            }
+        }
+    }
+    return error;
+}
+
 /*public virtual */TGSError TGSOrbitTLE::getDopplerRatio(double* sender, double* receiver) const
 {
     double factor;
@@ -313,12 +332,17 @@ namespace tgs {
     
     if (_orbit != NULL && _julian != NULL) {
         if (!_sflag) {
-            Zeptomoby::OrbitTools::cEciTime eci(_orbit->GetPosition(_orbit->TPlusEpoch(*_julian) / 60.0));
-            if (_seci != NULL) {
-                *_seci = eci;
+            try {
+                Zeptomoby::OrbitTools::cEciTime eci(_orbit->GetPosition(_orbit->TPlusEpoch(*_julian) / 60.0));
+                if (_seci != NULL) {
+                    *_seci = eci;
+                }
+                else if ((_seci = new(std::nothrow) Zeptomoby::OrbitTools::cEciTime(eci)) == NULL) {
+                    error = TGSERROR_NO_MEMORY;
+                }
             }
-            else if ((_seci = new(std::nothrow) Zeptomoby::OrbitTools::cEciTime(eci)) == NULL) {
-                error = TGSERROR_NO_MEMORY;
+            catch (Zeptomoby::OrbitTools::cDecayException& e) {
+                error = TGSERROR_NO_RESULT;
             }
             if (error == TGSERROR_OK) {
                 _sflag = true;

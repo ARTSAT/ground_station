@@ -86,6 +86,11 @@ namespace tgs {
     return TGSERROR_NO_SUPPORT;
 }
 
+/*public virtual */TGSError TGSOrbitInterface::getSatelliteDistance(double* distance) const
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
 /*public virtual */TGSError TGSOrbitInterface::getDopplerRatio(double* sender, double* receiver) const
 {
     return TGSERROR_NO_SUPPORT;
