@@ -65,6 +65,7 @@
 #define DEFAULT_SERVER_OPERATION_LISTEN         (4)
 #define DEFAULT_SESSION_MAXIMUM                 (16)
 #define DEFAULT_SESSION_TIMEOUT                 (300)
+#define DEFAULT_SESSION_LOCALONLY               (true)
 #define DEFAULT_OBSERVER_CALLSIGN               ("JQ1ZKL")
 #define DEFAULT_OBSERVER_LATITUDE               (35.610603)
 #define DEFAULT_OBSERVER_LONGITUDE              (139.351124)
@@ -518,10 +519,17 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         }
         else if (_session.owner.empty() || !_session.exclusive) {
             if (owner) {
-                boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
-                _session.owner = session;
-                _session.exclusive = false;
-                _session.host = host;
+                if (_config.sessionLocalonly) {
+                    if (host != "127.0.0.1") {
+                        error = tgs::TGSERROR_INVALID_SESSION;
+                    }
+                }
+                if (error == tgs::TGSERROR_OK) {
+                    boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+                    _session.owner = session;
+                    _session.exclusive = false;
+                    _session.host = host;
+                }
             }
         }
         else {
@@ -920,6 +928,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     _config.serverOperationListen = DEFAULT_SERVER_OPERATION_LISTEN;
     _config.sessionMaximum = DEFAULT_SESSION_MAXIMUM;
     _config.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+    _config.sessionLocalonly = DEFAULT_SESSION_LOCALONLY;
     _config.observerCallsign = DEFAULT_OBSERVER_CALLSIGN;
     _config.observerLatitude = DEFAULT_OBSERVER_LATITUDE;
     _config.observerLongitude = DEFAULT_OBSERVER_LONGITUDE;
@@ -950,6 +959,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 if ((type = root->FirstChildElement("session")) != NULL) {
                     xmlReadInteger(type, "maximum", &_config.sessionMaximum);
                     xmlReadInteger(type, "timeout", &_config.sessionTimeout);
+                    xmlReadBool(type, "localonly", &_config.sessionLocalonly);
                 }
                 if ((type = root->FirstChildElement("observer")) != NULL) {
                     xmlReadText(type, "callsign", &_config.observerCallsign);
@@ -994,6 +1004,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     log(LOG_NOTICE, "CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
     log(LOG_NOTICE, "CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
     log(LOG_NOTICE, "CONFIG: Session Timeout         [%d]", _config.sessionTimeout);
+    log(LOG_NOTICE, "CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
     log(LOG_NOTICE, "CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
     log(LOG_NOTICE, "CONFIG: Observer Latitude       [%lf]", _config.observerLatitude);
     log(LOG_NOTICE, "CONFIG: Observer Longitude      [%lf]", _config.observerLongitude);
@@ -1571,6 +1582,31 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if ((element = parent->FirstChildElement(tag.c_str())) != NULL) {
         if (!element->NoChildren()) {
             *result = element->GetText();
+        }
+        else {
+            error = tgs::TGSERROR_NO_RESULT;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_NO_RESULT;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError artsatd::xmlReadBool(tinyxml2::XMLElement const* parent, std::string const& tag, bool* result)
+{
+    tinyxml2::XMLElement const* element;
+    bool value;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((element = parent->FirstChildElement(tag.c_str())) != NULL) {
+        if (!element->NoChildren()) {
+            if (element->QueryBoolText(&value) == tinyxml2::XML_NO_ERROR) {
+                *result = value;
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_FORMAT;
+            }
         }
         else {
             error = tgs::TGSERROR_NO_RESULT;

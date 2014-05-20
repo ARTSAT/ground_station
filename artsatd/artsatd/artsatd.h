@@ -94,6 +94,7 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
             int                                 serverOperationListen;
             int                                 sessionMaximum;
             int                                 sessionTimeout;
+            bool                                sessionLocalonly;
             std::string                         observerCallsign;
             double                              observerLatitude;
             double                              observerLongitude;
@@ -280,6 +281,7 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
         static  void                            resetCommand                (CommandRec* command);
         static  int                             setWorkspace                (void);
         static  tgs::TGSError                   xmlReadText                 (tinyxml2::XMLElement const* parent, std::string const& tag, std::string* result);
+        static  tgs::TGSError                   xmlReadBool                 (tinyxml2::XMLElement const* parent, std::string const& tag, bool* result);
         static  tgs::TGSError                   xmlReadInteger              (tinyxml2::XMLElement const* parent, std::string const& tag, int* result);
         static  tgs::TGSError                   xmlReadDouble               (tinyxml2::XMLElement const* parent, std::string const& tag, double* result);
     private:

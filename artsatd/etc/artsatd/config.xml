@@ -13,6 +13,7 @@
     <session>
         <maximum>16</maximum>
         <timeout>300</timeout>
+        <localonly>true</localonly>
     </session>
     <observer>
         <callsign>JQ1ZKL</callsign>
