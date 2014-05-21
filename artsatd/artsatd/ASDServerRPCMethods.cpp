@@ -161,19 +161,19 @@ namespace ASDServerRPC {
         
         Result getStateRotator(const Params& args, Params *result)
         {
-            (*result)["valid"] = artsatd::getInstance().getRotator()->isValid();
+            (*result)["valid"] = artsatd::getInstance().getRotator().isValid();
             return RPC_OK;
         }
         
         Result getStateTransceiver(const Params& args, Params *result)
         {
-            (*result)["valid"] = artsatd::getInstance().getTransceiver()->isValid();
+            (*result)["valid"] = artsatd::getInstance().getTransceiver().isValid();
             return RPC_OK;
         }
         
         Result getStateTNC(const Params& args, Params *result)
         {
-            (*result)["valid"] = artsatd::getInstance().getTNC()->isValid();
+            (*result)["valid"] = artsatd::getInstance().getTNC().isValid();
             return RPC_OK;
         }
         
@@ -894,21 +894,6 @@ namespace ASDServerRPC {
                     (*result)["message"] = error.print();
                     return RPC_INTERNAL_ERR;
                 }
-            }
-            else {
-                return RPC_WRONG_ARGS;
-            }
-        }
-        
-        Result hasUpdate(const Params& args, Params *result)
-        {
-            double norad;
-            if (getParam("norad", &norad, args)) {
-                tgs::TGSPhysicsDatabase::RadioRec rec;
-                tgs::TGSPhysicsDatabase db;
-                db.open("physics.db");
-                (*result)["update"] = db.hasUpdate(norad);
-                return RPC_OK;
             }
             else {
                 return RPC_WRONG_ARGS;

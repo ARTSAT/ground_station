@@ -436,8 +436,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 
 /*public */void artsatd::getSatelliteMEL(double* mel) const
 {
-    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (mel != NULL) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
         *mel = _monitor.mel;
     }
     return;
@@ -445,8 +445,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 
 /*public */void artsatd::getRotatorStart(ir::IRXTime* start) const
 {
-    boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (start != NULL) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
         *start = _monitor.start;
     }
     return;
@@ -1261,7 +1261,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     
     if (mode != _state.modeTransceiver) {
         error = tgs::TGSERROR_OK;
-        if (_transceiver->isValid()) {
+        if (_transceiver.isValid()) {
             switch (mode) {
                 case MODETRANSCEIVER_BEACON:
                     error = _transceiver->selectModeBeacon();
@@ -1290,7 +1290,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     
     if (mode != _state.modeTNC || callsign != _state.callsign) {
         error = tgs::TGSERROR_OK;
-        if (_tnc->isValid()) {
+        if (_tnc.isValid()) {
             switch (mode) {
                 case MODETNC_COMMAND:
                     error = _tnc->selectModeCommand();
@@ -1334,7 +1334,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if (time >= _state.timeRotator + ir::IRXTimeDiff(_config.intervalRotator)) {
         if (!std::isnan(azimuth) && !std::isnan(elevation)) {
             if (std::round(azimuth) != std::round(_state.azimuth) || std::round(elevation) != std::round(_state.elevation)) {
-                if (_rotator->isValid()) {
+                if (_rotator.isValid()) {
                     if ((error = _rotator->rotateTo(std::round(azimuth), std::round(elevation))) != tgs::TGSERROR_OK) {
                         log(LOG_WARNING, "can't operate rotator angle [%s]", error.print().c_str());
                     }
@@ -1362,7 +1362,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if (time >= _state.timeTransceiver + ir::IRXTimeDiff(_config.intervalTransceiver)) {
         if (!std::isnan(sender)) {
             if (std::round(sender) != std::round(_state.sender)) {
-                if (_transceiver->isValid()) {
+                if (_transceiver.isValid()) {
                     if ((error = _transceiver->setFrequencySender(std::round(sender))) != tgs::TGSERROR_OK) {
                         log(LOG_WARNING, "can't operate transceiver sender frequency [%s]", error.print().c_str());
                     }
@@ -1375,7 +1375,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         if (error == tgs::TGSERROR_OK) {
             if (!std::isnan(receiver)) {
                 if (std::round(receiver) != std::round(_state.receiver)) {
-                    if (_transceiver->isValid()) {
+                    if (_transceiver.isValid()) {
                         if ((error = _transceiver->setFrequencyReceiver(std::round(receiver))) != tgs::TGSERROR_OK) {
                             log(LOG_WARNING, "can't operate transceiver receiver frequency [%s]", error.print().c_str());
                         }
@@ -1403,7 +1403,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if (time >= _state.timeTNC + ir::IRXTimeDiff(_config.intervalTNC)) {
         if (!command.empty()) {
             log(LOG_NOTICE, "TNC: packet send [%s]", command.c_str());
-            if (_tnc->isValid()) {
+            if (_tnc.isValid()) {
                 if ((error = _tnc->sendPacket(command + " ")) != tgs::TGSERROR_OK) {
                     log(LOG_WARNING, "can't operate tnc packet [%s]", error.print().c_str());
                 }
@@ -1424,13 +1424,13 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     std::string string;
     
     if (time >= _state.timeLog + ir::IRXTimeDiff(_config.intervalLog)) {
-        if (!_rotator->isValid()) {
+        if (!_rotator.isValid()) {
             log(LOG_NOTICE, "rotator is offline");
         }
-        if (!_transceiver->isValid()) {
+        if (!_transceiver.isValid()) {
             log(LOG_NOTICE, "transceiver is offline");
         }
-        if (!_tnc->isValid()) {
+        if (!_tnc.isValid()) {
             log(LOG_NOTICE, "tnc is offline");
         }
         switch (mode) {

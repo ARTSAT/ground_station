@@ -84,6 +84,7 @@ class ASDDeviceInterface {
     public:
         virtual                                 ~ASDDeviceInterface         (void) = 0;
                 Operator                        operator->                  (void) const;
+                bool                            isValid                     (void) const;
                 tgs::TGSError                   open                        (boost::shared_ptr<tgs::TGSDeviceInterface> const& device);
                 void                            close                       (void);
     protected:

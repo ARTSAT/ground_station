@@ -131,8 +131,7 @@ static  MethodTableRec const                    g_method[] = {
     {"db.getFieldByName",          &ASDServerRPC::db::getFieldByName},
     {"db.getFieldByCallsign",      &ASDServerRPC::db::getFieldByCallsign},
     {"db.getNoradByName",          &ASDServerRPC::db::getNoradByName},
-    {"db.getNoradByCallsign",      &ASDServerRPC::db::getNoradByCallsign},
-    {"db.hasUpdate",               &ASDServerRPC::db::hasUpdate}
+    {"db.getNoradByCallsign",      &ASDServerRPC::db::getNoradByCallsign}
 };
 
 /*public */ASDServerOperation::ASDServerOperation(void)
@@ -341,9 +340,9 @@ static  MethodTableRec const                    g_method[] = {
                 boost::replace_first(response->content, "<!HW />", SHRINK_SHOW);
                 response->content = boost::xpressive::regex_replace(response->content, s_HWF, "");
             }
-            boost::replace_first(response->content, "<!HR />", (artsatd::getRotator()->isValid()) ? (DEVICE_OK) : (DEVICE_NG));
-            boost::replace_first(response->content, "<!HT />", (artsatd::getTransceiver()->isValid()) ? (DEVICE_OK) : (DEVICE_NG));
-            boost::replace_first(response->content, "<!HM />", (artsatd::getTNC()->isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+            boost::replace_first(response->content, "<!HR />", (artsatd::getRotator().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+            boost::replace_first(response->content, "<!HT />", (artsatd::getTransceiver().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+            boost::replace_first(response->content, "<!HM />", (artsatd::getTNC().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
             boost::replace_first(response->content, "<!ND />", stringizeNORAD(norad));
             if (category == CATEGORY_DATABASE && !message.empty()) {
                 boost::replace_first(response->content, "<!ED />", message);
@@ -464,10 +463,10 @@ static  MethodTableRec const                    g_method[] = {
     boost::replace_first(response->content, "<!LT />", stringizeLatitude(x));
     boost::replace_first(response->content, "<!LN />", stringizeLongitude(y));
     boost::replace_first(response->content, "<!AT />", stringizeAltitude(z));
-    rotator = artsatd::getRotator().getData();
+    artsatd::getRotator().getData(&rotator);
     boost::replace_first(response->content, "<!AZ />", colorizeSpan("cyan", stringizeAzimuth(rotator.azimuth)));
     boost::replace_first(response->content, "<!EL />", colorizeSpan("magenta", stringizeElevation(rotator.elevation)));
-    transceiver = artsatd::getTransceiver().getData();
+    artsatd::getTransceiver().getData(&transceiver);
     boost::replace_first(response->content, "<!SF />", stringizeFrequency(transceiver.frequencySender, request.host != "127.0.0.1" && owner <= 0));
     boost::replace_first(response->content, "<!RF />", stringizeFrequency(transceiver.frequencyReceiver, false));
     session = stringizeSession(session);

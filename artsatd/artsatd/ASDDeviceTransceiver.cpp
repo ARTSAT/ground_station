@@ -51,7 +51,6 @@
 {
     _data.frequencySender = -1;
     _data.frequencyReceiver = -1;
-    _update = false;
 }
 
 /*public virtual */ASDDeviceTransceiver::~ASDDeviceTransceiver(void)
@@ -59,17 +58,13 @@
     close();
 }
 
-/*public */ASDDeviceTransceiver::DataRec ASDDeviceTransceiver::getData(void) const
+/*public */void ASDDeviceTransceiver::getData(DataRec* result) const
 {
-    boost::unique_lock<boost::shared_mutex> wlock(_mutex);
-    _update = false;
-    return _data;
-}
-
-/*public */bool ASDDeviceTransceiver::hasUpdate(void) const
-{
-    boost::shared_lock<boost::shared_mutex> rlock(_mutex);
-    return _update;
+    if (result != NULL) {
+        boost::shared_lock<boost::shared_mutex> rlock(_mutex);
+        *result = _data;
+    }
+    return;
 }
 
 /*protected virtual */void ASDDeviceTransceiver::update(ptr_type device)
@@ -77,9 +72,8 @@
     DataRec data;
     tgs::TGSError error;
     
-    boost::shared_lock<boost::shared_mutex> rlock(_mutex);
+    boost::upgrade_lock<boost::shared_mutex> ulock(_mutex);
     data = _data;
-    rlock.unlock();
     if ((error = device->getFrequencySender(&data.frequencySender)) == tgs::TGSERROR_NO_RESULT) {
         data.frequencySender = -1;
     }
@@ -92,8 +86,9 @@
     else if (error != tgs::TGSERROR_OK) {
         artsatd::getInstance().log(LOG_WARNING, "TGSTransceiverInterface getFrequencyReceiver error [%s]", error.print().c_str());
     }
-    boost::unique_lock<boost::shared_mutex> wlock(_mutex);
-    _data = data;
-    _update = true;
+    if (data.frequencySender != _data.frequencySender || data.frequencyReceiver != _data.frequencyReceiver) {
+        boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+        _data = data;
+    }
     return;
 }

@@ -266,10 +266,6 @@ namespace ASDServerRPC {
         /* result: {"norads":   [...]}                   */
         Result getNoradByCallsign(const Params& args, Params *result);
         
-        /* params: {"norad":  <int>}                     */
-        /* result: {"update": <bool>}                    */
-        Result hasUpdate(const Params& args, Params *result);
-        
     }
 };
 

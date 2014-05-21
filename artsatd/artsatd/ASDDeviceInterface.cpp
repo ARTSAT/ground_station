@@ -62,6 +62,17 @@ template <class T>
 }
 
 template <class T>
+/*public */bool ASDDeviceInterface<T>::isValid(void) const
+{
+    bool result(false);
+    
+    if (_device != NULL) {
+        result = _device->isValid();
+    }
+    return result;
+}
+
+template <class T>
 /*public */tgs::TGSError ASDDeviceInterface<T>::open(boost::shared_ptr<tgs::TGSDeviceInterface> const& device)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -133,16 +144,18 @@ template <class T>
 template <class T>
 /*private */void ASDDeviceInterface<T>::update(void)
 {
-    boost::unique_lock<boost::mutex> lock(_mutex);
-    _device->update();
+    if (_device->isValid()) {
+        boost::unique_lock<boost::mutex> lock(_mutex);
+        _device->update();
+    }
     return;
 }
 
 template <class T>
 /*private */void ASDDeviceInterface<T>::synchronize(void)
 {
-    boost::unique_lock<boost::mutex> lock(_mutex);
     if (_device->isValid()) {
+        boost::unique_lock<boost::mutex> lock(_mutex);
         update(boost::static_pointer_cast<T>(_device).get());
     }
     return;

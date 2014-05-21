@@ -63,14 +63,12 @@ class ASDDeviceRotator : public ASDDeviceInterface<tgs::TGSRotatorInterface> {
     
     private:
                 DataRec                         _data;
-        mutable bool                            _update;
         mutable boost::shared_mutex             _mutex;
     
     public:
         explicit                                ASDDeviceRotator            (void);
         virtual                                 ~ASDDeviceRotator           (void);
-                DataRec                         getData                     (void) const;
-                bool                            hasUpdate                   (void) const;
+                void                            getData                     (DataRec* result) const;
     protected:
         virtual void                            update                      (ptr_type device);
     private:
