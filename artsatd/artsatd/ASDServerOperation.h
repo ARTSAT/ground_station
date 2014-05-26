@@ -52,6 +52,16 @@
 
 class ASDServerOperation : public ASDNetworkServer::Notifier {
     private:
+        enum JSONCodeEnum {
+            JSONCODE_OK                         = 0,
+            JSONCODE_PARSEERROR                 = -32700,
+            JSONCODE_INVALIDREQUEST             = -32600,
+            JSONCODE_METHODNOTFOUND             = -32601,
+            JSONCODE_INVALIDPARAMS              = -32602,
+            JSONCODE_INTERNALERROR              = -32603
+        };
+    
+    private:
         struct CacheRec {
             std::string                         mime;
             std::string                         cache;
@@ -77,6 +87,7 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
                 void                            replyJSONRPC                (RequestRec const& request, ResponseRec* response);
     private:
         virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
+                void                            processJSONRPC              (rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const;
         static  tgs::TGSError                   serializeCache              (std::string const& file, std::string* result);
         static  void                            bindError                   (std::string const& name, tgs::TGSError error, std::string* category, std::string* message);
         static  std::string                     colorizeSpan                (std::string const& color, std::string const& string);
@@ -99,6 +110,7 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
         static  std::string                     stringizeTimeDiff           (ir::IRXTimeDiff const& param);
         static  std::string                     stringizeSession            (std::string const& param);
         static  std::string                     stringizeOnline             (int param);
+        static  void                            returnJSONRPC               (JSONCodeEnum code, rapidjson::Value& result, rapidjson::Value& id, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator);
     private:
                                                 ASDServerOperation          (ASDServerOperation const&);
                 ASDServerOperation&             operator=                   (ASDServerOperation const&);

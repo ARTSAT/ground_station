@@ -33,6 +33,9 @@ hr {
     height: 3px;
     background-color: #88ffcc;
 }
+pre {
+    display: inline;
+}
 table {
     margin: 4px 0px;
     border-spacing: 8px 2px;

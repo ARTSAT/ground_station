@@ -205,6 +205,7 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
         mutable boost::shared_mutex             _mutex_command;
     
     public:
+        static  std::string const&              getVersion                  (void);
         static  artsatd&                        getInstance                 (void);
         static  ASDDeviceRotator&               getRotator                  (void);
         static  ASDDeviceTransceiver&           getTransceiver              (void);

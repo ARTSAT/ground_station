@@ -62,14 +62,15 @@
 #define CATEGORY_HARDWARE                       ("hardware")
 #define CATEGORY_DATABASE                       ("database")
 #define CATEGORY_CONTROL                        ("control")
-#define SHRINK_SHOW                             ("show")
-#define SHRINK_HIDE                             ("hide")
+#define SHRINK_SHOW                             ("+")
+#define SHRINK_HIDE                             ("-")
 #define DEVICE_OK                               ("ok")
 #define DEVICE_NG                               ("ng")
 #define DEFAULT_TIME                            ("----/--/-- --:--:-- JST")
 #define DEFAULT_TIMEDIFF                        ("&Delta; --:--:--")
 #define FORM_DISABLED                           ("disabled")
 #define FORM_READONLY                           ("readonly")
+#define JSON_VERSION                            ("2.0")
 
 struct CacheTableRec {
     char const*                 path;
@@ -236,7 +237,7 @@ static  MethodTableRec const                    g_method[] = {
         for (i = 0; i < lengthof(s_shrink); ++i) {
             shrink[i] = false;
             if ((it = request.cookie.find(s_shrink[i])) != request.cookie.end()) {
-                if (it->second == SHRINK_HIDE) {
+                if (it->second == "true") {
                     shrink[i] = true;
                 }
             }
@@ -287,6 +288,7 @@ static  MethodTableRec const                    g_method[] = {
             response->header["Location"] = "/";
         }
         else {
+            boost::replace_first(response->content, "<!VS />", artsatd::getVersion());
             if (owner > 0) {
                 boost::replace_first(response->content, "<!PM />", "green");
                 if (flag) {
@@ -429,7 +431,7 @@ static  MethodTableRec const                    g_method[] = {
         setCookie(COOKIE_ERROR_CATEGORY, category, COOKIE_MAXAGE, response);
         setCookie(COOKIE_ERROR_MESSAGE, message, COOKIE_MAXAGE, response);
         for (i = 0; i < lengthof(s_shrink); ++i) {
-            setCookie(s_shrink[i], (!shrink[i]) ? (SHRINK_SHOW) : (SHRINK_HIDE), COOKIE_MAXAGE, response);
+            setCookie(s_shrink[i], (shrink[i]) ? ("true") : ("false"), COOKIE_MAXAGE, response);
         }
     }
     else {
@@ -555,92 +557,41 @@ static  MethodTableRec const                    g_method[] = {
 
 /*public */void ASDServerOperation::replyJSONRPC(RequestRec const& request, ResponseRec* response)
 {
-    rapidjson::Document req;
-    rapidjson::Document res;
-    rapidjson::Value result_obj;
-    int req_id = -1;
-    int error_code = 0;
-    std::string error_msg;
+    rapidjson::Document idoc;
+    rapidjson::Document odoc;
+    rapidjson::Value::ValueIterator it;
+    rapidjson::Value result;
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     
-    req.Parse<0>(request.content.c_str());
-    res.SetObject();
-    res.AddMember("jsonrpc", "2.0", res.GetAllocator());
-    if (req.HasParseError()) {
-        error_code = -32700;
-        error_msg = "Parse error";
-        response->status = 400;
-    }
-    else {
-        if (req["id"].IsInt()) {
-            req_id = req["id"].GetInt();
-            if (req_id >= 0 && req["method"].IsString()) {
-                std::string method = req["method"].GetString();
-                if (_method.find(method) != _method.end()) {
-                    ASDServerRPC::Params args, result;
-                    if (req.HasMember("params") && req["params"].IsObject()) {
-                        ASDServerRPC::Variant variant = ASDServerRPC::toVariant(req["params"]);
-                        args = boost::get<ASDServerRPC::Params>(variant);
-                    }
-                    ASDServerRPC::Result rpc_result = _method[method](args, &result);
-                    if (rpc_result == ASDServerRPC::RPC_OK) {
-                        response->status = 200;
-                    }
-                    else if (rpc_result == ASDServerRPC::RPC_WRONG_ARGS) {
-                        error_code = -32602;
-                        error_msg = "Invalid params";
-                        response->status = 400;
-                    }
-                    else {
-                        error_code = -32603;
-                        error_msg = "Internal error";
-                        response->status = 500;
-                    }
-                    result_obj.SetObject();
-                    ASDServerRPC::toJson(result, &result_obj, res.GetAllocator());
-                }
-                else {
-                    error_code = -32601;
-                    error_msg = "Method not found";
-                    response->status = 400;
+    if (!idoc.Parse<0>(request.content.c_str()).HasParseError()) {
+        if (idoc.IsArray()) {
+            odoc.SetArray();
+            for (it = idoc.Begin(); it != idoc.End(); ++it) {
+                processJSONRPC(*it, &result, odoc.GetAllocator());
+                if (!result.IsNull()) {
+                    odoc.PushBack(result, odoc.GetAllocator());
                 }
             }
-            else {
-                error_code = -32600;
-                error_msg = "Invalid Request";
-                response->status = 400;
+            if (odoc.Empty()) {
+                odoc.SetNull();
             }
         }
         else {
-            error_code = -32600;
-            error_msg = "Invalid Request";
-            response->status = 400;
+            processJSONRPC(idoc, &odoc, odoc.GetAllocator());
         }
     }
-    if (req_id == -1) {
-        rapidjson::Value null;
-        null.SetNull();
-        res.AddMember("id", null, res.GetAllocator());
+    else {
+        returnJSONRPC(JSONCODE_PARSEERROR, result, result, &odoc, odoc.GetAllocator());
+    }
+    if (!odoc.IsNull()) {
+        odoc.Accept(writer);
+        response->content = buffer.GetString();
     }
     else {
-        res.AddMember("id", req_id, res.GetAllocator());
+        response->status = Server::response::no_content;
+        response->content.clear();
     }
-    if (error_code == 0) {
-        res.AddMember("result", result_obj, res.GetAllocator());
-    }
-    else {
-        rapidjson::Value res_error;
-        res_error.SetObject();
-        res_error.AddMember("code", error_code, res.GetAllocator());
-        res_error.AddMember("message", error_msg.c_str(), res.GetAllocator());
-        if (result_obj.IsObject() && result_obj.MemberBegin() != result_obj.MemberEnd()) {
-            res_error.AddMember("data", result_obj, res.GetAllocator());
-        }
-        res.AddMember("error", res_error, res.GetAllocator());
-    }
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    res.Accept(writer);
-    response->content += buffer.GetString();
     return;
 }
 
@@ -664,6 +615,108 @@ static  MethodTableRec const                    g_method[] = {
         replyStatus(Server::response::not_found, response);
     }
     return tgs::TGSERROR_OK;
+}
+
+/*private */void ASDServerOperation::processJSONRPC(rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const
+{
+    std::map<std::string, ASDServerRPC::Method>::const_iterator it;
+    rapidjson::Value jsonrpc;
+    rapidjson::Value method;
+    rapidjson::Value params;
+    rapidjson::Value iid;
+    rapidjson::Value result;
+    rapidjson::Value oid;
+    ASDServerRPC::Params iparam;
+    ASDServerRPC::Params iresult;
+    ASDServerRPC::Result ierror;
+    bool reply;
+    JSONCodeEnum code;
+    
+    reply = true;
+    code = JSONCODE_OK;
+    if (request.IsObject()) {
+        if (request.HasMember("jsonrpc")) {
+            jsonrpc = request["jsonrpc"];
+            if (jsonrpc.IsString()) {
+                if (strcmp(jsonrpc.GetString(), JSON_VERSION) == 0) {
+                    if (request.HasMember("id")) {
+                        iid = request["id"];
+                        if (iid.IsInt() || iid.IsString()) {
+                            oid = iid;
+                        }
+                        else {
+                            code = JSONCODE_INVALIDREQUEST;
+                        }
+                    }
+                    else {
+                        reply = false;
+                    }
+                    if (code == JSONCODE_OK) {
+                        if (request.HasMember("method")) {
+                            method = request["method"];
+                            if (method.IsString()) {
+                                if ((it = _method.find(method.GetString())) != _method.end()) {
+                                    if (request.HasMember("params")) {
+                                        params = request["params"];
+                                        if (params.IsArray() || params.IsObject()) {
+                                            iparam = boost::get<ASDServerRPC::Params>(ASDServerRPC::toVariant(params));
+                                        }
+                                        else {
+                                            code = JSONCODE_INVALIDPARAMS;
+                                        }
+                                    }
+                                    if (code == JSONCODE_OK) {
+                                        ierror = it->second(iparam, &iresult);
+                                        result.SetObject();
+                                        ASDServerRPC::toJson(iresult, &result, allocator);
+                                        switch (ierror) {
+                                            case ASDServerRPC::RPC_OK:
+                                                // nop
+                                                break;
+                                            case ASDServerRPC::RPC_WRONG_ARGS:
+                                                code = JSONCODE_INVALIDPARAMS;
+                                                break;
+                                            default:
+                                                code = JSONCODE_INTERNALERROR;
+                                                break;
+                                        }
+                                    }
+                                }
+                                else {
+                                    code = JSONCODE_METHODNOTFOUND;
+                                }
+                            }
+                            else {
+                                code = JSONCODE_INVALIDREQUEST;
+                            }
+                        }
+                        else {
+                            code = JSONCODE_INVALIDREQUEST;
+                        }
+                    }
+                }
+                else {
+                    code = JSONCODE_INVALIDREQUEST;
+                }
+            }
+            else {
+                code = JSONCODE_INVALIDREQUEST;
+            }
+        }
+        else {
+            code = JSONCODE_INVALIDREQUEST;
+        }
+    }
+    else {
+        code = JSONCODE_INVALIDREQUEST;
+    }
+    if (reply) {
+        returnJSONRPC(code, result, oid, response, allocator);
+    }
+    else {
+        response->SetNull();
+    }
+    return;
 }
 
 /*private static */tgs::TGSError ASDServerOperation::serializeCache(std::string const& file, std::string* result)
@@ -892,4 +945,45 @@ static  MethodTableRec const                    g_method[] = {
 /*private static */std::string ASDServerOperation::stringizeOnline(int param)
 {
     return (param >= 0) ? ((boost::format("%d") % param).str()) : ("-");
+}
+
+/*private static */void ASDServerOperation::returnJSONRPC(JSONCodeEnum code, rapidjson::Value& result, rapidjson::Value& id, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator)
+{
+    rapidjson::Value error;
+    
+    response->SetObject();
+    response->AddMember("jsonrpc", JSON_VERSION, allocator);
+    if (code == JSONCODE_OK) {
+        response->AddMember("result", result, allocator);
+    }
+    else {
+        error.SetObject();
+        error.AddMember("code", code, allocator);
+        switch (code) {
+            case JSONCODE_PARSEERROR:
+                error.AddMember("message", "Parse error", allocator);
+                break;
+            case JSONCODE_INVALIDREQUEST:
+                error.AddMember("message", "Invalid Request", allocator);
+                break;
+            case JSONCODE_METHODNOTFOUND:
+                error.AddMember("message", "Method not found", allocator);
+                break;
+            case JSONCODE_INVALIDPARAMS:
+                error.AddMember("message", "Invalid params", allocator);
+                break;
+            case JSONCODE_INTERNALERROR:
+                error.AddMember("message", "Internal error", allocator);
+                break;
+            default:
+                error.AddMember("message", "Server error", allocator);
+                break;
+        }
+        if (!result.IsNull()) {
+            error.AddMember("data", result, allocator);
+        }
+        response->AddMember("error", error, allocator);
+    }
+    response->AddMember("id", id, allocator);
+    return;
 }

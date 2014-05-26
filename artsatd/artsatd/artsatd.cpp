@@ -51,6 +51,7 @@
 #include "TGSTNCTNC555.h"
 #include "ASDTLEClientCelestrak.h"
 
+#define VERSION_STRING                          ("4.1.1")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -80,6 +81,7 @@
 #define DEFAULT_INTERVAL_TRANSCEIVER            (1)
 #define DEFAULT_INTERVAL_TNC                    (1)
 #define DEFAULT_INTERVAL_LOG                    (10)
+#define LOG_SEPARATOR                           ("================================================================")
 #define LOOP_INTERVAL                           (250000)
 //<<<
 #define ROTATOR_MIN_AZIMUTH                     (0.0)
@@ -96,6 +98,13 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 /*private virtual */artsatd::~artsatd(void)
 {
     terminate();
+}
+
+/*public static */std::string const& artsatd::getVersion(void)
+{
+    static std::string const s_version(VERSION_STRING);
+    
+    return s_version;
 }
 
 /*public static */artsatd& artsatd::getInstance(void)
@@ -593,10 +602,39 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     int result(EXIT_SUCCESS);
     
     if ((result = setWorkspace()) == EXIT_SUCCESS) {
+        log(LOG_NOTICE, LOG_SEPARATOR);
+        log(LOG_NOTICE, (std::string("artsatd ") + VERSION_STRING).c_str());
+        log(LOG_NOTICE, "");
+        log(LOG_NOTICE, "Copyright (C) 2013 - 2014 HORIGUCHI Junshi.");
+        log(LOG_NOTICE, "                           http://iridium.jp/");
+        log(LOG_NOTICE, "                           zap00365@nifty.com");
+        log(LOG_NOTICE, "Copyright (C) 2014 - 2014 Ron Hashimoto.");
+        log(LOG_NOTICE, "                           http://h2so5.net/");
+        log(LOG_NOTICE, "                           mail@h2so5.net");
+        log(LOG_NOTICE, "");
+        log(LOG_NOTICE, "The MIT License (MIT)");
+        log(LOG_NOTICE, "");
+        log(LOG_NOTICE, "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and");
+        log(LOG_NOTICE, "associated documentation files (the \"Software\"), to deal in the Software without restriction,");
+        log(LOG_NOTICE, "including without limitation the rights to use, copy, modify, merge, publish, distribute,");
+        log(LOG_NOTICE, "sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is");
+        log(LOG_NOTICE, "furnished to do so, subject to the following conditions:");
+        log(LOG_NOTICE, "The above copyright notice and this permission notice shall be included in all copies or");
+        log(LOG_NOTICE, "substantial portions of the Software.");
+        log(LOG_NOTICE, "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING");
+        log(LOG_NOTICE, "BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.");
+        log(LOG_NOTICE, "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,");
+        log(LOG_NOTICE, "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,");
+        log(LOG_NOTICE, "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.");
+        log(LOG_NOTICE, LOG_SEPARATOR);
         if ((error = openConfig()) == tgs::TGSERROR_OK) {
+            log(LOG_NOTICE, LOG_SEPARATOR);
             if ((error = openDatabase()) == tgs::TGSERROR_OK) {
+                log(LOG_NOTICE, LOG_SEPARATOR);
                 if ((error = openPlugin()) == tgs::TGSERROR_OK) {
+                    log(LOG_NOTICE, LOG_SEPARATOR);
                     if ((error = openDevice()) == tgs::TGSERROR_OK) {
+                        log(LOG_NOTICE, LOG_SEPARATOR);
                         //<<<
                         if ((error = _passFactory.setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
                             ASDRotationSolver::RotatorSpec rotator = {
@@ -618,7 +656,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                             resetState(_control, &_state);
                             resetMonitor(&_monitor);
                             resetCommand(&_command);
-                            if ((error = openNetwork()) != tgs::TGSERROR_OK) {
+                            if ((error = openNetwork()) == tgs::TGSERROR_OK) {
+                                log(LOG_NOTICE, LOG_SEPARATOR);
+                            }
+                            else {
                                 log(LOG_ERR, "can't initialize network [%s]", error.print().c_str());
                                 result = EX_UNAVAILABLE;
                             }
@@ -998,27 +1039,27 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             error = tgs::TGSERROR_FAILED;
             break;
     }
-    log(LOG_NOTICE, "CONFIG: Server Database Port    [%s]", _config.serverDatabasePort.c_str());
-    log(LOG_NOTICE, "CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
-    log(LOG_NOTICE, "CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
-    log(LOG_NOTICE, "CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
-    log(LOG_NOTICE, "CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
-    log(LOG_NOTICE, "CONFIG: Session Timeout         [%d]", _config.sessionTimeout);
-    log(LOG_NOTICE, "CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
-    log(LOG_NOTICE, "CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
-    log(LOG_NOTICE, "CONFIG: Observer Latitude       [%lf]", _config.observerLatitude);
-    log(LOG_NOTICE, "CONFIG: Observer Longitude      [%lf]", _config.observerLongitude);
-    log(LOG_NOTICE, "CONFIG: Observer Altitude       [%lf]", _config.observerAltitude);
-    log(LOG_NOTICE, "CONFIG: CW Test Azimuth         [%d]", _config.cwTestAzimuth);
-    log(LOG_NOTICE, "CONFIG: CW Test Elevation       [%d]", _config.cwTestElevation);
-    log(LOG_NOTICE, "CONFIG: FM Test Azimuth         [%d]", _config.fmTestAzimuth);
-    log(LOG_NOTICE, "CONFIG: FM Test Elevation       [%d]", _config.fmTestElevation);
-    log(LOG_NOTICE, "CONFIG: Algorithm Lookahead     [%d]", _config.algorithmLookahead);
-    log(LOG_NOTICE, "CONFIG: Interval Session        [%d]", _config.intervalSession);
-    log(LOG_NOTICE, "CONFIG: Interval Rotator        [%d]", _config.intervalRotator);
-    log(LOG_NOTICE, "CONFIG: Interval Transceiver    [%d]", _config.intervalTransceiver);
-    log(LOG_NOTICE, "CONFIG: Interval TNC            [%d]", _config.intervalTNC);
-    log(LOG_NOTICE, "CONFIG: Interval Log            [%d]", _config.intervalLog);
+    log(LOG_NOTICE, " CONFIG: Server Database Port    [%s]", _config.serverDatabasePort.c_str());
+    log(LOG_NOTICE, " CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
+    log(LOG_NOTICE, " CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
+    log(LOG_NOTICE, " CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
+    log(LOG_NOTICE, " CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
+    log(LOG_NOTICE, " CONFIG: Session Timeout         [%d]", _config.sessionTimeout);
+    log(LOG_NOTICE, " CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
+    log(LOG_NOTICE, " CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
+    log(LOG_NOTICE, " CONFIG: Observer Latitude       [%lf]", _config.observerLatitude);
+    log(LOG_NOTICE, " CONFIG: Observer Longitude      [%lf]", _config.observerLongitude);
+    log(LOG_NOTICE, " CONFIG: Observer Altitude       [%lf]", _config.observerAltitude);
+    log(LOG_NOTICE, " CONFIG: CW Test Azimuth         [%d]", _config.cwTestAzimuth);
+    log(LOG_NOTICE, " CONFIG: CW Test Elevation       [%d]", _config.cwTestElevation);
+    log(LOG_NOTICE, " CONFIG: FM Test Azimuth         [%d]", _config.fmTestAzimuth);
+    log(LOG_NOTICE, " CONFIG: FM Test Elevation       [%d]", _config.fmTestElevation);
+    log(LOG_NOTICE, " CONFIG: Algorithm Lookahead     [%d]", _config.algorithmLookahead);
+    log(LOG_NOTICE, " CONFIG: Interval Session        [%d]", _config.intervalSession);
+    log(LOG_NOTICE, " CONFIG: Interval Rotator        [%d]", _config.intervalRotator);
+    log(LOG_NOTICE, " CONFIG: Interval Transceiver    [%d]", _config.intervalTransceiver);
+    log(LOG_NOTICE, " CONFIG: Interval TNC            [%d]", _config.intervalTNC);
+    log(LOG_NOTICE, " CONFIG: Interval Log            [%d]", _config.intervalLog);
     if (error != tgs::TGSERROR_OK) {
         closeConfig();
     }
@@ -1064,9 +1105,9 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                         if (plugin != NULL) {
                             if ((error = xmlReadInteger(type, "norad", &norad)) == tgs::TGSERROR_OK) {
                                 xmlReadText(type, "file", &file);
-                                log(LOG_NOTICE, "PLUGIN: Type  [%s]", name.c_str());
-                                log(LOG_NOTICE, "PLUGIN: File  [%s]", file.c_str());
-                                log(LOG_NOTICE, "PLUGIN: NORAD [%d]", norad);
+                                log(LOG_NOTICE, " PLUGIN: Type                    [%s]", name.c_str());
+                                log(LOG_NOTICE, " PLUGIN: File                    [%s]", file.c_str());
+                                log(LOG_NOTICE, " PLUGIN: NORAD                   [%d]", norad);
                                 if (!file.empty()) {
                                     name  = PATH_SERVER;
                                     name += "/";
@@ -1176,15 +1217,15 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     if (!name.empty()) {
                         if (client != NULL) {
                             if ((error = xmlReadInteger(type, "interval", &interval)) == tgs::TGSERROR_OK) {
-                                log(LOG_NOTICE, "NETWORK: Site     [%s]", name.c_str());
+                                log(LOG_NOTICE, "NETWORK: Site                    [%s]", name.c_str());
                                 url.clear();
                                 for (element = type->FirstChildElement("url"); element != NULL; element = element->NextSiblingElement("url")) {
                                     if (!element->NoChildren()) {
                                         url.push_back(element->GetText());
-                                        log(LOG_NOTICE, "NETWORK: URL      [%s]", url.back().c_str());
+                                        log(LOG_NOTICE, "NETWORK: URL                     [%s]", url.back().c_str());
                                     }
                                 }
-                                log(LOG_NOTICE, "NETWORK: Interval [%d]", interval);
+                                log(LOG_NOTICE, "NETWORK: Interval                [%d]", interval);
                                 if ((error = client->open(DATABASE_PHYSICS, url, interval)) == tgs::TGSERROR_OK) {
                                     _clientTle.push_back(client);
                                 }
