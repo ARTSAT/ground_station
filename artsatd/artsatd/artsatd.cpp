@@ -604,16 +604,16 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if ((result = setWorkspace()) == EXIT_SUCCESS) {
         log(LOG_NOTICE, LOG_SEPARATOR);
         log(LOG_NOTICE, (std::string("artsatd ") + VERSION_STRING).c_str());
-        log(LOG_NOTICE, "");
+        log(LOG_NOTICE, " ");
         log(LOG_NOTICE, "Copyright (C) 2013 - 2014 HORIGUCHI Junshi.");
         log(LOG_NOTICE, "                           http://iridium.jp/");
         log(LOG_NOTICE, "                           zap00365@nifty.com");
         log(LOG_NOTICE, "Copyright (C) 2014 - 2014 Ron Hashimoto.");
         log(LOG_NOTICE, "                           http://h2so5.net/");
         log(LOG_NOTICE, "                           mail@h2so5.net");
-        log(LOG_NOTICE, "");
+        log(LOG_NOTICE, " ");
         log(LOG_NOTICE, "The MIT License (MIT)");
-        log(LOG_NOTICE, "");
+        log(LOG_NOTICE, " ");
         log(LOG_NOTICE, "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and");
         log(LOG_NOTICE, "associated documentation files (the \"Software\"), to deal in the Software without restriction,");
         log(LOG_NOTICE, "including without limitation the rights to use, copy, modify, merge, publish, distribute,");
