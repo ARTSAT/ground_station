@@ -91,6 +91,11 @@ namespace tgs {
     return TGSERROR_NO_SUPPORT;
 }
 
+/*public virtual */TGSError TGSOrbitInterface::getSatelliteSpeed(double* speed) const
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
 /*public virtual */TGSError TGSOrbitInterface::getDopplerRatio(double* sender, double* receiver) const
 {
     return TGSERROR_NO_SUPPORT;

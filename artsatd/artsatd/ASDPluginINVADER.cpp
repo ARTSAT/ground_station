@@ -573,6 +573,20 @@ static DurationRec const g_duration[] = {
                 queueDOF(session);
             }
         }
+        else if (type == "critical_operation") {
+            if (command == "PSS") {
+                artsatd::getInstance().requestCommand(session, "c-c-d-pss");
+            }
+            else if (command == "TXR") {
+                artsatd::getInstance().requestCommand(session, "r-c-p-txr");
+            }
+            else if (command == "TOF") {
+                artsatd::getInstance().requestCommand(session, "c-c-g-tof");
+            }
+            else if (command == "TXS") {
+                artsatd::getInstance().requestCommand(session, "r-c-p-txs");
+            }
+        }
         _mutex.lock();
         _command = context;
         _mutex.unlock();

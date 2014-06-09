@@ -301,6 +301,21 @@ namespace tgs {
     return error;
 }
 
+/*public virtual */TGSError TGSOrbitTLE::getSatelliteSpeed(double* speed) const
+{
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::getSatelliteSpeed(speed)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheSatellite()) == TGSERROR_OK) {
+            Zeptomoby::OrbitTools::cVector velocity(_seci->Velocity());
+            if (speed != NULL) {
+                *speed = velocity.Magnitude();
+            }
+        }
+    }
+    return error;
+}
+
 /*public virtual */TGSError TGSOrbitTLE::getDopplerRatio(double* sender, double* receiver) const
 {
     double factor;
