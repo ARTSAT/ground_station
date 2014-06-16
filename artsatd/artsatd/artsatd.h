@@ -240,6 +240,9 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 tgs::TGSError                   requestSession              (std::string* session, bool* update);
                 tgs::TGSError                   controlSession              (std::string const& session, bool owner, std::string const& host);
                 tgs::TGSError                   excludeSession              (std::string const& session, bool exclusive);
+                tgs::TGSError                   controlManualRotator        (std::string const& session, tgs::TGSError (*function)(ASDDeviceRotator& rotator, void const* info), void const* info);
+                tgs::TGSError                   controlManualTransceiver    (std::string const& session, tgs::TGSError (*function)(ASDDeviceTransceiver& transceiver, void const* info), void const* info);
+                tgs::TGSError                   controlManualTNC            (std::string const& session, tgs::TGSError (*function)(ASDDeviceTNC& tnc, void const* info), void const* info);
                 tgs::TGSError                   requestCommand              (std::string const& session, std::string const& command);
     private:
         explicit                                artsatd                     (void);

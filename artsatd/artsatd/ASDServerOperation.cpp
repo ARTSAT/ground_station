@@ -134,6 +134,12 @@ static  MethodTableRec const                    g_method[] = {
     {"db.getNoradByName",          &ASDServerRPC::db::getNoradByName},
     {"db.getNoradByCallsign",      &ASDServerRPC::db::getNoradByCallsign}
 };
+static  char const* const                       g_shrink[] = {
+    COOKIE_SHRINK_HARDWARE,
+    COOKIE_SHRINK_DATABASE,
+    COOKIE_SHRINK_STATUS,
+    COOKIE_SHRINK_CONTROL
+};
 
 /*public */ASDServerOperation::ASDServerOperation(void)
 {
@@ -187,46 +193,20 @@ static  MethodTableRec const                    g_method[] = {
 
 /*public */void ASDServerOperation::replyRoot(RequestRec const& request, ResponseRec* response)
 {
-    static char const* const s_shrink[] = {
-        COOKIE_SHRINK_HARDWARE,
-        COOKIE_SHRINK_DATABASE,
-        COOKIE_SHRINK_STATUS,
-        COOKIE_SHRINK_CONTROL
-    };
-    static boost::xpressive::sregex const s_ESS(boost::xpressive::sregex::compile("<!\\[ESS />.*?<!\\]ESS />"));
-    static boost::xpressive::sregex const s_HWT(boost::xpressive::sregex::compile("<!\\[HWF />.*?<!\\]HWF />"));
-    static boost::xpressive::sregex const s_HWF(boost::xpressive::sregex::compile("<!\\[HWT />.*?<!\\]HWT />"));
-    static boost::xpressive::sregex const s_EHW(boost::xpressive::sregex::compile("<!\\[EHW />.*?<!\\]EHW />"));
-    static boost::xpressive::sregex const s_DBT(boost::xpressive::sregex::compile("<!\\[DBF />.*?<!\\]DBF />"));
-    static boost::xpressive::sregex const s_DBF(boost::xpressive::sregex::compile("<!\\[DBT />.*?<!\\]DBT />"));
-    static boost::xpressive::sregex const s_EDB(boost::xpressive::sregex::compile("<!\\[EDB />.*?<!\\]EDB />"));
-    static boost::xpressive::sregex const s_STT(boost::xpressive::sregex::compile("<!\\[STF />.*?<!\\]STF />"));
-    static boost::xpressive::sregex const s_STF(boost::xpressive::sregex::compile("<!\\[STT />.*?<!\\]STT />"));
-    static boost::xpressive::sregex const s_CNT(boost::xpressive::sregex::compile("<!\\[CNF />.*?<!\\]CNF />"));
-    static boost::xpressive::sregex const s_CNF(boost::xpressive::sregex::compile("<!\\[CNT />.*?<!\\]CNT />"));
-    static boost::xpressive::sregex const s_ECN(boost::xpressive::sregex::compile("<!\\[ECN />.*?<!\\]ECN />"));
-    static boost::xpressive::sregex const s_tag(boost::xpressive::sregex::compile("<![^<>]+? />"));
     artsatd& daemon(artsatd::getInstance());
     insensitive::map<std::string, std::string>::const_iterator it;
     std::string session;
+    bool update;
     std::string category;
     std::string message;
-    bool shrink[lengthof(s_shrink)];
-    int owner;
-    int norad;
-    boost::shared_ptr<ASDPluginInterface> plugin;
-    tgs::TGSPhysicsDatabase database;
-    tgs::TGSPhysicsDatabase::FieldRec field;
-    std::string string;
-    bool flag;
+    bool shrink[lengthof(g_shrink)];
     int i;
-    tgs::TGSError error;
     
     if ((it = request.cookie.find(COOKIE_SESSION_ID)) != request.cookie.end()) {
         session = it->second;
     }
-    if (daemon.requestSession(&session, &flag) == tgs::TGSERROR_OK) {
-        if (!flag) {
+    if (daemon.requestSession(&session, &update) == tgs::TGSERROR_OK) {
+        if (!update) {
             if ((it = request.cookie.find(COOKIE_ERROR_CATEGORY)) != request.cookie.end()) {
                 category = it->second;
             }
@@ -234,204 +214,27 @@ static  MethodTableRec const                    g_method[] = {
                 message = it->second;
             }
         }
-        for (i = 0; i < lengthof(s_shrink); ++i) {
+        for (i = 0; i < lengthof(g_shrink); ++i) {
             shrink[i] = false;
-            if ((it = request.cookie.find(s_shrink[i])) != request.cookie.end()) {
+            if ((it = request.cookie.find(g_shrink[i])) != request.cookie.end()) {
                 if (it->second == "true") {
                     shrink[i] = true;
                 }
             }
         }
-        daemon.getSession(session, &owner, &flag, &string, NULL);
-        norad = daemon.getNORAD();
         if (!request.query.empty()) {
-            if ((it = request.query.find("session")) != request.query.end()) {
-                if (it->second == "reload") {
-                    bindError(CATEGORY_SESSION, tgs::TGSERROR_OK, &category, &message);
-                }
-                else if (it->second == "session") {
-                    bindError(CATEGORY_SESSION, daemon.controlSession(session, owner <= 0, request.host), &category, &message);
-                }
-                else if (it->second == "exclusive") {
-                    bindError(CATEGORY_SESSION, daemon.excludeSession(session, !flag), &category, &message);
-                }
-            }
-            if ((it = request.query.find("shrink")) != request.query.end()) {
-                for (i = 0; i < lengthof(s_shrink); ++i) {
-                    if (it->second == s_shrink[i]) {
-                        shrink[i] = !shrink[i];
-                        break;
-                    }
-                }
-            }
-            if ((it = request.query.find("manual")) != request.query.end()) {
-                if (it->second == "rotator") {
-                    bindError(CATEGORY_HARDWARE, daemon.setManualRotator(session, !daemon.getManualRotator()), &category, &message);
-                }
-                else if (it->second == "transceiver") {
-                    bindError(CATEGORY_HARDWARE, daemon.setManualTransceiver(session, !daemon.getManualTransceiver()), &category, &message);
-                }
-                else if (it->second == "tnc") {
-                    bindError(CATEGORY_HARDWARE, daemon.setManualTNC(session, !daemon.getManualTNC()), &category, &message);
-                }
-            }
-            if ((it = request.query.find("norad")) != request.query.end()) {
-                bindError(CATEGORY_DATABASE, daemon.setNORAD(session, it->second), &category, &message);
-            }
-            if ((it = request.query.find("mode")) != request.query.end()) {
-                bindError(CATEGORY_CONTROL, daemon.setMode(session, it->second), &category, &message);
-            }
-            if ((plugin = daemon.getPlugin(norad)) != NULL) {
-                plugin->execute(session, request.query, &category, &message);
-            }
+            executeRoot(session, request.host, request.query, &category, &message, shrink);
             replyStatus(Server::response::found, response);
             response->header["Location"] = "/";
         }
         else {
-            boost::replace_first(response->content, "<!VS />", artsatd::getVersion());
-            if (owner > 0) {
-                boost::replace_first(response->content, "<!PM />", "green");
-                if (flag) {
-                    boost::replace_first(response->content, "<!EX />", "green");
-                    boost::replace_first(response->content, "<!SI />", "You are controlling the ground station exclusively.");
-                }
-                else {
-                    boost::replace_first(response->content, "<!SI />", "You are controlling the ground station.");
-                }
-            }
-            else if (owner < 0) {
-                boost::replace_first(response->content, "<!PM />", "red");
-                if (flag) {
-                    boost::replace_first(response->content, "<!_DP />", FORM_DISABLED);
-                    boost::replace_first(response->content, "<!EX />", "red");
-                    boost::replace_first(response->content, "<!SI />", string + " is controlling the ground station exclusively.");
-                }
-                else {
-                    boost::replace_first(response->content, "<!SI />", string + " is controlling the ground station.");
-                }
-            }
-            else {
-                boost::replace_first(response->content, "<!SI />", "The ground station is on standby.");
-            }
-            if (category == CATEGORY_SESSION && !message.empty()) {
-                boost::replace_first(response->content, "<!ES />", message);
-            }
-            else {
-                response->content = boost::xpressive::regex_replace(response->content, s_ESS, "");
-            }
-            if (!shrink[0]) {
-                boost::replace_first(response->content, "<!HW />", SHRINK_HIDE);
-                response->content = boost::xpressive::regex_replace(response->content, s_HWT, "");
-                if (daemon.getManualRotator()) {
-                    boost::replace_first(response->content, "<!MR />", "red");
-                }
-                if (daemon.getManualTransceiver()) {
-                    boost::replace_first(response->content, "<!MT />", "red");
-                }
-                if (daemon.getManualTNC()) {
-                    boost::replace_first(response->content, "<!MM />", "red");
-                }
-                if (category == CATEGORY_HARDWARE && !message.empty()) {
-                    boost::replace_first(response->content, "<!EH />", message);
-                }
-                else {
-                    response->content = boost::xpressive::regex_replace(response->content, s_EHW, "");
-                }
-            }
-            else {
-                boost::replace_first(response->content, "<!HW />", SHRINK_SHOW);
-                response->content = boost::xpressive::regex_replace(response->content, s_HWF, "");
-            }
-            boost::replace_first(response->content, "<!HR />", (artsatd::getRotator().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
-            boost::replace_first(response->content, "<!HT />", (artsatd::getTransceiver().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
-            boost::replace_first(response->content, "<!HM />", (artsatd::getTNC().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
-            boost::replace_first(response->content, "<!ND />", stringizeNORAD(norad));
-            if (category == CATEGORY_DATABASE && !message.empty()) {
-                boost::replace_first(response->content, "<!ED />", message);
-            }
-            else {
-                response->content = boost::xpressive::regex_replace(response->content, s_EDB, "");
-            }
-            string = daemon.getMode();
-            if (!shrink[1]) {
-                boost::replace_first(response->content, "<!DB />", SHRINK_HIDE);
-                response->content = boost::xpressive::regex_replace(response->content, s_DBT, "");
-                field.norad = -1;
-                field.beacon.frequency = -1;
-                field.beacon.drift = INT_MIN;
-                field.sender.frequency = -1;
-                field.sender.drift = INT_MIN;
-                field.receiver.frequency = -1;
-                field.receiver.drift = INT_MIN;
-                memset(&field.tle, 0, sizeof(field.tle));
-                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
-                    if (database.getField(norad, &field) == tgs::TGSERROR_OK) {
-                        boost::replace_first(response->content, "<!NM />", colorizeSpan("green", field.name));
-                    }
-                    else {
-                        boost::replace_first(response->content, "<!NM />", "Unknown NORAD");
-                    }
-                    database.close();
-                }
-                else {
-                    boost::replace_first(response->content, "<!NM />", colorizeSpan("red", "Database Error " + error.print()));
-                }
-                boost::replace_first(response->content, "<!CS />", stringizeCallsign(field.callsign));
-                boost::replace_first(response->content, "<!BM />", stringizeMode(field.beacon.mode));
-                boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW_TEST") ? ("green") : (""), stringizeFrequency(field.beacon.frequency, false)));
-                boost::replace_first(response->content, "<!BD />", stringizeDrift(field.beacon.drift));
-                boost::replace_first(response->content, "<!SM />", stringizeMode(field.sender.mode));
-                boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.sender.frequency, request.host != "127.0.0.1" && owner <= 0)));
-                boost::replace_first(response->content, "<!SD />", stringizeDrift(field.sender.drift));
-                boost::replace_first(response->content, "<!RM />", stringizeMode(field.receiver.mode));
-                boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency, false)));
-                boost::replace_first(response->content, "<!RD />", stringizeDrift(field.receiver.drift));
-                boost::replace_first(response->content, "<!TU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
-                boost::replace_first(response->content, "<!TL />", stringizeTLE(field.tle));
-            }
-            else {
-                boost::replace_first(response->content, "<!DB />", SHRINK_SHOW);
-                response->content = boost::xpressive::regex_replace(response->content, s_DBF, "");
-            }
-            if (!shrink[2]) {
-                boost::replace_first(response->content, "<!ST />", SHRINK_HIDE);
-                response->content = boost::xpressive::regex_replace(response->content, s_STT, "");
-            }
-            else {
-                boost::replace_first(response->content, "<!ST />", SHRINK_SHOW);
-                response->content = boost::xpressive::regex_replace(response->content, s_STF, "");
-            }
-            boost::replace_first(response->content, "<!" + ((!string.empty()) ? (string) : ("NO")) + " />", "green");
-            if (category == CATEGORY_CONTROL && !message.empty()) {
-                boost::replace_first(response->content, "<!EC />", message);
-            }
-            else {
-                response->content = boost::xpressive::regex_replace(response->content, s_ECN, "");
-            }
-            if (!shrink[3]) {
-                boost::replace_first(response->content, "<!CN />", SHRINK_HIDE);
-                response->content = boost::xpressive::regex_replace(response->content, s_CNT, "");
-                string.clear();
-                if ((plugin = daemon.getPlugin(norad)) != NULL) {
-                    plugin->process(session, category, message, &string);
-                }
-                boost::replace_first(response->content, "<!CD />", string);
-            }
-            else {
-                boost::replace_first(response->content, "<!CN />", SHRINK_SHOW);
-                response->content = boost::xpressive::regex_replace(response->content, s_CNF, "");
-            }
-            if (owner <= 0) {
-                boost::replace_all(response->content, "<!_DF />", FORM_DISABLED);
-                boost::replace_all(response->content, "<!_RO />", FORM_READONLY);
-            }
-            response->content = boost::xpressive::regex_replace(response->content, s_tag, "");
+            processRoot(session, request.host, category, message, shrink, &response->content);
         }
         setCookie(COOKIE_SESSION_ID, session, COOKIE_MAXAGE, response);
         setCookie(COOKIE_ERROR_CATEGORY, category, COOKIE_MAXAGE, response);
         setCookie(COOKIE_ERROR_MESSAGE, message, COOKIE_MAXAGE, response);
-        for (i = 0; i < lengthof(s_shrink); ++i) {
-            setCookie(s_shrink[i], (shrink[i]) ? ("true") : ("false"), COOKIE_MAXAGE, response);
+        for (i = 0; i < lengthof(g_shrink); ++i) {
+            setCookie(g_shrink[i], (shrink[i]) ? ("true") : ("false"), COOKIE_MAXAGE, response);
         }
     }
     else {
@@ -617,6 +420,283 @@ static  MethodTableRec const                    g_method[] = {
     return tgs::TGSERROR_OK;
 }
 
+/*private */void ASDServerOperation::executeRoot(std::string const& session, std::string const& host, insensitive::map<std::string, std::string> const& query, std::string* category, std::string* message, bool shrink[]) const
+{
+    artsatd& daemon(artsatd::getInstance());
+    insensitive::map<std::string, std::string>::const_iterator it;
+    bool exclusive;
+    boost::shared_ptr<ASDPluginInterface> plugin;
+    int value;
+    int i;
+    tgs::TGSError error;
+    
+    if ((it = query.find("session")) != query.end()) {
+        if (it->second == "reload") {
+            bindError(CATEGORY_SESSION, tgs::TGSERROR_OK, category, message);
+        }
+        else if (it->second == "session") {
+            daemon.getSession(session, &value, NULL, NULL, NULL);
+            bindError(CATEGORY_SESSION, daemon.controlSession(session, value <= 0, host), category, message);
+        }
+        else if (it->second == "exclusive") {
+            daemon.getSession(session, NULL, &exclusive, NULL, NULL);
+            bindError(CATEGORY_SESSION, daemon.excludeSession(session, !exclusive), category, message);
+        }
+    }
+    else if ((it = query.find("shrink")) != query.end()) {
+        for (i = 0; i < lengthof(g_shrink); ++i) {
+            if (it->second == g_shrink[i]) {
+                shrink[i] = !shrink[i];
+                break;
+            }
+        }
+    }
+    else if ((it = query.find("manual")) != query.end()) {
+        if (it->second == "rotator") {
+            bindError(CATEGORY_HARDWARE, daemon.setManualRotator(session, !daemon.getManualRotator()), category, message);
+        }
+        else if (it->second == "transceiver") {
+            bindError(CATEGORY_HARDWARE, daemon.setManualTransceiver(session, !daemon.getManualTransceiver()), category, message);
+        }
+        else if (it->second == "tnc") {
+            bindError(CATEGORY_HARDWARE, daemon.setManualTNC(session, !daemon.getManualTNC()), category, message);
+        }
+    }
+    else if ((it = query.find("azimuth")) != query.end()) {
+        if ((error = valueizeAzimuth(it->second, &value)) == tgs::TGSERROR_OK) {
+            error = daemon.controlManualRotator(session, &controlRotatorAzimuth, &value);
+        }
+        bindError(CATEGORY_HARDWARE, error, category, message);
+    }
+    else if ((it = query.find("elevation")) != query.end()) {
+        if ((error = valueizeElevation(it->second, &value)) == tgs::TGSERROR_OK) {
+            error = daemon.controlManualRotator(session, &controlRotatorElevation, &value);
+        }
+        bindError(CATEGORY_HARDWARE, error, category, message);
+    }
+    else if ((it = query.find("transceiver")) != query.end()) {
+        if (it->second == "CW") {
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &controlTransceiverModeCW, NULL), category, message);
+        }
+        else if (it->second == "FM") {
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &controlTransceiverModeFM, NULL), category, message);
+        }
+    }
+    else if ((it = query.find("sender")) != query.end()) {
+        if ((error = valueizeFrequency(it->second, &value)) == tgs::TGSERROR_OK) {
+            error = daemon.controlManualTransceiver(session, &controlTransceiverSender, &value);
+        }
+        bindError(CATEGORY_HARDWARE, error, category, message);
+    }
+    else if ((it = query.find("receiver")) != query.end()) {
+        if ((error = valueizeFrequency(it->second, &value)) == tgs::TGSERROR_OK) {
+            error = daemon.controlManualTransceiver(session, &controlTransceiverReceiver, &value);
+        }
+        bindError(CATEGORY_HARDWARE, error, category, message);
+    }
+    else if ((it = query.find("tnc")) != query.end()) {
+        if (it->second == "Command") {
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCModeCommand, NULL), category, message);
+        }
+        else if (it->second == "Converse") {
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCModeConverse, NULL), category, message);
+        }
+    }
+    else if ((it = query.find("message")) != query.end()) {
+        bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCPacket, &it->second), category, message);
+    }
+    else if ((it = query.find("norad")) != query.end()) {
+        bindError(CATEGORY_DATABASE, daemon.setNORAD(session, it->second), category, message);
+    }
+    else if ((it = query.find("mode")) != query.end()) {
+        bindError(CATEGORY_CONTROL, daemon.setMode(session, it->second), category, message);
+    }
+    if ((plugin = daemon.getPlugin(daemon.getNORAD())) != NULL) {
+        plugin->execute(session, query, category, message);
+    }
+    return;
+}
+
+/*private */void ASDServerOperation::processRoot(std::string const& session, std::string const& host, std::string const& category, std::string const& message, bool const shrink[], std::string* response) const
+{
+    static boost::xpressive::sregex const s_ESS(boost::xpressive::sregex::compile("<!\\[ESS />.*?<!\\]ESS />"));
+    static boost::xpressive::sregex const s_HWT(boost::xpressive::sregex::compile("<!\\[HWF />.*?<!\\]HWF />"));
+    static boost::xpressive::sregex const s_HWF(boost::xpressive::sregex::compile("<!\\[HWT />.*?<!\\]HWT />"));
+    static boost::xpressive::sregex const s_MNR(boost::xpressive::sregex::compile("<!\\[MNR />.*?<!\\]MNR />"));
+    static boost::xpressive::sregex const s_MNT(boost::xpressive::sregex::compile("<!\\[MNT />.*?<!\\]MNT />"));
+    static boost::xpressive::sregex const s_MNM(boost::xpressive::sregex::compile("<!\\[MNM />.*?<!\\]MNM />"));
+    static boost::xpressive::sregex const s_EHW(boost::xpressive::sregex::compile("<!\\[EHW />.*?<!\\]EHW />"));
+    static boost::xpressive::sregex const s_DBT(boost::xpressive::sregex::compile("<!\\[DBF />.*?<!\\]DBF />"));
+    static boost::xpressive::sregex const s_DBF(boost::xpressive::sregex::compile("<!\\[DBT />.*?<!\\]DBT />"));
+    static boost::xpressive::sregex const s_EDB(boost::xpressive::sregex::compile("<!\\[EDB />.*?<!\\]EDB />"));
+    static boost::xpressive::sregex const s_STT(boost::xpressive::sregex::compile("<!\\[STF />.*?<!\\]STF />"));
+    static boost::xpressive::sregex const s_STF(boost::xpressive::sregex::compile("<!\\[STT />.*?<!\\]STT />"));
+    static boost::xpressive::sregex const s_CNT(boost::xpressive::sregex::compile("<!\\[CNF />.*?<!\\]CNF />"));
+    static boost::xpressive::sregex const s_CNF(boost::xpressive::sregex::compile("<!\\[CNT />.*?<!\\]CNT />"));
+    static boost::xpressive::sregex const s_ECN(boost::xpressive::sregex::compile("<!\\[ECN />.*?<!\\]ECN />"));
+    static boost::xpressive::sregex const s_tag(boost::xpressive::sregex::compile("<![^<>]+? />"));
+    artsatd& daemon(artsatd::getInstance());
+    int owner;
+    bool exclusive;
+    int norad;
+    tgs::TGSPhysicsDatabase database;
+    tgs::TGSPhysicsDatabase::FieldRec field;
+    boost::shared_ptr<ASDPluginInterface> plugin;
+    std::string string;
+    tgs::TGSError error;
+    
+    daemon.getSession(session, &owner, &exclusive, &string, NULL);
+    boost::replace_first(*response, "<!VS />", artsatd::getVersion());
+    if (owner > 0) {
+        boost::replace_first(*response, "<!PM />", "green");
+        if (exclusive) {
+            boost::replace_first(*response, "<!EX />", "green");
+            boost::replace_first(*response, "<!SI />", "You are controlling the ground station exclusively.");
+        }
+        else {
+            boost::replace_first(*response, "<!SI />", "You are controlling the ground station.");
+        }
+    }
+    else if (owner < 0) {
+        boost::replace_first(*response, "<!PM />", "red");
+        if (exclusive) {
+            boost::replace_first(*response, "<!_DP />", FORM_DISABLED);
+            boost::replace_first(*response, "<!EX />", "red");
+            boost::replace_first(*response, "<!SI />", string + " is controlling the ground station exclusively.");
+        }
+        else {
+            boost::replace_first(*response, "<!SI />", string + " is controlling the ground station.");
+        }
+    }
+    else {
+        boost::replace_first(*response, "<!SI />", "The ground station is on standby.");
+    }
+    if (category == CATEGORY_SESSION && !message.empty()) {
+        boost::replace_first(*response, "<!ES />", message);
+    }
+    else {
+        *response = boost::xpressive::regex_replace(*response, s_ESS, "");
+    }
+    if (!shrink[0]) {
+        boost::replace_first(*response, "<!HW />", SHRINK_HIDE);
+        *response = boost::xpressive::regex_replace(*response, s_HWT, "");
+        if (daemon.getManualRotator()) {
+            boost::replace_first(*response, "<!MR />", "red");
+        }
+        else {
+            *response = boost::xpressive::regex_replace(*response, s_MNR, "");
+        }
+        if (daemon.getManualTransceiver()) {
+            boost::replace_first(*response, "<!MT />", "red");
+        }
+        else {
+            *response = boost::xpressive::regex_replace(*response, s_MNT, "");
+        }
+        if (daemon.getManualTNC()) {
+            boost::replace_first(*response, "<!MM />", "red");
+        }
+        else {
+            *response = boost::xpressive::regex_replace(*response, s_MNM, "");
+        }
+        if (category == CATEGORY_HARDWARE && !message.empty()) {
+            boost::replace_first(*response, "<!EH />", message);
+        }
+        else {
+            *response = boost::xpressive::regex_replace(*response, s_EHW, "");
+        }
+    }
+    else {
+        boost::replace_first(*response, "<!HW />", SHRINK_SHOW);
+        *response = boost::xpressive::regex_replace(*response, s_HWF, "");
+    }
+    boost::replace_first(*response, "<!HR />", (artsatd::getRotator().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+    boost::replace_first(*response, "<!HT />", (artsatd::getTransceiver().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+    boost::replace_first(*response, "<!HM />", (artsatd::getTNC().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
+    norad = daemon.getNORAD();
+    boost::replace_first(*response, "<!ND />", stringizeNORAD(norad));
+    if (category == CATEGORY_DATABASE && !message.empty()) {
+        boost::replace_first(*response, "<!ED />", message);
+    }
+    else {
+        *response = boost::xpressive::regex_replace(*response, s_EDB, "");
+    }
+    string = daemon.getMode();
+    if (!shrink[1]) {
+        boost::replace_first(*response, "<!DB />", SHRINK_HIDE);
+        *response = boost::xpressive::regex_replace(*response, s_DBT, "");
+        field.norad = -1;
+        field.beacon.frequency = -1;
+        field.beacon.drift = INT_MIN;
+        field.sender.frequency = -1;
+        field.sender.drift = INT_MIN;
+        field.receiver.frequency = -1;
+        field.receiver.drift = INT_MIN;
+        memset(&field.tle, 0, sizeof(field.tle));
+        if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+            if (database.getField(norad, &field) == tgs::TGSERROR_OK) {
+                boost::replace_first(*response, "<!NM />", colorizeSpan("green", field.name));
+            }
+            else {
+                boost::replace_first(*response, "<!NM />", "Unknown NORAD");
+            }
+            database.close();
+        }
+        else {
+            boost::replace_first(*response, "<!NM />", colorizeSpan("red", "Database Error " + error.print()));
+        }
+        boost::replace_first(*response, "<!CS />", stringizeCallsign(field.callsign));
+        boost::replace_first(*response, "<!BM />", stringizeMode(field.beacon.mode));
+        boost::replace_first(*response, "<!BF />", colorizeSpan((string == "CW_TEST") ? ("green") : (""), stringizeFrequency(field.beacon.frequency, false)));
+        boost::replace_first(*response, "<!BD />", stringizeDrift(field.beacon.drift));
+        boost::replace_first(*response, "<!SM />", stringizeMode(field.sender.mode));
+        boost::replace_first(*response, "<!SF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.sender.frequency, host != "127.0.0.1" && owner <= 0)));
+        boost::replace_first(*response, "<!SD />", stringizeDrift(field.sender.drift));
+        boost::replace_first(*response, "<!RM />", stringizeMode(field.receiver.mode));
+        boost::replace_first(*response, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency, false)));
+        boost::replace_first(*response, "<!RD />", stringizeDrift(field.receiver.drift));
+        boost::replace_first(*response, "<!TU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
+        boost::replace_first(*response, "<!TL />", stringizeTLE(field.tle));
+    }
+    else {
+        boost::replace_first(*response, "<!DB />", SHRINK_SHOW);
+        *response = boost::xpressive::regex_replace(*response, s_DBF, "");
+    }
+    if (!shrink[2]) {
+        boost::replace_first(*response, "<!ST />", SHRINK_HIDE);
+        *response = boost::xpressive::regex_replace(*response, s_STT, "");
+    }
+    else {
+        boost::replace_first(*response, "<!ST />", SHRINK_SHOW);
+        *response = boost::xpressive::regex_replace(*response, s_STF, "");
+    }
+    boost::replace_first(*response, "<!" + ((!string.empty()) ? (string) : ("NO")) + " />", "green");
+    if (category == CATEGORY_CONTROL && !message.empty()) {
+        boost::replace_first(*response, "<!EC />", message);
+    }
+    else {
+        *response = boost::xpressive::regex_replace(*response, s_ECN, "");
+    }
+    if (!shrink[3]) {
+        boost::replace_first(*response, "<!CN />", SHRINK_HIDE);
+        *response = boost::xpressive::regex_replace(*response, s_CNT, "");
+        string.clear();
+        if ((plugin = daemon.getPlugin(norad)) != NULL) {
+            plugin->process(session, category, message, &string);
+        }
+        boost::replace_first(*response, "<!CD />", string);
+    }
+    else {
+        boost::replace_first(*response, "<!CN />", SHRINK_SHOW);
+        *response = boost::xpressive::regex_replace(*response, s_CNF, "");
+    }
+    if (owner <= 0) {
+        boost::replace_all(*response, "<!_DF />", FORM_DISABLED);
+        boost::replace_all(*response, "<!_RO />", FORM_READONLY);
+    }
+    *response = boost::xpressive::regex_replace(*response, s_tag, "");
+    return;
+}
+
 /*private */void ASDServerOperation::processJSONRPC(rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const
 {
     std::map<std::string, ASDServerRPC::Method>::const_iterator it;
@@ -739,6 +819,128 @@ static  MethodTableRec const                    g_method[] = {
         error = tgs::TGSERROR_FILE_NOTFOUND;
     }
     return error;
+}
+
+/*private static */tgs::TGSError ASDServerOperation::valueizeAzimuth(std::string const& param, int* result)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (param == "N") {
+        *result = 0;
+    }
+    else if (param == "NE") {
+        *result = 45;
+    }
+    else if (param == "E") {
+        *result = 90;
+    }
+    else if (param == "SE") {
+        *result = 135;
+    }
+    else if (param == "S") {
+        *result = 180;
+    }
+    else if (param == "SW") {
+        *result = 225;
+    }
+    else if (param == "W") {
+        *result = 270;
+    }
+    else if (param == "NW") {
+        *result = 315;
+    }
+    else if (1 <= param.size() && param.size() <= 3 && boost::all(param, boost::is_digit())) {
+        *result = boost::lexical_cast<int>(param);
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError ASDServerOperation::valueizeElevation(std::string const& param, int* result)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (param == "0°") {
+        *result = 0;
+    }
+    else if (param == "45°") {
+        *result = 45;
+    }
+    else if (param == "90°") {
+        *result = 90;
+    }
+    else if (1 <= param.size() && param.size() <= 3 && boost::all(param, boost::is_digit())) {
+        *result = boost::lexical_cast<int>(param);
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError ASDServerOperation::valueizeFrequency(std::string const& param, int* result)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (1 <= param.size() && param.size() <= 10 && boost::all(param, boost::is_any_of(".0123456789"))) {
+        try {
+            *result = static_cast<int>(boost::lexical_cast<double>(param) * 1000000.0);
+        }
+        catch (std::exception& e) {
+            error = tgs::TGSERROR_INVALID_PARAM;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlRotatorAzimuth(ASDDeviceRotator& rotator, void const* info)
+{
+    return rotator->rotateAzimuthTo(*static_cast<int const*>(info));
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlRotatorElevation(ASDDeviceRotator& rotator, void const* info)
+{
+    return rotator->rotateElevationTo(*static_cast<int const*>(info));
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTransceiverModeCW(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->selectModeBeacon();
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTransceiverModeFM(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->selectModeCommunication();
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTransceiverSender(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->setFrequencySender(*static_cast<int const*>(info));
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTransceiverReceiver(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->setFrequencyReceiver(*static_cast<int const*>(info));
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTNCModeCommand(ASDDeviceTNC& tnc, void const* info)
+{
+    return tnc->selectModeCommand();
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTNCModeConverse(ASDDeviceTNC& tnc, void const* info)
+{
+    return tnc->selectModeConverse();
+}
+
+/*private static */tgs::TGSError ASDServerOperation::controlTNCPacket(ASDDeviceTNC& tnc, void const* info)
+{
+    return tnc->sendPacket(*static_cast<std::string const*>(info));
 }
 
 /*private static */void ASDServerOperation::bindError(std::string const& name, tgs::TGSError error, std::string* category, std::string* message)

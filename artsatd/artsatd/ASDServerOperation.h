@@ -49,6 +49,9 @@
 
 #include "ASDNetworkServer.h"
 #include "ASDServerRPC.h"
+#include "ASDDeviceRotator.h"
+#include "ASDDeviceTransceiver.h"
+#include "ASDDeviceTNC.h"
 
 class ASDServerOperation : public ASDNetworkServer::Notifier {
     private:
@@ -87,8 +90,22 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
                 void                            replyJSONRPC                (RequestRec const& request, ResponseRec* response);
     private:
         virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
+                void                            executeRoot                 (std::string const& session, std::string const& host, insensitive::map<std::string, std::string> const& query, std::string* category, std::string* message, bool shrink[]) const;
+                void                            processRoot                 (std::string const& session, std::string const& host, std::string const& category, std::string const& message, bool const shrink[], std::string* response) const;
                 void                            processJSONRPC              (rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const;
         static  tgs::TGSError                   serializeCache              (std::string const& file, std::string* result);
+        static  tgs::TGSError                   valueizeAzimuth             (std::string const& param, int* result);
+        static  tgs::TGSError                   valueizeElevation           (std::string const& param, int* result);
+        static  tgs::TGSError                   valueizeFrequency           (std::string const& param, int* result);
+        static  tgs::TGSError                   controlRotatorAzimuth       (ASDDeviceRotator& rotator, void const* info);
+        static  tgs::TGSError                   controlRotatorElevation     (ASDDeviceRotator& rotator, void const* info);
+        static  tgs::TGSError                   controlTransceiverModeCW    (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTransceiverModeFM    (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTransceiverSender    (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTransceiverReceiver  (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTNCModeCommand       (ASDDeviceTNC& tnc, void const* info);
+        static  tgs::TGSError                   controlTNCModeConverse      (ASDDeviceTNC& tnc, void const* info);
+        static  tgs::TGSError                   controlTNCPacket            (ASDDeviceTNC& tnc, void const* info);
         static  void                            bindError                   (std::string const& name, tgs::TGSError error, std::string* category, std::string* message);
         static  std::string                     colorizeSpan                (std::string const& color, std::string const& string);
         static  std::string                     stringizeLatitude           (double param);

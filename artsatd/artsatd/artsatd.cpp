@@ -51,7 +51,7 @@
 #include "TGSTNCTNC555.h"
 #include "ASDTLEClientCelestrak.h"
 
-#define VERSION_STRING                          ("4.1.2")
+#define VERSION_STRING                          ("4.2.1")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -560,6 +560,81 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         if (_session.owner == session) {
             boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
             _session.exclusive = exclusive;
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::controlManualRotator(std::string const& session, tgs::TGSError (*function)(ASDDeviceRotator& rotator, void const* info), void const* info)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty() && function != NULL) {
+        boost::shared_lock<boost::shared_mutex> slock(_mutex_session);
+        if (_session.owner == session) {
+            boost::shared_lock<boost::shared_mutex> clock(_mutex_control);
+            if (_control.manualRotator) {
+                error = (*function)(_rotator, info);
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_STATE;
+            }
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::controlManualTransceiver(std::string const& session, tgs::TGSError (*function)(ASDDeviceTransceiver& transceiver, void const* info), void const* info)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty() && function != NULL) {
+        boost::shared_lock<boost::shared_mutex> slock(_mutex_session);
+        if (_session.owner == session) {
+            boost::shared_lock<boost::shared_mutex> clock(_mutex_control);
+            if (_control.manualTransceiver) {
+                error = (*function)(_transceiver, info);
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_STATE;
+            }
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_SESSION;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*public */tgs::TGSError artsatd::controlManualTNC(std::string const& session, tgs::TGSError (*function)(ASDDeviceTNC& tnc, void const* info), void const* info)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (!session.empty() && function != NULL) {
+        boost::shared_lock<boost::shared_mutex> slock(_mutex_session);
+        if (_session.owner == session) {
+            boost::shared_lock<boost::shared_mutex> clock(_mutex_control);
+            if (_control.manualTNC) {
+                error = (*function)(_tnc, info);
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_STATE;
+            }
         }
         else {
             error = tgs::TGSERROR_INVALID_SESSION;

@@ -31,35 +31,147 @@
                 <table>
                     <tr>
                         <td><span class="button <!HR />">Rotator</span></td>
+                        <![MNR />
+                        <td class="right" colspan="2"></td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="NW" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="N" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="NE" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="elevation" value="90&deg;" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNR />
                         <td><span class="button <!HT />">Transceiver</span></td>
+                        <![MNT />
+                        <td class="right" colspan="2">
+                            <form action="" method="get">
+                                <input type="submit" name="transceiver" value="CW" <!_DF /> /><input type="submit" name="transceiver" value="FM" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNT />
                         <td><span class="button <!HM />">TNC</span></td>
+                        <![MNM />
+                        <td class="right">
+                            <form action="" method="get">
+                                <input type="submit" name="tnc" value="Command" <!_DF /> /><input type="submit" name="tnc" value="Converse" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNM />
                         <td></td>
                     </tr>
                     <tr>
                         <td>
                             <form action="" method="get">
-                                <input type="hidden" name="manual" value="rotator" />
-                                <input class="<!MR />" type="submit" name="" value="manual" <!_DF /> />
+                                <input type="hidden" name="manual" value="rotator" /><input class="<!MR />" type="submit" value="manual" <!_DF /> />
+                            </form>
+                        </td>
+                        <![MNR />
+                        <td class="right">Azimuth:</td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="text" size="3" maxlength="3" name="azimuth" <!_RO /> />&deg;<input type="submit" value="set" <!_DF /> />
                             </form>
                         </td>
                         <td>
                             <form action="" method="get">
-                                <input type="hidden" name="manual" value="transceiver" />
-                                <input class="<!MT />" type="submit" name="" value="manual" <!_DF /> />
+                                <input type="submit" name="azimuth" value="W" <!_DF /> />
+                            </form>
+                        </td>
+                        <td></td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="E" <!_DF /> />
                             </form>
                         </td>
                         <td>
                             <form action="" method="get">
-                                <input type="hidden" name="manual" value="tnc" />
-                                <input class="<!MM />" type="submit" name="" value="manual" <!_DF /> />
+                                <input type="submit" name="elevation" value="45&deg;" <!_DF /> />
                             </form>
                         </td>
+                        <!]MNR />
+                        <td>
+                            <form action="" method="get">
+                                <input type="hidden" name="manual" value="transceiver" /><input class="<!MT />" type="submit" value="manual" <!_DF /> />
+                            </form>
+                        </td>
+                        <![MNT />
+                        <td class="right">Sender:</td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="text" size="10" maxlength="10" name="sender" <!_RO /> />MHz<input type="submit" value="set" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNT />
+                        <td>
+                            <form action="" method="get">
+                                <input type="hidden" name="manual" value="tnc" /><input class="<!MM />" type="submit" value="manual" <!_DF /> />
+                            </form>
+                        </td>
+                        <![MNM />
+                        <td>
+                            <form action="" method="get">
+                                <input type="text" size="24" name="message" <!_RO /> /><input type="submit" value="send" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNM />
                         <td></td>
                     </tr>
                     <tr>
                         <td><a href="webcam.html" target="webcam">[ webcam ]</a></td>
+                        <![MNR />
+                        <td class="right">Elevation:</td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="text" size="3" maxlength="3" name="elevation" <!_RO /> />&deg;<input type="submit" value="set" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="SW" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="S" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="azimuth" value="SE" <!_DF /> />
+                            </form>
+                        </td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="submit" name="elevation" value="0&deg;" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNR />
                         <td><a href="streaming.html" target="streaming">[ streaming ]</a></td>
+                        <![MNT />
+                        <td class="right">Receiver:</td>
+                        <td>
+                            <form action="" method="get">
+                                <input type="text" size="10" maxlength="10" name="receiver" <!_RO /> />MHz<input type="submit" value="set" <!_DF /> />
+                            </form>
+                        </td>
+                        <!]MNT />
                         <td></td>
+                        <![MNM />
+                        <td></td>
+                        <!]MNM />
                         <td></td>
                     </tr>
                 </table>
@@ -72,7 +184,7 @@
             </div>
             <div id="database">
                 <form action="" method="get">
-                    <a href="?shrink=database">[ <pre><!DB /></pre> ]</a> <b>Satellite Database:</b> <input type="text" size="24" maxlength="24" name="norad" value="<!ND />" <!_RO /> /><input type="submit" name="" value="update" <!_DF /> /> <a href="database.html" target="database">[ database ]</a>
+                    <a href="?shrink=database">[ <pre><!DB /></pre> ]</a> <b>Satellite Database:</b> <input type="text" size="24" maxlength="24" name="norad" value="<!ND />" <!_RO /> /><input type="submit" value="update" <!_DF /> /> <a href="database.html" target="database">[ database ]</a>
                 </form>
                 <![EDB />
                 <div class="error">Database error <!ED /></div>

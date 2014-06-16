@@ -99,6 +99,7 @@ div#control {
     margin: 4px 0px;
 }
 div#hardware table {
+    border-spacing: 0px 2px;
     background-color: #222222;
     text-align: center;
 }
@@ -157,6 +158,9 @@ td.critical {
 }
 .left {
     text-align: left;
+}
+.right {
+    text-align: right;
 }
 .red {
     color: #ff0000;

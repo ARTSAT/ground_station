@@ -575,7 +575,7 @@ static DurationRec const g_duration[] = {
         }
         else if (type == "critical_operation") {
             if (command == "PSS") {
-                artsatd::getInstance().requestCommand(session, "c-c-d-pss");
+                artsatd::getInstance().requestCommand(session, "c-c-g-pss");
             }
             else if (command == "TXR") {
                 artsatd::getInstance().requestCommand(session, "r-c-p-txr");
