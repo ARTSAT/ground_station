@@ -4,6 +4,9 @@
 **      Original Copyright (C) 2014 - 2014 Ron Hashimoto.
 **                                          http://h2so5.net/
 **                                          mail@h2so5.net
+**      Portions Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
+**                                          http://iridium.jp/
+**                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
 **                                          <website>
 **                                          <e-mail>
@@ -47,77 +50,101 @@
 #include "ASDServerRPC.h"
 
 namespace ASDServerRPC {
-    
-    Variant toVariant(const rapidjson::Value& value)
-    {
-        switch (value.GetType()) {
-            case 1:
-                return false;
-            case 2:
-                return true;
-            case 3:
-            {
-                std::map<std::string, Variant> map;
-                for (rapidjson::Value::ConstMemberIterator it = value.MemberBegin(); it != value.MemberEnd(); ++it) {
-                    std::string name = it->name.GetString();
-                    map[name] = toVariant(it->value);
-                }
-                return map;
-            }
-            case 4:
-            {
-                std::list<Variant> list;
-                for (rapidjson::Value::ConstValueIterator it = value.Begin(); it != value.End(); ++it) {
-                    list.push_back(toVariant(*it));
-                }
-                return list;
-            }
-            case 5:
-                return std::string(value.GetString());
-            case 6:
-                return value.GetDouble();
-            default:
-                return boost::blank();
-        }
-    }
-    
-    void toJson(const Variant& variant, rapidjson::Value* value, rapidjson::Document::AllocatorType& alloc)
-    {
-        switch (variant.which()) {
-            case 0:
-                value->SetBool(boost::get<bool>(value));
-                break;
-            case 1:
-                value->SetDouble(boost::get<double>(variant));
-                break;
-            case 2:
-                value->SetString(boost::get<std::string>(variant).c_str(), alloc);
-                break;
-            case 3:
-            {
-                value->SetObject();
-                const std::map<std::string, Variant>& map = boost::get<std::map<std::string, Variant> >(variant);
-                for (std::map<std::string, Variant>::const_iterator it = map.begin(); it != map.end(); ++it) {
-                    rapidjson::Value child_val;
-                    toJson(it->second, &child_val, alloc);
-                    value->AddMember(it->first.c_str(), alloc, child_val, alloc);
-                }
-            }
-                break;
-            case 4:
-            {
-                value->SetArray();
-                const std::list<Variant>& list = boost::get<std::list<Variant> >(variant);
-                for (std::list<Variant>::const_iterator it = list.begin(); it != list.end(); ++it) {
-                    rapidjson::Value child_val;
-                    toJson(*it, &child_val, alloc);
-                    value->PushBack(child_val, alloc);
-                }
-            }
-                break;
-            default:
-                value->SetNull();
-        }
-    }
 
+void toVariant(rapidjson::Value const& param, Variant* result)
+{
+    Variant value;
+    
+    if (result != NULL) {
+        switch (param.GetType()) {
+            case rapidjson::kFalseType:
+                *result = false;
+                break;
+            case rapidjson::kTrueType:
+                *result = true;
+                break;
+            case rapidjson::kNumberType:
+                *result = param.GetDouble();
+                break;
+            case rapidjson::kStringType:
+                *result = param.GetString();
+                break;
+            case rapidjson::kArrayType:
+                {
+                    std::list<Variant> list;
+                    rapidjson::Value::ConstValueIterator it;
+                    for (it = param.Begin(); it != param.End(); ++it) {
+                        toVariant(*it, &value);
+                        list.push_back(value);
+                    }
+                    *result = list;
+                }
+                break;
+            case rapidjson::kObjectType:
+                {
+                    std::map<std::string, Variant> map;
+                    rapidjson::Value::ConstMemberIterator it;
+                    for (it = param.MemberBegin(); it != param.MemberEnd(); ++it) {
+                        toVariant(it->value, &value);
+                        map[it->name.GetString()] = value;
+                    }
+                    *result = map;
+                }
+                break;
+            default:
+                *result = boost::blank();
+                break;
+        }
+    }
+    return;
 }
+
+void toJSON(Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator)
+{
+    rapidjson::Value value;
+    
+    if (result != NULL) {
+        switch (param.which()) {
+            case VARIANTTYPE_BOOL:
+                result->SetBool(boost::get<bool>(param));
+                break;
+            case VARIANTTYPE_INT:
+                result->SetInt(boost::get<int>(param));
+                break;
+            case VARIANTTYPE_DOUBLE:
+                result->SetDouble(boost::get<double>(param));
+                break;
+            case VARIANTTYPE_STRING:
+                result->SetString(boost::get<std::string>(param).c_str(), allocator);
+                break;
+            case VARIANTTYPE_LIST:
+                {
+                    result->SetArray();
+                    std::list<Variant> const& list(boost::get<std::list<Variant> >(param));
+                    std::list<Variant>::const_iterator it;
+                    for (it = list.begin(); it != list.end(); ++it) {
+                        toJSON(*it, &value, allocator);
+                        result->PushBack(value, allocator);
+                    }
+                }
+                break;
+            case VARIANTTYPE_MAP:
+                {
+                    result->SetObject();
+                    std::map<std::string, Variant> const& map(boost::get<std::map<std::string, Variant> >(param));
+                    std::map<std::string, Variant>::const_iterator it;
+                    for (it = map.begin(); it != map.end(); ++it) {
+                        toJSON(it->second, &value, allocator);
+                        result->AddMember(it->first.c_str(), allocator, value, allocator);
+                    }
+                }
+                break;
+            default:
+                result->SetNull();
+                break;
+        }
+    }
+    return;
+}
+
+}// end of namespace

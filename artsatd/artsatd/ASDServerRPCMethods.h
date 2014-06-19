@@ -52,160 +52,160 @@
 namespace ASDServerRPC {
     namespace sys {
         
-        // params: {<ANY>}
+        // Param: {<ANY>}
         // result: {"args": <ANY>}
-        Result rpcEcho(const Params& args, Params *result);
+        tgs::TGSError rpcEcho(const Param& args, Param *result);
         
     }
     namespace trans {
         
-        /* params: {"manual": <bool>}      */
+        /* Param: {"manual": <bool>}      */
         /* result: {"manual": <bool>}      */
-        Result setManualRotator(const Params& args, Params *result);
+        tgs::TGSError setManualRotator(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"manual": <bool>}      */
-        Result getManualRotator(const Params& args, Params *result);
+        tgs::TGSError getManualRotator(const Param& args, Param *result);
         
-        /* params: {"manual": <bool>}      */
+        /* Param: {"manual": <bool>}      */
         /* result: {"manual": <bool>}      */
-        Result setManualTransceiver(const Params& args, Params *result);
+        tgs::TGSError setManualTransceiver(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"manual": <bool>}      */
-        Result getManualTransceiver(const Params& args, Params *result);
+        tgs::TGSError getManualTransceiver(const Param& args, Param *result);
         
-        /* params: {"manual": <bool>}      */
+        /* Param: {"manual": <bool>}      */
         /* result: {"manual": <bool>}      */
-        Result setManualTNC(const Params& args, Params *result);
+        tgs::TGSError setManualTNC(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"manual": <bool>}      */
-        Result getManualTNC(const Params& args, Params *result);
+        tgs::TGSError getManualTNC(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"valid": <bool>}       */
-        Result getStateRotator(const Params& args, Params *result);
+        tgs::TGSError getStateRotator(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"valid": <bool>}       */
-        Result getStateTransceiver(const Params& args, Params *result);
+        tgs::TGSError getStateTransceiver(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"valid": <bool>}       */
-        Result getStateTNC(const Params& args, Params *result);
+        tgs::TGSError getStateTNC(const Param& args, Param *result);
     
-        /* params: {"mode": <string>}      */
+        /* Param: {"mode": <string>}      */
         /* result: {"mode": <string>}      */
-        Result setMode(const Params& args, Params *result);
+        tgs::TGSError setMode(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"mode": <string>}      */
-        Result getMode(const Params& args, Params *result);
+        tgs::TGSError getMode(const Param& args, Param *result);
         
-        /* params: {"norad": <int>}        */
+        /* Param: {"norad": <int>}        */
         /* result: {"norad": <int>}        */
-        Result setNorad(const Params& args, Params *result);
+        tgs::TGSError setNorad(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"norad": <int>}        */
-        Result getNorad(const Params& args, Params *result);
+        tgs::TGSError getNorad(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"azimuth": <dobule>}   */
-        Result getAngleAzimuth(const Params& args, Params *result);
+        tgs::TGSError getAngleAzimuth(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"elevation": <dobule>} */
-        Result getAngleElevation(const Params& args, Params *result);
+        tgs::TGSError getAngleElevation(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"beacon": <dobule>}    */
-        Result getFrequencyBeacon(const Params& args, Params *result);
+        tgs::TGSError getFrequencyBeacon(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"sender": <dobule>}    */
-        Result getFrequencySender(const Params& args, Params *result);
+        tgs::TGSError getFrequencySender(const Param& args, Param *result);
         
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"receiver": <dobule>}  */
-        Result getFrequencyReceiver(const Params& args, Params *result);
+        tgs::TGSError getFrequencyReceiver(const Param& args, Param *result);
         
-        /* params: {"command": <string>}   */
+        /* Param: {"command": <string>}   */
         /* result: {"command": <string>}   */
-        Result sendSafeCommand(const Params& args, Params *result);
+        tgs::TGSError sendSafeCommand(const Param& args, Param *result);
     }
     namespace pass {
-        /* params: {}                      */
+        /* Param: {}                      */
         /* result: {"visible": <bool>}     */
-        Result getStateNearest(const Params& args, Params *result);
+        tgs::TGSError getStateNearest(const Param& args, Param *result);
     }
     namespace db {
         
-        /* params: {"norad": <int>, 
+        /* Param: {"norad": <int>,
                     "name":  <string>}                   */
         /* result: {"name":  <string>}                   */
-        Result setName(const Params& args, Params *result);
+        tgs::TGSError setName(const Param& args, Param *result);
          
-        /* params: {"norad": <int>}                      */
+        /* Param: {"norad": <int>}                      */
         /* result: {"name":  <string>}                   */
-        Result getName(const Params& args, Params *result);
+        tgs::TGSError getName(const Param& args, Param *result);
         
-        /* params: {"norad":    <int>, 
+        /* Param: {"norad":    <int>,
                     "callsign": <string>}                */
         /* result: {"callsign": <string>}                */
-        Result setCallsign(const Params& args, Params *result);
+        tgs::TGSError setCallsign(const Param& args, Param *result);
         
-        /* params: {"norad":    <int>}                   */
+        /* Param: {"norad":    <int>}                   */
         /* result: {"callsign": <string>}                */
-        Result getCallsign(const Params& args, Params *result);
+        tgs::TGSError getCallsign(const Param& args, Param *result);
         
-        /* params: {"norad":     <int>, 
+        /* Param: {"norad":     <int>,
                    ("mode":      <string>), 
                    ("frequency": <double>), 
                    ("drift":     <double>)}              */
         /* result: {"mode":      <string>, 
                     "frequency": <double>, 
                     "drift":     <double>}               */
-        Result setRadioBeacon(const Params& args, Params *result);
+        tgs::TGSError setRadioBeacon(const Param& args, Param *result);
         
-        /* params: {"norad":     <int>}                  */
+        /* Param: {"norad":     <int>}                  */
         /* result: {"mode":      <string>,
                     "frequency": <double>, 
                     "drift":     <double>}               */
-        Result getRadioBeacon(const Params& args, Params *result);
+        tgs::TGSError getRadioBeacon(const Param& args, Param *result);
         
-        /* params: {"norad":     <int>,
+        /* Param: {"norad":     <int>,
                    ("mode":      <string>),
                    ("frequency": <double>),
                    ("drift":     <double>)}              */
         /* result: {"mode":      <string>, 
                     "frequency": <double>, 
                     "drift":     <double>}               */
-        Result setRadioSender(const Params& args, Params *result);
+        tgs::TGSError setRadioSender(const Param& args, Param *result);
         
-        /* params: {"norad":     <int>}                  */
+        /* Param: {"norad":     <int>}                  */
         /* result: {"mode":      <string>,
                     "frequency": <double>, 
                     "drift":     <double>}               */
-        Result getRadioSender(const Params& args, Params *result);
+        tgs::TGSError getRadioSender(const Param& args, Param *result);
         
-        /* params: {"norad":     <int>,
+        /* Param: {"norad":     <int>,
                    ("mode":      <string>),
                    ("frequency": <double>),
                    ("drift":     <double>)}              */
         /* result: {"mode":      <string>, 
                     "frequency": <double>, 
                     "drift":     <double>}               */
-        Result setRadioReceiver(const Params& args, Params *result);
+        tgs::TGSError setRadioReceiver(const Param& args, Param *result);
         
-        /* params: {"norad":     <int>}                  */
+        /* Param: {"norad":     <int>}                  */
         /* result: {"mode":      <string>, 
                     "frequency": <double>, 
                     "drift":     <double>}               */
-        Result getRadioReceiver(const Params& args, Params *result);
+        tgs::TGSError getRadioReceiver(const Param& args, Param *result);
         
-        /* params: {"time":          <string>,
+        /* Param: {"time":          <string>,
                     "tle":  {"name": <string>,
                              "one":  <string>,
                              "two":  <string>}}          */
@@ -213,20 +213,20 @@ namespace ASDServerRPC {
                     "tle":  {"name": <string>,
                              "one":  <string>,
                              "two":  <string>}}          */
-        Result setOrbitData(const Params& args, Params *result);
+        tgs::TGSError setOrbitData(const Param& args, Param *result);
         
-        /* params: {"norad":          <int>}             */
+        /* Param: {"norad":          <int>}             */
         /* result: {"time":           <string>,
                     "tle":   {"name": <string>,
                               "one":  <string>,
                               "two":  <string>}}         */
-        Result getOrbitData(const Params& args, Params *result);
+        tgs::TGSError getOrbitData(const Param& args, Param *result);
         
-        /* params: {}                                    */
+        /* Param: {}                                    */
         /* result: {"count":          <int>}             */
-        Result getCount(const Params& args, Params *result);
+        tgs::TGSError getCount(const Param& args, Param *result);
         
-        /* params: {"norad":                  <int>}     */
+        /* Param: {"norad":                  <int>}     */
         /* result: {"norad":                  <int>,
                     "name":                   <string>,
                     "callsign":               <string>,
@@ -244,27 +244,27 @@ namespace ASDServerRPC {
                                  "one":       <string>,
                                  "two":       <string>}} */
         
-        /* params: {"limit":  <int>,
+        /* Param: {"limit":  <int>,
                     "offset": <int>}                     */
         /* result: {"fields": [...]}                     */
         
-        Result getField(const Params& args, Params *result);
+        tgs::TGSError getField(const Param& args, Param *result);
     
-        /* params: {"name":   <string>}                  */
+        /* Param: {"name":   <string>}                  */
         /* result: {"fields": [...]}                     */
-        Result getFieldByName(const Params& args, Params *result);
+        tgs::TGSError getFieldByName(const Param& args, Param *result);
         
-        /* params: {"callsign": <string>}                */
+        /* Param: {"callsign": <string>}                */
         /* result: {"fields":   [...]}                   */
-        Result getFieldByCallsign(const Params& args, Params *result);
+        tgs::TGSError getFieldByCallsign(const Param& args, Param *result);
         
-        /* params: {"name":   <string>}                  */
+        /* Param: {"name":   <string>}                  */
         /* result: {"norads": [...]}                     */
-        Result getNoradByName(const Params& args, Params *result);
+        tgs::TGSError getNoradByName(const Param& args, Param *result);
         
-        /* params: {"callsign": <string>}                */
+        /* Param: {"callsign": <string>}                */
         /* result: {"norads":   [...]}                   */
-        Result getNoradByCallsign(const Params& args, Params *result);
+        tgs::TGSError getNoradByCallsign(const Param& args, Param *result);
         
     }
 };

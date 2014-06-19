@@ -4,6 +4,9 @@
 **      Original Copyright (C) 2014 - 2014 Ron Hashimoto.
 **                                          http://h2so5.net/
 **                                          mail@h2so5.net
+**      Portions Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
+**                                          http://iridium.jp/
+**                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
 **                                          <website>
 **                                          <e-mail>
@@ -47,25 +50,42 @@
 #ifndef __ASD_SERVERRPC_H
 #define __ASD_SERVERRPC_H
 
+#include "TGSType.h"
 #include "document.h"
 
 namespace ASDServerRPC {
-    
-    enum Result {
-        RPC_OK,
-        RPC_WRONG_ARGS,
-        RPC_INTERNAL_ERR
-    };
-    
-    typedef boost::make_recursive_variant<bool, double, std::string,
+
+enum VariantTypeEnum {
+    VARIANTTYPE_BOOL,
+    VARIANTTYPE_INT,
+    VARIANTTYPE_DOUBLE,
+    VARIANTTYPE_STRING,
+    VARIANTTYPE_LIST,
+    VARIANTTYPE_MAP,
+    VARIANTTYPE_BLANK,
+    VARIANTTYPE_LIMIT
+};
+
+typedef boost::make_recursive_variant<
+    bool,
+    int,
+    double,
+    std::string,
+    std::list<boost::recursive_variant_>,
     std::map<std::string, boost::recursive_variant_>,
-    std::list<boost::recursive_variant_>, boost::blank>::type                           Variant;
-    typedef std::map<std::string, Variant>                                              Params;
-    typedef boost::function<Result(const Params& args, Params *result)>                 Method;
-    
-    Variant toVariant(const rapidjson::Value& value);
-    void toJson(const Variant& variant, rapidjson::Value* value, rapidjson::Document::AllocatorType& alloc);
-    
-}
+    boost::blank
+>::type Variant;
+typedef std::map<
+    std::string,
+    Variant
+> Param;
+typedef boost::function<
+    tgs::TGSError(Param const& param, Param* result)
+> Method;
+
+extern  void                    toVariant           (rapidjson::Value const& param, Variant* result);
+extern  void                    toJSON              (Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator);
+
+}// end of namespace
 
 #endif

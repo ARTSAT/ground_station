@@ -49,8 +49,8 @@
 
 namespace {
     template <class T>
-    bool getParam(const std::string& name, T *result, const ASDServerRPC::Params& args) {
-        ASDServerRPC::Params::const_iterator it = args.find(name);
+    bool getParam(const std::string& name, T *result, const ASDServerRPC::Param& args) {
+        ASDServerRPC::Param::const_iterator it = args.find(name);
         if (it != args.end() && it->second.type() == typeid(T)) {
             *result = boost::get<T>(it->second);
             return true;
@@ -61,8 +61,8 @@ namespace {
     }
     
     template <>
-    bool getParam(const std::string& name, int *result, const ASDServerRPC::Params& args) {
-        ASDServerRPC::Params::const_iterator it = args.find(name);
+    bool getParam(const std::string& name, int *result, const ASDServerRPC::Param& args) {
+        ASDServerRPC::Param::const_iterator it = args.find(name);
         if (it != args.end() && it->second.type() == typeid(double)) {
             *result = boost::get<double>(it->second);
             return true;
@@ -75,199 +75,199 @@ namespace {
 
 namespace ASDServerRPC {
     namespace sys {
-        Result rpcEcho(const Params& args, Params *result)
+        tgs::TGSError rpcEcho(const Param& args, Param *result)
         {
             (*result)["args"] = args;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
     }
     
     namespace trans {
         
-        Result setManualRotator(const Params& args, Params *result)
+        tgs::TGSError setManualRotator(const Param& args, Param *result)
         {
             bool flag;
             if (getParam("manual", &flag, args)) {
                 tgs::TGSError error = artsatd::getInstance().setManualRotator("!!TODO!!", flag);
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["manual"] = artsatd::getInstance().getManualRotator();
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
 
-        Result getManualRotator(const Params& args, Params *result)
+        tgs::TGSError getManualRotator(const Param& args, Param *result)
         {
             (*result)["manual"] = artsatd::getInstance().getManualRotator();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
 
-        Result setManualTransceiver(const Params& args, Params *result)
+        tgs::TGSError setManualTransceiver(const Param& args, Param *result)
         {
             bool flag;
             if (getParam("manual", &flag, args)) {
                 tgs::TGSError error = artsatd::getInstance().setManualTransceiver("!!TODO!!", flag);
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["manual"] = artsatd::getInstance().getManualTransceiver();
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
 
-        Result getManualTransceiver(const Params& args, Params *result)
+        tgs::TGSError getManualTransceiver(const Param& args, Param *result)
         {
             (*result)["manual"] = artsatd::getInstance().getManualTransceiver();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result setManualTNC(const Params& args, Params *result)
+        tgs::TGSError setManualTNC(const Param& args, Param *result)
         {
             bool flag;
             if (getParam("manual", &flag, args)) {
                 tgs::TGSError error = artsatd::getInstance().setManualTNC("!!TODO!!", flag);
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["manual"] = artsatd::getInstance().getManualTNC();
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getManualTNC(const Params& args, Params *result)
+        tgs::TGSError getManualTNC(const Param& args, Param *result)
         {
             (*result)["manual"] = artsatd::getInstance().getManualTNC();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getStateRotator(const Params& args, Params *result)
+        tgs::TGSError getStateRotator(const Param& args, Param *result)
         {
             (*result)["valid"] = artsatd::getInstance().getRotator().isValid();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getStateTransceiver(const Params& args, Params *result)
+        tgs::TGSError getStateTransceiver(const Param& args, Param *result)
         {
             (*result)["valid"] = artsatd::getInstance().getTransceiver().isValid();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getStateTNC(const Params& args, Params *result)
+        tgs::TGSError getStateTNC(const Param& args, Param *result)
         {
             (*result)["valid"] = artsatd::getInstance().getTNC().isValid();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result setMode(const Params& args, Params *result)
+        tgs::TGSError setMode(const Param& args, Param *result)
         {
             std::string mode;
             if (getParam("mode", &mode, args)) {
                 tgs::TGSError error = artsatd::getInstance().setMode("!!TODO!!", mode);
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["mode"] = artsatd::getInstance().getMode();
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getMode(const Params& args, Params *result)
+        tgs::TGSError getMode(const Param& args, Param *result)
         {
             (*result)["mode"] = artsatd::getInstance().getMode();
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result setNorad(const Params& args, Params *result)
+        tgs::TGSError setNorad(const Param& args, Param *result)
         {
             double norad = 0;
             if (getParam("norad", &norad, args)) {
                 tgs::TGSError error = artsatd::getInstance().setNORAD("!!TODO!!", norad);
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["norad"] = static_cast<double>(artsatd::getInstance().getNORAD());
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
 
-        Result getNorad(const Params& args, Params *result)
+        tgs::TGSError getNorad(const Param& args, Param *result)
         {
             (*result)["norad"] = static_cast<double>(artsatd::getInstance().getNORAD());
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getAngleAzimuth(const Params& args, Params *result)
+        tgs::TGSError getAngleAzimuth(const Param& args, Param *result)
         {
             double value;
             artsatd::getInstance().getSatelliteDirection(&value, NULL);
             (*result)["azimuth"] = value;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getAngleElevation(const Params& args, Params *result)
+        tgs::TGSError getAngleElevation(const Param& args, Param *result)
         {
             double value;
             artsatd::getInstance().getSatelliteDirection(NULL, &value);
             (*result)["elevation"] = value;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getFrequencyBeacon(const Params& args, Params *result)
+        tgs::TGSError getFrequencyBeacon(const Param& args, Param *result)
         {
             double value;
             artsatd::getInstance().getSatelliteFrequency(&value, NULL, NULL);
             (*result)["beacon"] = value;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getFrequencySender(const Params& args, Params *result)
+        tgs::TGSError getFrequencySender(const Param& args, Param *result)
         {
             double value;
             artsatd::getInstance().getSatelliteFrequency(NULL, &value, NULL);
             (*result)["sender"] = value;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result getFrequencyReceiver(const Params& args, Params *result)
+        tgs::TGSError getFrequencyReceiver(const Param& args, Param *result)
         {
             double value;
             artsatd::getInstance().getSatelliteFrequency(NULL, NULL, &value);
             (*result)["receiver"] = value;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
         
-        Result sendSafeCommand(const Params& args, Params *result)
+        tgs::TGSError sendSafeCommand(const Param& args, Param *result)
         {
             static const std::string safe_patterns[] = {
                 "c-c-g-sta",
@@ -284,20 +284,20 @@ namespace ASDServerRPC {
                     if (regex_match(command, r)) {
                         artsatd::getInstance().requestCommand("!!TODO!!", command);
                         (*result)["command"] = command;
-                        return RPC_OK;
+                        return tgs::TGSERROR_OK;
                     }
                 }
                 (*result)["message"] = std::string("unsafe command");
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
     }
     
     namespace pass {
-        Result getStateNearest(const Params& args, Params *result)
+        tgs::TGSError getStateNearest(const Param& args, Param *result)
         {
             ir::IRXTime aos, los;
             double mel;
@@ -306,13 +306,13 @@ namespace ASDServerRPC {
             (*result)["aos"] = aos.formatISO8601();
             (*result)["los"] = los.formatISO8601();
             (*result)["mel"] = mel;
-            return RPC_OK;
+            return tgs::TGSERROR_OK;
         }
     }
     
     namespace db {
         
-        Result setName(const Params& args, Params *result)
+        tgs::TGSError setName(const Param& args, Param *result)
         {
             double norad;
             std::string name;
@@ -327,24 +327,24 @@ namespace ASDServerRPC {
                     
                     if (error == tgs::TGSERROR_OK) {
                         (*result)["name"] = result_name;
-                        return RPC_OK;
+                        return tgs::TGSERROR_OK;
                     }
                     else {
                         (*result)["message"] = error.print();
-                        return RPC_INTERNAL_ERR;
+                        return tgs::TGSERROR_FAILED;
                     }
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getName(const Params& args, Params *result)
+        tgs::TGSError getName(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -356,19 +356,19 @@ namespace ASDServerRPC {
                 
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["name"] = result_name;
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result setCallsign(const Params& args, Params *result)
+        tgs::TGSError setCallsign(const Param& args, Param *result)
         {
             double norad;
             std::string callsign;
@@ -383,24 +383,24 @@ namespace ASDServerRPC {
                     
                     if (error == tgs::TGSERROR_OK) {
                         (*result)["callsign"] = result_callsign;
-                        return RPC_OK;
+                        return tgs::TGSERROR_OK;
                     }
                     else {
                         (*result)["message"] = error.print();
-                        return RPC_INTERNAL_ERR;
+                        return tgs::TGSERROR_FAILED;
                     }
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getCallsign(const Params& args, Params *result)
+        tgs::TGSError getCallsign(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -412,19 +412,19 @@ namespace ASDServerRPC {
                 
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["callsign"] = result_callsign;
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
   
-        Result setRadioBeacon(const Params& args, Params *result)
+        tgs::TGSError setRadioBeacon(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -445,24 +445,24 @@ namespace ASDServerRPC {
                         (*result)["mode"] = rec.mode;
                         (*result)["frequency"] = static_cast<double>(rec.frequency);
                         (*result)["drift"] = static_cast<double>(rec.drift);
-                        return RPC_OK;
+                        return tgs::TGSERROR_OK;
                     }
                     else {
                         (*result)["message"] = error.print();
-                        return RPC_INTERNAL_ERR;
+                        return tgs::TGSERROR_FAILED;
                     }
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getRadioBeacon(const Params& args, Params *result)
+        tgs::TGSError getRadioBeacon(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -474,19 +474,19 @@ namespace ASDServerRPC {
                     (*result)["mode"] = rec.mode;
                     (*result)["frequency"] = static_cast<double>(rec.frequency);
                     (*result)["drift"] = static_cast<double>(rec.drift);
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result setRadioSender(const Params& args, Params *result)
+        tgs::TGSError setRadioSender(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -507,24 +507,24 @@ namespace ASDServerRPC {
                         (*result)["mode"] = rec.mode;
                         (*result)["frequency"] = static_cast<double>(rec.frequency);
                         (*result)["drift"] = static_cast<double>(rec.drift);
-                        return RPC_OK;
+                        return tgs::TGSERROR_OK;
                     }
                     else {
                         (*result)["message"] = error.print();
-                        return RPC_INTERNAL_ERR;
+                        return tgs::TGSERROR_FAILED;
                     }
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getRadioSender(const Params& args, Params *result)
+        tgs::TGSError getRadioSender(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -536,19 +536,19 @@ namespace ASDServerRPC {
                     (*result)["mode"] = rec.mode;
                     (*result)["frequency"] = static_cast<double>(rec.frequency);
                     (*result)["drift"] = static_cast<double>(rec.drift);
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result setRadioReceiver(const Params& args, Params *result)
+        tgs::TGSError setRadioReceiver(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -569,24 +569,24 @@ namespace ASDServerRPC {
                         (*result)["mode"] = rec.mode;
                         (*result)["frequency"] = static_cast<double>(rec.frequency);
                         (*result)["drift"] = static_cast<double>(rec.drift);
-                        return RPC_OK;
+                        return tgs::TGSERROR_OK;
                     }
                     else {
                         (*result)["message"] = error.print();
-                        return RPC_INTERNAL_ERR;
+                        return tgs::TGSERROR_FAILED;
                     }
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getRadioReceiver(const Params& args, Params *result)
+        tgs::TGSError getRadioReceiver(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -598,22 +598,22 @@ namespace ASDServerRPC {
                     (*result)["mode"] = rec.mode;
                     (*result)["frequency"] = static_cast<double>(rec.frequency);
                     (*result)["drift"] = static_cast<double>(rec.drift);
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result setOrbitData(const Params& args, Params *result)
+        tgs::TGSError setOrbitData(const Param& args, Param *result)
         {
             std::string time_str, name, one, two;
-            Params tle;
+            Param tle;
             if (getParam("time", &time_str, args) &&
                 getParam("tle",  &tle,  args) &&
                 getParam("name", &name, tle)  &&
@@ -625,7 +625,7 @@ namespace ASDServerRPC {
                 
                 if (time.parseISO8601(time_str)) {
                     (*result)["message"] = "time parse error";
-                    return RPC_WRONG_ARGS;
+                    return tgs::TGSERROR_INVALID_PARAM;
                 }
                 
                 name.copy(tle.name, sizeof(tle.name));
@@ -637,19 +637,19 @@ namespace ASDServerRPC {
                 tgs::TGSError error = db.setOrbitData(tle, time);
                 if (error == tgs::TGSERROR_OK) {
                     // TODO: return value
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getOrbitData(const Params& args, Params *result)
+        tgs::TGSError getOrbitData(const Param& args, Param *result)
         {
             double norad;
             if (getParam("norad", &norad, args)) {
@@ -662,24 +662,24 @@ namespace ASDServerRPC {
                 tgs::TGSError error = db.getOrbitData(norad, &tle, &time);
                 if (error == tgs::TGSERROR_OK) {
                     (*result)["time"] = time.formatISO8601();
-                    Params tle_res;
+                    Param tle_res;
                     tle_res["name"] = std::string(tle.name);
                     tle_res["one"] = std::string(tle.one);
                     tle_res["two"] = std::string(tle.two);
                     (*result)["tle"] = tle_res;
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getCount(const Params& args, Params *result)
+        tgs::TGSError getCount(const Param& args, Param *result)
         {
             tgs::TGSPhysicsDatabase::RadioRec rec;
             tgs::TGSPhysicsDatabase db;
@@ -689,40 +689,40 @@ namespace ASDServerRPC {
             tgs::TGSError error = db.getCount(&count);
             if (error == tgs::TGSERROR_OK) {
                 (*result)["count"] = static_cast<double>(count);
-                return RPC_OK;
+                return tgs::TGSERROR_OK;
             }
             else {
                 (*result)["message"] = error.print();
-                return RPC_INTERNAL_ERR;
+                return tgs::TGSERROR_FAILED;
             }
         }
         
         namespace {
-            void fieldToVariant(const tgs::TGSPhysicsDatabase::FieldRec &field, Params *result)
+            void fieldToVariant(const tgs::TGSPhysicsDatabase::FieldRec &field, Param *result)
             {
                 (*result)["name"] = field.name;
                 (*result)["callsign"] = field.callsign;
                 
-                Params beacon;
+                Param beacon;
                 beacon["mode"] = field.beacon.mode;
                 beacon["frequency"] = static_cast<double>(field.beacon.frequency);
                 beacon["drift"] = static_cast<double>(field.beacon.drift);
                 (*result)["beacon"] = beacon;
                 
-                Params sender;
+                Param sender;
                 sender["mode"] = field.sender.mode;
                 sender["frequency"] = static_cast<double>(field.sender.frequency);
                 sender["drift"] = static_cast<double>(field.sender.drift);
                 (*result)["sender"] = sender;
                 
-                Params receiver;
+                Param receiver;
                 receiver["mode"] = field.receiver.mode;
                 receiver["frequency"] = static_cast<double>(field.receiver.frequency);
                 receiver["drift"] = static_cast<double>(field.receiver.drift);
                 (*result)["receiver"] = receiver;
                 
                 (*result)["time"] = field.time.formatISO8601();
-                Params tle;
+                Param tle;
                 tle["name"] = std::string(field.tle.name);
                 tle["one"] = std::string(field.tle.one);
                 tle["two"] = std::string(field.tle.two);
@@ -731,7 +731,7 @@ namespace ASDServerRPC {
             
         }
         
-        Result getField(const Params& args, Params *result)
+        tgs::TGSError getField(const Param& args, Param *result)
         {
             tgs::TGSPhysicsDatabase::RadioRec rec;
             tgs::TGSPhysicsDatabase db;
@@ -743,11 +743,11 @@ namespace ASDServerRPC {
                 tgs::TGSError error = db.getField(norad, &field);
                 if (error == tgs::TGSERROR_OK) {
                     fieldToVariant(field, result);
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else if (getParam("limit", &limit, args)) {
@@ -758,25 +758,25 @@ namespace ASDServerRPC {
                 if (error == tgs::TGSERROR_OK) {
                     std::list<Variant> list;
                     for (FieldVec::iterator it = fields.begin(); it != fields.end(); ++it) {
-                        Params field;
+                        Param field;
                         fieldToVariant(*it, &field);
                         list.push_back(field);
                     }
                     (*result)["fields"] = list;
                     
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getFieldByName(const Params& args, Params *result)
+        tgs::TGSError getFieldByName(const Param& args, Param *result)
         {
             tgs::TGSPhysicsDatabase::RadioRec rec;
             tgs::TGSPhysicsDatabase db;
@@ -790,25 +790,25 @@ namespace ASDServerRPC {
                 if (error == tgs::TGSERROR_OK) {
                     std::list<Variant> list;
                     for (FieldVec::iterator it = fields.begin(); it != fields.end(); ++it) {
-                        Params field;
+                        Param field;
                         fieldToVariant(*it, &field);
                         list.push_back(field);
                     }
                     (*result)["fields"] = list;
                     
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getFieldByCallsign(const Params& args, Params *result)
+        tgs::TGSError getFieldByCallsign(const Param& args, Param *result)
         {
             tgs::TGSPhysicsDatabase::RadioRec rec;
             tgs::TGSPhysicsDatabase db;
@@ -822,25 +822,25 @@ namespace ASDServerRPC {
                 if (error == tgs::TGSERROR_OK) {
                     std::list<Variant> list;
                     for (FieldVec::iterator it = fields.begin(); it != fields.end(); ++it) {
-                        Params field;
+                        Param field;
                         fieldToVariant(*it, &field);
                         list.push_back(field);
                     }
                     (*result)["fields"] = list;
                     
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getNoradByName(const Params& args, Params *result)
+        tgs::TGSError getNoradByName(const Param& args, Param *result)
         {
             tgs::TGSPhysicsDatabase::RadioRec rec;
             tgs::TGSPhysicsDatabase db;
@@ -858,19 +858,19 @@ namespace ASDServerRPC {
                     }
                     (*result)["norads"] = list;
                     
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
         
-        Result getNoradByCallsign(const Params& args, Params *result)
+        tgs::TGSError getNoradByCallsign(const Param& args, Param *result)
         {
             tgs::TGSPhysicsDatabase::RadioRec rec;
             tgs::TGSPhysicsDatabase db;
@@ -888,16 +888,16 @@ namespace ASDServerRPC {
                     }
                     (*result)["norads"] = list;
                     
-                    return RPC_OK;
+                    return tgs::TGSERROR_OK;
                 }
                 else {
                     (*result)["message"] = error.print();
-                    return RPC_INTERNAL_ERR;
+                    return tgs::TGSERROR_FAILED;
                 }
             }
             else {
-                return RPC_WRONG_ARGS;
+                return tgs::TGSERROR_INVALID_PARAM;
             }
         }
     }
-};
+}

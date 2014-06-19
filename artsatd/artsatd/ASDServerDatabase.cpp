@@ -289,7 +289,7 @@ template <typename T>
     
     array.PushBack((value.valid) ? (rapidjson::kTrueType) : (rapidjson::kFalseType), doc.GetAllocator());
     array.PushBack(value.value, doc.GetAllocator());
-    object->AddMember(value.name, array, doc.GetAllocator());
+    object->AddMember(value.name, doc.GetAllocator(), array, doc.GetAllocator());
     return;
 }
 
@@ -300,6 +300,6 @@ template <typename T>
     
     array.PushBack(minimum.value, doc.GetAllocator());
     array.PushBack(maximum.value, doc.GetAllocator());
-    object->AddMember(minimum.name, array, doc.GetAllocator());
+    object->AddMember(minimum.name, doc.GetAllocator(), array, doc.GetAllocator());
     return;
 }

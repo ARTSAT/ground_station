@@ -706,11 +706,12 @@ static  char const* const                       g_shrink[] = {
     rapidjson::Value iid;
     rapidjson::Value result;
     rapidjson::Value oid;
-    ASDServerRPC::Params iparam;
-    ASDServerRPC::Params iresult;
-    ASDServerRPC::Result ierror;
+    ASDServerRPC::Variant variant;
+    ASDServerRPC::Param mparam;
+    ASDServerRPC::Param mresult;
     bool reply;
     JSONCodeEnum code;
+    tgs::TGSError error;
     
     reply = true;
     code = JSONCODE_OK;
@@ -738,22 +739,25 @@ static  char const* const                       g_shrink[] = {
                                 if ((it = _method.find(method.GetString())) != _method.end()) {
                                     if (request.HasMember("params")) {
                                         params = request["params"];
-                                        if (params.IsArray() || params.IsObject()) {
-                                            iparam = boost::get<ASDServerRPC::Params>(ASDServerRPC::toVariant(params));
+                                        if (params.IsObject()) {
+                                            ASDServerRPC::toVariant(params, &variant);
+                                            mparam = boost::get<ASDServerRPC::Param>(variant);
+                                        }
+                                        else if (params.IsArray()) {
+                                            code = JSONCODE_INVALIDPARAMS;
                                         }
                                         else {
-                                            code = JSONCODE_INVALIDPARAMS;
+                                            code = JSONCODE_INVALIDREQUEST;
                                         }
                                     }
                                     if (code == JSONCODE_OK) {
-                                        ierror = it->second(iparam, &iresult);
-                                        result.SetObject();
-                                        ASDServerRPC::toJson(iresult, &result, allocator);
-                                        switch (ierror) {
-                                            case ASDServerRPC::RPC_OK:
+                                        error = it->second(mparam, &mresult);
+                                        ASDServerRPC::toJSON(mresult, &result, allocator);
+                                        switch (error) {
+                                            case tgs::TGSERROR_OK:
                                                 // nop
                                                 break;
-                                            case ASDServerRPC::RPC_WRONG_ARGS:
+                                            case tgs::TGSERROR_INVALID_PARAM:
                                                 code = JSONCODE_INVALIDPARAMS;
                                                 break;
                                             default:
