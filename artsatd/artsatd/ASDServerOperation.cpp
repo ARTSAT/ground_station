@@ -48,7 +48,7 @@
 #include "writer.h"
 #include "stringbuffer.h"
 #include "artsatd.h"
-#include "ASDServerRPCMethods.h"
+#include "ASDServerRPCMethod.h"
 
 #define COOKIE_SESSION_ID                       ("session")
 #define COOKIE_ERROR_CATEGORY                   ("category")
@@ -83,6 +83,38 @@ struct MethodTableRec {
     char const*                 name;
     ASDServerRPC::Method        method;
 };
+template <class T>
+class Writer : public rapidjson::Writer<T> {
+    public:
+        explicit                Writer          (T& stream) : rapidjson::Writer<T>(stream)
+                {
+                }
+    
+                Writer&         Double          (double param)
+                {
+                    char buffer[100];
+                    int ret;
+                    int i;
+                    
+#if _MSC_VER
+                    ret = sprintf_s(buffer, sizeof(buffer), "%.9f", param);
+#else
+                    ret = snprintf(buffer, sizeof(buffer), "%.9f", param);
+#endif
+                    RAPIDJSON_ASSERT(ret >= 1);
+                    if (!isnan(param) && !isinf(param)) {
+                        this->Prefix(rapidjson::kNumberType);
+                        for (i = 0; i < ret; ++i) {
+                            this->stream_.Put(buffer[i]);
+                        }
+                    }
+                    else {
+                        this->Prefix(rapidjson::kStringType);
+                        this->WriteString(buffer, strlen(buffer));
+                    }
+                    return *this;
+                }
+};
 
 static  CacheTableRec const                     g_cache[] = {
     {"/",               "text/html",        "no-cache",              "/root.html",          &ASDServerOperation::replyRoot},
@@ -94,45 +126,45 @@ static  CacheTableRec const                     g_cache[] = {
     {"/default.css",    "text/css",         "private, max-age=3600", "/css/default.css",    NULL}
 };
 static  MethodTableRec const                    g_method[] = {
-    {"sys.rpcEcho",                &ASDServerRPC::sys::rpcEcho},
-    {"trans.setManualRotator",     &ASDServerRPC::trans::setManualRotator},
-    {"trans.getManualRotator",     &ASDServerRPC::trans::getManualRotator},
-    {"trans.setManualTransceiver", &ASDServerRPC::trans::setManualTransceiver},
-    {"trans.getManualTransceiver", &ASDServerRPC::trans::getManualTransceiver},
-    {"trans.setManualTNC",         &ASDServerRPC::trans::setManualTNC},
-    {"trans.getManualTNC",         &ASDServerRPC::trans::getManualTNC},
-    {"trans.getStateRotator",      &ASDServerRPC::trans::getStateRotator},
-    {"trans.getStateTransceiver",  &ASDServerRPC::trans::getStateTransceiver},
-    {"trans.getStateTNC",          &ASDServerRPC::trans::getStateTNC},
-    {"trans.setMode",              &ASDServerRPC::trans::setMode},
-    {"trans.getMode",              &ASDServerRPC::trans::getMode},
-    {"trans.setNorad",             &ASDServerRPC::trans::setNorad},
-    {"trans.getNorad",             &ASDServerRPC::trans::getNorad},
-    {"trans.getAngleAzimuth",      &ASDServerRPC::trans::getAngleAzimuth},
-    {"trans.getAngleElevation",    &ASDServerRPC::trans::getAngleElevation},
-    {"trans.getFrequencyBeacon",   &ASDServerRPC::trans::getFrequencyBeacon},
-    {"trans.getFrequencySender",   &ASDServerRPC::trans::getFrequencySender},
-    {"trans.getFrequencyReceiver", &ASDServerRPC::trans::getFrequencyReceiver},
-    {"trans.sendSafeCommand",      &ASDServerRPC::trans::sendSafeCommand},
-    {"pass.getStateNearest",       &ASDServerRPC::pass::getStateNearest},
-    {"db.setName",                 &ASDServerRPC::db::setName},
-    {"db.getName",                 &ASDServerRPC::db::getName},
-    {"db.setCallsign",             &ASDServerRPC::db::setCallsign},
-    {"db.getCallsign",             &ASDServerRPC::db::getCallsign},
-    {"db.setRadioBeacon",          &ASDServerRPC::db::setRadioBeacon},
-    {"db.getRadioBeacon",          &ASDServerRPC::db::getRadioBeacon},
-    {"db.setRadioSender",          &ASDServerRPC::db::setRadioSender},
-    {"db.getRadioSender",          &ASDServerRPC::db::getRadioSender},
-    {"db.setRadioReceiver",        &ASDServerRPC::db::setRadioReceiver},
-    {"db.getRadioReceiver",        &ASDServerRPC::db::getRadioReceiver},
-    {"db.setOrbitData",            &ASDServerRPC::db::setOrbitData},
-    {"db.getOrbitData",            &ASDServerRPC::db::getOrbitData},
-    {"db.getCount",                &ASDServerRPC::db::getCount},
-    {"db.getField",                &ASDServerRPC::db::getField},
-    {"db.getFieldByName",          &ASDServerRPC::db::getFieldByName},
-    {"db.getFieldByCallsign",      &ASDServerRPC::db::getFieldByCallsign},
-    {"db.getNoradByName",          &ASDServerRPC::db::getNoradByName},
-    {"db.getNoradByCallsign",      &ASDServerRPC::db::getNoradByCallsign}
+    {"system.rpcEcho",                      &ASDServerRPC::system::rpcEcho},
+    {"observer.getVersion",                 &ASDServerRPC::observer::getVersion},
+    {"observer.getSession",                 &ASDServerRPC::observer::getSession},
+    {"observer.setManualRotator",           &ASDServerRPC::observer::setManualRotator},
+    {"observer.getManualRotator",           &ASDServerRPC::observer::getManualRotator},
+    {"observer.setManualTransceiver",       &ASDServerRPC::observer::setManualTransceiver},
+    {"observer.getManualTransceiver",       &ASDServerRPC::observer::getManualTransceiver},
+    {"observer.setManualTNC",               &ASDServerRPC::observer::setManualTNC},
+    {"observer.getManualTNC",               &ASDServerRPC::observer::getManualTNC},
+    {"observer.setNORAD",                   &ASDServerRPC::observer::setNORAD},
+    {"observer.getNORAD",                   &ASDServerRPC::observer::getNORAD},
+    {"observer.setMode",                    &ASDServerRPC::observer::setMode},
+    {"observer.getMode",                    &ASDServerRPC::observer::getMode},
+    {"observer.getTime",                    &ASDServerRPC::observer::getTime},
+    {"observer.getObserverCallsign",        &ASDServerRPC::observer::getObserverCallsign},
+    {"observer.getObserverPosition",        &ASDServerRPC::observer::getObserverPosition},
+    {"observer.getObserverDirection",       &ASDServerRPC::observer::getObserverDirection},
+    {"observer.getObserverFrequency",       &ASDServerRPC::observer::getObserverFrequency},
+    {"observer.getSatellitePosition",       &ASDServerRPC::observer::getSatellitePosition},
+    {"observer.getSatelliteDirection",      &ASDServerRPC::observer::getSatelliteDirection},
+    {"observer.getSatelliteFrequency",      &ASDServerRPC::observer::getSatelliteFrequency},
+    {"observer.getSatelliteDopplerShift",   &ASDServerRPC::observer::getSatelliteDopplerShift},
+    {"observer.getSatelliteAOSLOS",         &ASDServerRPC::observer::getSatelliteAOSLOS},
+    {"observer.getSatelliteMEL",            &ASDServerRPC::observer::getSatelliteMEL},
+    {"observer.getRotatorStart",            &ASDServerRPC::observer::getRotatorStart},
+    {"observer.getError",                   &ASDServerRPC::observer::getError},
+    {"observer.isValidRotator",             &ASDServerRPC::observer::isValidRotator},
+    {"observer.isValidTransceiver",         &ASDServerRPC::observer::isValidTransceiver},
+    {"observer.isValidTNC",                 &ASDServerRPC::observer::isValidTNC},
+    {"observer.controlSession",             &ASDServerRPC::observer::controlSession},
+    {"observer.excludeSession",             &ASDServerRPC::observer::excludeSession},
+    {"observer.setRotatorAzimuth",          &ASDServerRPC::observer::setRotatorAzimuth},
+    {"observer.setRotatorElevation",        &ASDServerRPC::observer::setRotatorElevation},
+    {"observer.setTransceiverMode",         &ASDServerRPC::observer::setTransceiverMode},
+    {"observer.setTransceiverSender",       &ASDServerRPC::observer::setTransceiverSender},
+    {"observer.setTransceiverReceiver",     &ASDServerRPC::observer::setTransceiverReceiver},
+    {"observer.setTNCMode",                 &ASDServerRPC::observer::setTNCMode},
+    {"observer.sendTNCPacket",              &ASDServerRPC::observer::sendTNCPacket},
+    {"observer.requestCommand",             &ASDServerRPC::observer::requestCommand}
 };
 static  char const* const                       g_shrink[] = {
     COOKIE_SHRINK_HARDWARE,
@@ -365,7 +397,7 @@ static  char const* const                       g_shrink[] = {
     rapidjson::Value::ValueIterator it;
     rapidjson::Value result;
     rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    Writer<rapidjson::StringBuffer> writer(buffer);
     
     if (!idoc.Parse<0>(request.content.c_str()).HasParseError()) {
         if (idoc.IsArray()) {
@@ -481,6 +513,9 @@ static  char const* const                       g_shrink[] = {
         else if (it->second == "FM") {
             bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &controlTransceiverModeFM, NULL), category, message);
         }
+        else {
+            bindError(CATEGORY_HARDWARE, tgs::TGSERROR_INVALID_PARAM, category, message);
+        }
     }
     else if ((it = query.find("sender")) != query.end()) {
         if ((error = valueizeFrequency(it->second, &value)) == tgs::TGSERROR_OK) {
@@ -501,8 +536,11 @@ static  char const* const                       g_shrink[] = {
         else if (it->second == "Converse") {
             bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCModeConverse, NULL), category, message);
         }
+        else {
+            bindError(CATEGORY_HARDWARE, tgs::TGSERROR_INVALID_PARAM, category, message);
+        }
     }
-    else if ((it = query.find("message")) != query.end()) {
+    else if ((it = query.find("packet")) != query.end()) {
         bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCPacket, &it->second), category, message);
     }
     else if ((it = query.find("norad")) != query.end()) {
@@ -725,7 +763,7 @@ static  char const* const                       g_shrink[] = {
                         if (iid.IsInt() || iid.IsString()) {
                             oid = iid;
                         }
-                        else {
+                        else if (!iid.IsNull()) {
                             code = JSONCODE_INVALIDREQUEST;
                         }
                     }
@@ -746,7 +784,7 @@ static  char const* const                       g_shrink[] = {
                                         else if (params.IsArray()) {
                                             code = JSONCODE_INVALIDPARAMS;
                                         }
-                                        else {
+                                        else if (!params.IsNull()) {
                                             code = JSONCODE_INVALIDREQUEST;
                                         }
                                     }
@@ -758,6 +796,8 @@ static  char const* const                       g_shrink[] = {
                                                 // nop
                                                 break;
                                             case tgs::TGSERROR_INVALID_PARAM:
+                                            case tgs::TGSERROR_INVALID_FORMAT:
+                                            case tgs::TGSERROR_NO_RESULT:
                                                 code = JSONCODE_INVALIDPARAMS;
                                                 break;
                                             default:

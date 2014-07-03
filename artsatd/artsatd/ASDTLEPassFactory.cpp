@@ -81,12 +81,14 @@ tgs::TGSError ASDTLEPassFactory::getNearestPass(ASDTLEPass* pass, ir::IRXTime co
             }
         }
         
+        double max_elevation = -FLT_MAX;
         while (elevation < 0.0) {
             aos.addSecond(1);
             if (_orbit.setTargetTime(aos) != tgs::TGSERROR_OK ||
                 _orbit.getSatelliteDirection(&azimuth, &elevation) != tgs::TGSERROR_OK) {
                 return tgs::TGSERROR_INVALID_STATE;
             }
+            max_elevation = std::max(max_elevation, elevation);
         }
         
         _last_searched_time = param;
@@ -107,6 +109,11 @@ tgs::TGSError ASDTLEPassFactory::getNearestPass(ASDTLEPass* pass, ir::IRXTime co
                 return tgs::TGSERROR_INVALID_STATE;
             if (_orbit.getDopplerRatio(&state.sender, &state.receiver) != tgs::TGSERROR_OK)
                 return tgs::TGSERROR_INVALID_STATE;
+            
+            // low elevation mode (fixed elevation)
+            //if (max_elevation < 15.0) {
+            //    state.elevation = max_elevation / 2.0;
+            //}
             
             state.time = t;
             state_sequence.push_back(state);

@@ -51,7 +51,7 @@
 #include "TGSTNCTNC555.h"
 #include "ASDTLEClientCelestrak.h"
 
-#define VERSION_STRING                          ("4.2.2")
+#define VERSION_STRING                          ("4.3")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")

@@ -67,7 +67,7 @@ void toVariant(rapidjson::Value const& param, Variant* result)
                 *result = param.GetDouble();
                 break;
             case rapidjson::kStringType:
-                *result = param.GetString();
+                *result = static_cast<std::string>(param.GetString());
                 break;
             case rapidjson::kArrayType:
                 {

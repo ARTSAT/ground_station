@@ -292,6 +292,12 @@ class ASDNetworkServer::Responder {
                 response = Server::response::stock_reply(Server::response::internal_server_error);
             }
         }
+        else if (boost::iequals(method(request), "OPTIONS")) {
+            output.header["Content-Type"] = "text/plain";
+            output.header["Allow"] = "GET, POST, OPTIONS";
+            response = Server::response::stock_reply(Server::response::ok);
+            mergeHeader(output.header, &response.headers);
+        }
         else {
             response = Server::response::stock_reply(Server::response::not_supported);
         }
