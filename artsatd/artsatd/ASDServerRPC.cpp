@@ -188,7 +188,7 @@ static  MethodTableRec const                    g_method[] = {
         if (idoc.IsArray()) {
             odoc.SetArray();
             for (it = idoc.Begin(); it != idoc.End(); ++it) {
-                processJSON(*it, &result, odoc.GetAllocator());
+                processJSON(request.host, *it, &result, odoc.GetAllocator());
                 if (!result.IsNull()) {
                     odoc.PushBack(result, odoc.GetAllocator());
                 }
@@ -198,7 +198,7 @@ static  MethodTableRec const                    g_method[] = {
             }
         }
         else {
-            processJSON(idoc, &odoc, odoc.GetAllocator());
+            processJSON(request.host, idoc, &odoc, odoc.GetAllocator());
         }
     }
     else {
@@ -217,7 +217,7 @@ static  MethodTableRec const                    g_method[] = {
     return;
 }
 
-/*private */void ASDServerRPC::processJSON(rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const
+/*private */void ASDServerRPC::processJSON(std::string const& host, rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const
 {
     std::map<std::string, Method>::const_iterator it;
     rapidjson::Value jsonrpc;
@@ -271,7 +271,7 @@ static  MethodTableRec const                    g_method[] = {
                                         }
                                     }
                                     if (code == JSONCODE_OK) {
-                                        error = it->second(this, mparam, &mresult);
+                                        error = it->second(this, host, mparam, &mresult);
                                         toJSON(mresult, &result, allocator);
                                         switch (error) {
                                             case tgs::TGSERROR_OK:
@@ -458,13 +458,13 @@ static  MethodTableRec const                    g_method[] = {
     return;
 }
 
-/*public */tgs::TGSError ASDServerRPC::rpcEcho(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::rpcEcho(std::string const& host, Param const& param, Param* result) const
 {
     *result = param;
     return tgs::TGSERROR_OK;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getVersion(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getVersion(std::string const& host, Param const& param, Param* result) const
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
@@ -474,26 +474,26 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSession(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSession(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     int owner;
     bool exclusive;
-    std::string host;
+    std::string current;
     int online;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSession(session, &owner, &exclusive, &host, &online);
+        artsatd::getInstance().getSession(session, &owner, &exclusive, &current, &online);
         setResult(owner, "owner", result);
         setResult(exclusive, "exclusive", result);
-        setResult(host, "host", result);
+        setResult(current, "host", result);
         setResult(online, "online", result);
     }
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setManualRotator(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setManualRotator(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     bool manual;
@@ -509,7 +509,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getManualRotator(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getManualRotator(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -520,7 +520,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setManualTransceiver(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setManualTransceiver(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     bool manual;
@@ -536,7 +536,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getManualTransceiver(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getManualTransceiver(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -547,7 +547,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setManualTNC(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setManualTNC(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     bool manual;
@@ -563,7 +563,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getManualTNC(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getManualTNC(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -574,7 +574,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setNORAD(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setNORAD(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string query;
@@ -590,7 +590,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getNORAD(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getNORAD(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -601,7 +601,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setMode(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setMode(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string mode;
@@ -617,7 +617,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getMode(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getMode(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -628,7 +628,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getTime(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getTime(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -639,7 +639,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getObserverCallsign(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getObserverCallsign(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string callsign;
@@ -652,7 +652,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getObserverPosition(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getObserverPosition(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double latitude;
@@ -669,7 +669,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getObserverDirection(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getObserverDirection(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     ASDDeviceRotator::DataRec rotator;
@@ -683,7 +683,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getObserverFrequency(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getObserverFrequency(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     ASDDeviceTransceiver::DataRec transceiver;
@@ -697,7 +697,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatellitePosition(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSatellitePosition(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double latitude;
@@ -714,7 +714,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteDirection(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSatelliteDirection(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double azimuth;
@@ -729,7 +729,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteFrequency(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSatelliteFrequency(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double beacon;
@@ -746,7 +746,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteDopplerShift(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSatelliteDopplerShift(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double sender;
@@ -761,7 +761,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteAOSLOS(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSatelliteAOSLOS(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     ir::IRXTime aos;
@@ -776,7 +776,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteMEL(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSatelliteMEL(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double mel;
@@ -789,7 +789,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getRotatorStart(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getRotatorStart(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     ir::IRXTime start;
@@ -802,7 +802,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getError(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getError(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError state;
@@ -816,7 +816,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::isValidRotator(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::isValidRotator(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -827,7 +827,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::isValidTransceiver(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::isValidTransceiver(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -838,7 +838,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::isValidTNC(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::isValidTNC(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -849,26 +849,23 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::controlSession(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::controlSession(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     bool owner;
-    std::string host;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
         if ((error = getParam(param, "owner", &owner)) == tgs::TGSERROR_OK) {
-            if ((error = getParam(param, "host", &host)) == tgs::TGSERROR_OK) {
-                if ((error = artsatd::getInstance().controlSession(session, owner, host)) != tgs::TGSERROR_OK) {
-                    error = setError(error, result);
-                }
+            if ((error = artsatd::getInstance().controlSession(session, owner, host)) != tgs::TGSERROR_OK) {
+                error = setError(error, result);
             }
         }
     }
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::excludeSession(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::excludeSession(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     bool exclusive;
@@ -884,7 +881,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setRotatorAzimuth(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setRotatorAzimuth(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     int azimuth;
@@ -900,7 +897,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setRotatorElevation(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setRotatorElevation(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     int elevation;
@@ -916,7 +913,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setTransceiverMode(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setTransceiverMode(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string mode;
@@ -941,7 +938,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setTransceiverSender(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setTransceiverSender(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     int sender;
@@ -957,7 +954,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setTransceiverReceiver(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setTransceiverReceiver(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     int receiver;
@@ -973,7 +970,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::setTNCMode(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::setTNCMode(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string mode;
@@ -998,7 +995,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::sendTNCPacket(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::sendTNCPacket(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string packet;
@@ -1014,7 +1011,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::requestCommand(Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::requestCommand(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     std::string command;

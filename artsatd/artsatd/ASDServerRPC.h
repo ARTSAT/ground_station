@@ -87,7 +87,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
         typedef std::map<std::string, Variant>  Param;
     public:
         typedef boost::function<
-            tgs::TGSError(ASDServerRPC const*, Param const& param, Param* result)
+            tgs::TGSError(ASDServerRPC const*, std::string const& host, Param const& param, Param* result)
         >                                       Method;
     
     private:
@@ -105,7 +105,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   [any]
                  */
-                tgs::TGSError                   rpcEcho                     (Param const& param, Param* result) const;
+                tgs::TGSError                   rpcEcho                     (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -113,7 +113,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   version <std::string>: version string
                  */
-                tgs::TGSError                   getVersion                  (Param const& param, Param* result) const;
+                tgs::TGSError                   getVersion                  (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -127,7 +127,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   host <std::string>: owner's host
                  *   online <int>: online count
                  */
-                tgs::TGSError                   getSession                  (Param const& param, Param* result) const;
+                tgs::TGSError                   getSession                  (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -135,7 +135,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setManualRotator            (Param const& param, Param* result) const;
+                tgs::TGSError                   setManualRotator            (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -143,7 +143,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   manual <bool>: state flag
                  */
-                tgs::TGSError                   getManualRotator            (Param const& param, Param* result) const;
+                tgs::TGSError                   getManualRotator            (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -151,7 +151,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setManualTransceiver        (Param const& param, Param* result) const;
+                tgs::TGSError                   setManualTransceiver        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -159,7 +159,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   manual <bool>: state flag
                  */
-                tgs::TGSError                   getManualTransceiver        (Param const& param, Param* result) const;
+                tgs::TGSError                   getManualTransceiver        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -167,7 +167,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setManualTNC                (Param const& param, Param* result) const;
+                tgs::TGSError                   setManualTNC                (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -175,7 +175,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   manual <bool>: state flag
                  */
-                tgs::TGSError                   getManualTNC                (Param const& param, Param* result) const;
+                tgs::TGSError                   getManualTNC                (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -183,7 +183,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setNORAD                    (Param const& param, Param* result) const;
+                tgs::TGSError                   setNORAD                    (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -192,7 +192,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   norad <int>: current NORAD number
                  *                -1 not set yet
                  */
-                tgs::TGSError                   getNORAD                    (Param const& param, Param* result) const;
+                tgs::TGSError                   getNORAD                    (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -201,7 +201,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setMode                     (Param const& param, Param* result) const;
+                tgs::TGSError                   setMode                     (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -210,7 +210,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   mode <std::string>: mode name
                  *                       "" idle mode
                  */
-                tgs::TGSError                   getMode                     (Param const& param, Param* result) const;
+                tgs::TGSError                   getMode                     (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -218,7 +218,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   time <std::string>: current time
                  */
-                tgs::TGSError                   getTime                     (Param const& param, Param* result) const;
+                tgs::TGSError                   getTime                     (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -226,7 +226,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   callsign <std::string>: observer's callsign
                  */
-                tgs::TGSError                   getObserverCallsign         (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverCallsign         (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -236,7 +236,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   longitude <double>: observer's longitude
                  *   altitude <double>: observer's altitude
                  */
-                tgs::TGSError                   getObserverPosition         (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverPosition         (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -247,7 +247,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   elevation <int>: observer's rotator elevation
                  *                  -1 invalid state
                  */
-                tgs::TGSError                   getObserverDirection        (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverDirection        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -258,7 +258,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   receiver <int>: observer's transceiver receiver frequency
                  *                  -1 invalid state
                  */
-                tgs::TGSError                   getObserverFrequency        (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverFrequency        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -268,7 +268,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   longitude <double>: satellite's longitude
                  *   altitude <double>: satellite's altitude
                  */
-                tgs::TGSError                   getSatellitePosition        (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatellitePosition        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -277,7 +277,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   azimuth <double>: satellite's azimuth
                  *   elevation <double>: satellite's elevation
                  */
-                tgs::TGSError                   getSatelliteDirection       (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteDirection       (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -287,7 +287,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   sender <double>: satellite's sender frequency
                  *   receiver <double>: satellite's receiver frequency
                  */
-                tgs::TGSError                   getSatelliteFrequency       (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteFrequency       (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -296,7 +296,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   sender <double>: satellite's sender doppler shift ratio
                  *   receiver <double>: satellite's receiver doppler shift ratio
                  */
-                tgs::TGSError                   getSatelliteDopplerShift    (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteDopplerShift    (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -305,7 +305,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   aos <std::string>: satellite's next AOS time
                  *   los <std::string>: satellite's next LOS time
                  */
-                tgs::TGSError                   getSatelliteAOSLOS          (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteAOSLOS          (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -313,7 +313,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   mel <double>: satellite's next MEL
                  */
-                tgs::TGSError                   getSatelliteMEL             (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteMEL             (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -321,7 +321,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   start <std::string>: next rotation start time
                  */
-                tgs::TGSError                   getRotatorStart             (Param const& param, Param* result) const;
+                tgs::TGSError                   getRotatorStart             (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -330,7 +330,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   code <int>: current error code
                  *   message <std::string>: current error message
                  */
-                tgs::TGSError                   getError                    (Param const& param, Param* result) const;
+                tgs::TGSError                   getError                    (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -338,7 +338,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   valid <bool>: valid flag
                  */
-                tgs::TGSError                   isValidRotator              (Param const& param, Param* result) const;
+                tgs::TGSError                   isValidRotator              (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -346,7 +346,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   valid <bool>: valid flag
                  */
-                tgs::TGSError                   isValidTransceiver          (Param const& param, Param* result) const;
+                tgs::TGSError                   isValidTransceiver          (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -354,16 +354,15 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  *   valid <bool>: valid flag
                  */
-                tgs::TGSError                   isValidTNC                  (Param const& param, Param* result) const;
+                tgs::TGSError                   isValidTNC                  (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
                  *   owner <bool>: own flag
-                 *   host <std::string>: your host
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   controlSession              (Param const& param, Param* result) const;
+                tgs::TGSError                   controlSession              (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -371,7 +370,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   excludeSession              (Param const& param, Param* result) const;
+                tgs::TGSError                   excludeSession              (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -379,7 +378,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setRotatorAzimuth           (Param const& param, Param* result) const;
+                tgs::TGSError                   setRotatorAzimuth           (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -387,7 +386,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setRotatorElevation         (Param const& param, Param* result) const;
+                tgs::TGSError                   setRotatorElevation         (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -397,7 +396,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setTransceiverMode          (Param const& param, Param* result) const;
+                tgs::TGSError                   setTransceiverMode          (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -405,7 +404,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setTransceiverSender        (Param const& param, Param* result) const;
+                tgs::TGSError                   setTransceiverSender        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -413,7 +412,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setTransceiverReceiver      (Param const& param, Param* result) const;
+                tgs::TGSError                   setTransceiverReceiver      (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -423,7 +422,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setTNCMode                  (Param const& param, Param* result) const;
+                tgs::TGSError                   setTNCMode                  (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -431,7 +430,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   sendTNCPacket               (Param const& param, Param* result) const;
+                tgs::TGSError                   sendTNCPacket               (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * params:
                  *   [session <std::string>: session ID]
@@ -439,11 +438,11 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   requestCommand              (Param const& param, Param* result) const;
+                tgs::TGSError                   requestCommand              (std::string const& host, Param const& param, Param* result) const;
     private:
         virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
                 void                            replyJSON                   (RequestRec const& request, ResponseRec* response) const;
-                void                            processJSON                 (rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const;
+                void                            processJSON                 (std::string const& host, rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const;
         static  void                            returnJSON                  (JSONCodeEnum code, rapidjson::Value& result, rapidjson::Value& id, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator);
         static  void                            toVariant                   (rapidjson::Value const& param, Variant* result);
         static  void                            toJSON                      (Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator);
