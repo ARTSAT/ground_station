@@ -48,6 +48,7 @@
 
 @interface AppDelegate ()
 @property (weak) IBOutlet NSMenu *statusMenu;
+@property (copy) NSString *session;
 @end
 
 @implementation AppDelegate
@@ -59,6 +60,7 @@ NSTimer *_timer;
 {
     [self setupStatusItem];
     
+    self.session = [[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getVersion"}] objectForKey:@"result"] objectForKey:@"session"];
     _timer = [NSTimer scheduledTimerWithTimeInterval:1.0
                                               target:self
                                             selector:@selector(time:)
@@ -116,11 +118,12 @@ NSTimer *_timer;
                                 };
     
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"  Norad " attributes:smallAttr]];
-    int norad = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getNorad"}] objectForKey:@"result"] objectForKey:@"norad"] intValue];
+    int norad = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getNORAD", @"params": @{@"session": self.session
+                                                                                                                }}] objectForKey:@"result"] objectForKey:@"norad"] intValue];
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%d  ", norad] attributes:stdAttr]];
     
     {
-        NSString* mode = [[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getMode"}] objectForKey:@"result"] objectForKey:@"mode"];
+        NSString* mode = [[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getMode", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"mode"];
         if ([mode length] == 0) mode = @"Idle";
         NSDictionary *attr;
         
@@ -142,29 +145,29 @@ NSTimer *_timer;
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"   Elevation" attributes:smallAttr]];
     
     {
-        double elevation = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getAngleElevation"}] objectForKey:@"result"] objectForKey:@"elevation"] doubleValue];
+        double elevation = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getSatelliteDirection", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"elevation"] doubleValue];
         NSDictionary *attr = elevation >= 0.0 ? redAttr : stdAttr;
         [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@" %.03f ", elevation] attributes:attr]];
     }
     
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"  Azimuth" attributes:smallAttr]];
-    double azimuth = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getAngleAzimuth"}] objectForKey:@"result"] objectForKey:@"azimuth"] doubleValue];
+    double azimuth = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getSatelliteDirection", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"azimuth"] doubleValue];
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@" %.03f  ", azimuth] attributes:stdAttr]];
     
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@" " attributes:grayAttr]];
     
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"   CW " attributes:smallAttr]];
-    double beacon = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getFrequencyBeacon"}] objectForKey:@"result"] objectForKey:@"beacon"] doubleValue] / 1000000.0;
+    double beacon = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getSatelliteFrequency", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"beacon"] doubleValue] / 1000000.0;
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%.03f", beacon] attributes:stdAttr]];
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"MHz " attributes:smallAttr]];
     
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"   FM⬆" attributes:smallAttr]];
-    double sender = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getFrequencySender"}] objectForKey:@"result"] objectForKey:@"sender"] doubleValue] / 1000000.0;
+    double sender = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getSatelliteFrequency", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"sender"] doubleValue] / 1000000.0;
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%.03f", sender] attributes:stdAttr]];
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"MHz " attributes:smallAttr]];
     
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"   FM⬇" attributes:smallAttr]];
-    double receiver = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"trans.getFrequencyReceiver"}] objectForKey:@"result"] objectForKey:@"receiver"] doubleValue] / 1000000.0;
+    double receiver = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getSatelliteFrequency", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"receiver"] doubleValue] / 1000000.0;
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%.03f", receiver] attributes:stdAttr]];
     [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"MHz " attributes:smallAttr]];
     
@@ -178,7 +181,7 @@ NSTimer *_timer;
             NSError *error;
             NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
             if (!error) {
-                NSString *url = @"http://localhost:16780/rpc.json";
+                NSString *url = @"http://localhost:16782/rpc.json";
                 NSMutableURLRequest *request = [[NSMutableURLRequest alloc]init];
                 [request setURL:[NSURL URLWithString:url]];
                 [request setHTTPMethod:@"POST"];

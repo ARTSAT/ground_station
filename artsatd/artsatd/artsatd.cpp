@@ -64,7 +64,7 @@
 #define DEFAULT_SERVER_DATABASE_LISTEN          (1)
 #define DEFAULT_SERVER_OPERATION_PORT           ("16780")
 #define DEFAULT_SERVER_OPERATION_LISTEN         (4)
-#define DEFAULT_SERVER_RPC_PORT                 ("16788")
+#define DEFAULT_SERVER_RPC_PORT                 ("16782")
 #define DEFAULT_SERVER_RPC_LISTEN               (4)
 #define DEFAULT_SESSION_MAXIMUM                 (16)
 #define DEFAULT_SESSION_TIMEOUT                 (300)

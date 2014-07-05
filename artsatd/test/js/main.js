@@ -402,7 +402,7 @@ function initializeButtons() {
 
 $(document).ready(function() {
     JSONRPCClient = new $.JsonRpcClient({
-        'ajaxUrl': 'http://localhost:16788/rpc.json'
+        'ajaxUrl': 'http://localhost:16782/rpc.json'
     });
     initializeButtons();
 });

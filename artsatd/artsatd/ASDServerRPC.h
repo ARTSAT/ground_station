@@ -99,44 +99,346 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
         virtual                                 ~ASDServerRPC               (void);
                 tgs::TGSError                   open                        (std::string const& database);
                 void                            close                       (void);
+                /*
+                 * params:
+                 *   [any]
+                 * result:
+                 *   [any]
+                 */
                 tgs::TGSError                   rpcEcho                     (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   version <std::string>: version string
+                 */
                 tgs::TGSError                   getVersion                  (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   owner <int>: current owner
+                 *                -1 not you
+                 *                 0 nobody owning
+                 *                +1 you
+                 *   exclusive <bool>: exclusively owning
+                 *   host <std::string>: owner's host
+                 *   online <int>: online count
+                 */
                 tgs::TGSError                   getSession                  (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   manual <bool>: state flag
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setManualRotator            (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   manual <bool>: state flag
+                 */
                 tgs::TGSError                   getManualRotator            (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   manual <bool>: state flag
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setManualTransceiver        (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   manual <bool>: state flag
+                 */
                 tgs::TGSError                   getManualTransceiver        (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   manual <bool>: state flag
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setManualTNC                (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   manual <bool>: state flag
+                 */
                 tgs::TGSError                   getManualTNC                (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   query <std::string>: NORAD number or satellite's name
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setNORAD                    (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   norad <int>: current NORAD number
+                 *                -1 not set yet
+                 */
                 tgs::TGSError                   getNORAD                    (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   mode <std::string>: mode name
+                 *                       "" idle mode
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setMode                     (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   mode <std::string>: mode name
+                 *                       "" idle mode
+                 */
                 tgs::TGSError                   getMode                     (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   time <std::string>: current time
+                 */
                 tgs::TGSError                   getTime                     (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   callsign <std::string>: observer's callsign
+                 */
                 tgs::TGSError                   getObserverCallsign         (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   latitude <double>: observer's latitude
+                 *   longitude <double>: observer's longitude
+                 *   altitude <double>: observer's altitude
+                 */
                 tgs::TGSError                   getObserverPosition         (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   azimuth <int>: observer's rotator azimuth
+                 *                  -1 invalid state
+                 *   elevation <int>: observer's rotator elevation
+                 *                  -1 invalid state
+                 */
                 tgs::TGSError                   getObserverDirection        (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   sender <int>: observer's transceiver sender frequency
+                 *                  -1 invalid state
+                 *   receiver <int>: observer's transceiver receiver frequency
+                 *                  -1 invalid state
+                 */
                 tgs::TGSError                   getObserverFrequency        (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   latitude <double>: satellite's latitude
+                 *   longitude <double>: satellite's longitude
+                 *   altitude <double>: satellite's altitude
+                 */
                 tgs::TGSError                   getSatellitePosition        (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   azimuth <double>: satellite's azimuth
+                 *   elevation <double>: satellite's elevation
+                 */
                 tgs::TGSError                   getSatelliteDirection       (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   beacon <double>: satellite's beacon frequency
+                 *   sender <double>: satellite's sender frequency
+                 *   receiver <double>: satellite's receiver frequency
+                 */
                 tgs::TGSError                   getSatelliteFrequency       (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   sender <double>: satellite's sender doppler shift ratio
+                 *   receiver <double>: satellite's receiver doppler shift ratio
+                 */
                 tgs::TGSError                   getSatelliteDopplerShift    (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   aos <std::string>: satellite's next AOS time
+                 *   los <std::string>: satellite's next LOS time
+                 */
                 tgs::TGSError                   getSatelliteAOSLOS          (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   mel <double>: satellite's next MEL
+                 */
                 tgs::TGSError                   getSatelliteMEL             (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   start <std::string>: next rotation start time
+                 */
                 tgs::TGSError                   getRotatorStart             (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   code <int>: current error code
+                 *   message <std::string>: current error message
+                 */
                 tgs::TGSError                   getError                    (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   valid <bool>: valid flag
+                 */
                 tgs::TGSError                   isValidRotator              (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   valid <bool>: valid flag
+                 */
                 tgs::TGSError                   isValidTransceiver          (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   valid <bool>: valid flag
+                 */
                 tgs::TGSError                   isValidTNC                  (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   owner <bool>: own flag
+                 *   host <std::string>: your host
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   controlSession              (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   exclusive <bool>: exclusive flag
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   excludeSession              (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   azimuth <int>: rotator's azimuth
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setRotatorAzimuth           (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   elevation <int>: rotator's elevation
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setRotatorElevation         (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   mode <std::string>: transceiver's mode
+                 *                       "CW"
+                 *                       "FM"
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setTransceiverMode          (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   sender <int>: transceiver's sender frequency
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setTransceiverSender        (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   receiver <int>: transceiver's receiver frequency
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setTransceiverReceiver      (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   mode <std::string>: TNC's mode
+                 *                       "Command"
+                 *                       "Converse"
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   setTNCMode                  (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   packet <std::string>: sending packet data
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   sendTNCPacket               (Param const& param, Param* result) const;
+                /*
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   command <std::string>: requesting command data
+                 * result:
+                 *   session <std::string>: session ID
+                 */
                 tgs::TGSError                   requestCommand              (Param const& param, Param* result) const;
     private:
         virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);

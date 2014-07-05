@@ -810,7 +810,7 @@ static  MethodTableRec const                    g_method[] = {
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
         state = artsatd::getInstance().getError();
-        setResult(state, "code", result);
+        setResult(state.get(), "code", result);
         setResult(state.print(), "message", result);
     }
     return error;
@@ -1022,13 +1022,9 @@ static  MethodTableRec const                    g_method[] = {
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
         if ((error = getParam(param, "command", &command)) == tgs::TGSERROR_OK) {
-#if 0
             if ((error = artsatd::getInstance().requestCommand(session, command)) != tgs::TGSERROR_OK) {
                 error = setError(error, result);
             }
-#else
-            error = setError(tgs::TGSERROR_NO_SUPPORT, result);
-#endif
         }
     }
     return error;

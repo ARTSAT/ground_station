@@ -10,7 +10,6 @@
 		418B27F418CDA78B003BACA4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 418B27F318CDA78B003BACA4 /* Cocoa.framework */; };
 		418B27FE18CDA78B003BACA4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 418B27FC18CDA78B003BACA4 /* InfoPlist.strings */; };
 		418B280018CDA78B003BACA4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 418B27FF18CDA78B003BACA4 /* main.m */; };
-		418B280418CDA78B003BACA4 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 418B280218CDA78B003BACA4 /* Credits.rtf */; };
 		418B280718CDA78B003BACA4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 418B280618CDA78B003BACA4 /* AppDelegate.m */; };
 		418B280A18CDA78B003BACA4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 418B280818CDA78B003BACA4 /* MainMenu.xib */; };
 /* End PBXBuildFile section */
@@ -25,7 +24,6 @@
 		418B27FD18CDA78B003BACA4 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		418B27FF18CDA78B003BACA4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		418B280118CDA78B003BACA4 /* ASDStatusBar-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ASDStatusBar-Prefix.pch"; sourceTree = "<group>"; };
-		418B280318CDA78B003BACA4 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		418B280518CDA78B003BACA4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		418B280618CDA78B003BACA4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		418B280918CDA78B003BACA4 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -97,7 +95,6 @@
 				418B27FC18CDA78B003BACA4 /* InfoPlist.strings */,
 				418B27FF18CDA78B003BACA4 /* main.m */,
 				418B280118CDA78B003BACA4 /* ASDStatusBar-Prefix.pch */,
-				418B280218CDA78B003BACA4 /* Credits.rtf */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -154,7 +151,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				418B27FE18CDA78B003BACA4 /* InfoPlist.strings in Resources */,
-				418B280418CDA78B003BACA4 /* Credits.rtf in Resources */,
 				418B280A18CDA78B003BACA4 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -180,14 +176,6 @@
 				418B27FD18CDA78B003BACA4 /* en */,
 			);
 			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		418B280218CDA78B003BACA4 /* Credits.rtf */ = {
-			isa = PBXVariantGroup;
-			children = (
-				418B280318CDA78B003BACA4 /* en */,
-			);
-			name = Credits.rtf;
 			sourceTree = "<group>";
 		};
 		418B280818CDA78B003BACA4 /* MainMenu.xib */ = {
@@ -303,6 +291,7 @@
 				418B280F18CDA78C003BACA4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
