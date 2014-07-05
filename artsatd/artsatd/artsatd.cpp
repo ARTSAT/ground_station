@@ -51,7 +51,7 @@
 #include "TGSTNCTNC555.h"
 #include "ASDTLEClientCelestrak.h"
 
-#define VERSION_STRING                          ("4.3")
+#define VERSION_STRING                          ("4.4")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -64,6 +64,8 @@
 #define DEFAULT_SERVER_DATABASE_LISTEN          (1)
 #define DEFAULT_SERVER_OPERATION_PORT           ("16780")
 #define DEFAULT_SERVER_OPERATION_LISTEN         (4)
+#define DEFAULT_SERVER_RPC_PORT                 ("16788")
+#define DEFAULT_SERVER_RPC_LISTEN               (4)
 #define DEFAULT_SESSION_MAXIMUM                 (16)
 #define DEFAULT_SESSION_TIMEOUT                 (300)
 #define DEFAULT_SESSION_LOCALONLY               (true)
@@ -666,6 +668,51 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return error;
 }
 
+/*public static */tgs::TGSError artsatd::controlRotatorAzimuth(ASDDeviceRotator& rotator, void const* info)
+{
+    return rotator->rotateAzimuthTo(*static_cast<int const*>(info));
+}
+
+/*public static */tgs::TGSError artsatd::controlRotatorElevation(ASDDeviceRotator& rotator, void const* info)
+{
+    return rotator->rotateElevationTo(*static_cast<int const*>(info));
+}
+
+/*public static */tgs::TGSError artsatd::controlTransceiverModeCW(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->selectModeBeacon();
+}
+
+/*public static */tgs::TGSError artsatd::controlTransceiverModeFM(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->selectModeCommunication();
+}
+
+/*public static */tgs::TGSError artsatd::controlTransceiverSender(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->setFrequencySender(*static_cast<int const*>(info));
+}
+
+/*public static */tgs::TGSError artsatd::controlTransceiverReceiver(ASDDeviceTransceiver& transceiver, void const* info)
+{
+    return transceiver->setFrequencyReceiver(*static_cast<int const*>(info));
+}
+
+/*public static */tgs::TGSError artsatd::controlTNCModeCommand(ASDDeviceTNC& tnc, void const* info)
+{
+    return tnc->selectModeCommand();
+}
+
+/*public static */tgs::TGSError artsatd::controlTNCModeConverse(ASDDeviceTNC& tnc, void const* info)
+{
+    return tnc->selectModeConverse();
+}
+
+/*public static */tgs::TGSError artsatd::controlTNCPacket(ASDDeviceTNC& tnc, void const* info)
+{
+    return tnc->sendPacket(*static_cast<std::string const*>(info));
+}
+
 /*private virtual */int artsatd::usage(int argc, char const* argv[])
 {
     return EXIT_SUCCESS;
@@ -1042,6 +1089,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     _config.serverDatabaseListen = DEFAULT_SERVER_DATABASE_LISTEN;
     _config.serverOperationPort = DEFAULT_SERVER_OPERATION_PORT;
     _config.serverOperationListen = DEFAULT_SERVER_OPERATION_LISTEN;
+    _config.serverRPCPort = DEFAULT_SERVER_RPC_PORT;
+    _config.serverRPCListen = DEFAULT_SERVER_RPC_LISTEN;
     _config.sessionMaximum = DEFAULT_SESSION_MAXIMUM;
     _config.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
     _config.sessionLocalonly = DEFAULT_SESSION_LOCALONLY;
@@ -1070,6 +1119,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     if ((element = type->FirstChildElement("operation")) != NULL) {
                         xmlReadText(element, "port", &_config.serverOperationPort);
                         xmlReadInteger(element, "listen", &_config.serverOperationListen);
+                    }
+                    if ((element = type->FirstChildElement("rpc")) != NULL) {
+                        xmlReadText(element, "port", &_config.serverRPCPort);
+                        xmlReadInteger(element, "listen", &_config.serverRPCListen);
                     }
                 }
                 if ((type = root->FirstChildElement("session")) != NULL) {
@@ -1118,6 +1171,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     log(LOG_NOTICE, " CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
     log(LOG_NOTICE, " CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
     log(LOG_NOTICE, " CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
+    log(LOG_NOTICE, " CONFIG: Server RPC Port         [%s]", _config.serverRPCPort.c_str());
+    log(LOG_NOTICE, " CONFIG: Server RPC Listen       [%d]", _config.serverRPCListen);
     log(LOG_NOTICE, " CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
     log(LOG_NOTICE, " CONFIG: Session Timeout         [%d]", _config.sessionTimeout);
     log(LOG_NOTICE, " CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
@@ -1322,10 +1377,15 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     }
     if (error == tgs::TGSERROR_OK) {
         if ((error = _replierOperation.open(PATH_SERVER, DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
-            _serverDatabase.setNotifier(&_replierDatabase);
-            if ((error = _serverDatabase.open(_config.serverDatabasePort, _config.serverDatabaseListen)) == tgs::TGSERROR_OK) {
-                _serverOperation.setNotifier(&_replierOperation);
-                error = _serverOperation.open(_config.serverOperationPort, _config.serverOperationListen);
+            if ((error = _replierRPC.open(DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
+                _serverDatabase.setNotifier(&_replierDatabase);
+                if ((error = _serverDatabase.open(_config.serverDatabasePort, _config.serverDatabaseListen)) == tgs::TGSERROR_OK) {
+                    _serverOperation.setNotifier(&_replierOperation);
+                    if ((error = _serverOperation.open(_config.serverOperationPort, _config.serverOperationListen)) == tgs::TGSERROR_OK) {
+                        _serverRPC.setNotifier(&_replierRPC);
+                        error = _serverRPC.open(_config.serverRPCPort, _config.serverRPCListen);
+                    }
+                }
             }
         }
     }
@@ -1364,8 +1424,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 
 /*private */void artsatd::closeNetwork(void)
 {
+    _serverRPC.close();
     _serverOperation.close();
     _serverDatabase.close();
+    _replierRPC.close();
     _replierOperation.close();
     _clientTle.clear();
     return;

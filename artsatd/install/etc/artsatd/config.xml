@@ -9,6 +9,10 @@
             <port>16780</port>
             <listen>4</listen>
         </operation>
+        <rpc>
+            <port>16788</port>
+            <listen>4</listen>
+        </rpc>
     </server>
     <session>
         <maximum>16</maximum>

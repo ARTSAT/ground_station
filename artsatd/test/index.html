@@ -1,0 +1,435 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <!-- Force latest IE rendering engine or ChromeFrame if installed -->
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><![endif]-->
+        <meta charset="utf-8" />
+        <title>artsatd JSONRPC tester</title>
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="img/favicon.ico" />
+        <!-- Bootstrap styles -->
+        <link rel="stylesheet" href="css/bootstrap.min.css" />
+        <!-- FontAwesome -->
+        <link rel="stylesheet" href="css/font-awesome.min.css" />
+        <!-- Syntax highlighting. -->
+        <link rel="stylesheet" href="css/prism.css" />
+        <!-- Generic page styles -->
+        <link rel="stylesheet" href="css/style.css" />
+        <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    </head>
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">artsatd JSONRPC tester</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>Session ID</strong>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div id="session" class="pull-left">****************</div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>system.rpcEcho</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="rpcEcho-param" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="rpcEcho" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getVersion</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getVersion-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getVersion" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSession</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSession-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSession" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getManualRotator</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getManualRotator-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getManualRotator" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getManualTransceiver</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getManualTransceiver-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getManualTransceiver" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getManualTNC</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getManualTNC-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getManualTNC" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getNORAD</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getNORAD-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getNORAD" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getMode</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getMode-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getMode" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getTime</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getTime-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getTime" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getObserverCallsign</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getObserverCallsign-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getObserverCallsign" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getObserverPosition</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getObserverPosition-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getObserverPosition" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getObserverDirection</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getObserverDirection-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getObserverDirection" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getObserverFrequency</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getObserverFrequency-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getObserverFrequency" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSatellitePosition</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSatellitePosition-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSatellitePosition" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSatelliteDirection</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSatelliteDirection-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSatelliteDirection" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSatelliteFrequency</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSatelliteFrequency-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSatelliteFrequency" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSatelliteDopplerShift</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSatelliteDopplerShift-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSatelliteDopplerShift" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSatelliteAOSLOS</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSatelliteAOSLOS-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSatelliteAOSLOS" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getSatelliteMEL</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getSatelliteMEL-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getSatelliteMEL" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getRotatorStart</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getRotatorStart-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getRotatorStart" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.getError</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="getError-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="getError" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.isValidRotator</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="isValidRotator-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="isValidRotator" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.isValidTransceiver</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="isValidTransceiver-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="isValidTransceiver" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="pull-left">
+                        <strong>observer.isValidTNC</strong>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="isValidTNC-result" type="text" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="isValidTNC" class="btn btn-default" type="button">call</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="./js/jquery.min.js"></script>
+        <script src="./js/bootstrap.min.js"></script>
+        <script src="./js/jquery.jsonrpcclient.js"></script>
+        <script src="./js/jquery.json.js"></script>
+        <script src="./js/prism.js"></script>
+        <script src="./js/ofxUtils.js"></script>
+        <script src="./js/main.js"></script>
+    </body>
+</html>

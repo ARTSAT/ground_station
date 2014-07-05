@@ -45,10 +45,7 @@
 */
 
 #include "ASDServerOperation.h"
-#include "writer.h"
-#include "stringbuffer.h"
 #include "artsatd.h"
-#include "ASDServerRPCMethod.h"
 
 #define COOKIE_SESSION_ID                       ("session")
 #define COOKIE_ERROR_CATEGORY                   ("category")
@@ -70,50 +67,13 @@
 #define DEFAULT_TIMEDIFF                        ("&Delta; --:--:--")
 #define FORM_DISABLED                           ("disabled")
 #define FORM_READONLY                           ("readonly")
-#define JSON_VERSION                            ("2.0")
 
 struct CacheTableRec {
     char const*                 path;
     char const*                 mime;
     char const*                 cache;
     char const*                 content;
-    void  (ASDServerOperation::*function)       (ASDServerOperation::RequestRec const& request, ASDServerOperation::ResponseRec* response);
-};
-struct MethodTableRec {
-    char const*                 name;
-    ASDServerRPC::Method        method;
-};
-template <class T>
-class Writer : public rapidjson::Writer<T> {
-    public:
-        explicit                Writer          (T& stream) : rapidjson::Writer<T>(stream)
-                {
-                }
-    
-                Writer&         Double          (double param)
-                {
-                    char buffer[100];
-                    int ret;
-                    int i;
-                    
-#if _MSC_VER
-                    ret = sprintf_s(buffer, sizeof(buffer), "%.9f", param);
-#else
-                    ret = snprintf(buffer, sizeof(buffer), "%.9f", param);
-#endif
-                    RAPIDJSON_ASSERT(ret >= 1);
-                    if (!isnan(param) && !isinf(param)) {
-                        this->Prefix(rapidjson::kNumberType);
-                        for (i = 0; i < ret; ++i) {
-                            this->stream_.Put(buffer[i]);
-                        }
-                    }
-                    else {
-                        this->Prefix(rapidjson::kStringType);
-                        this->WriteString(buffer, strlen(buffer));
-                    }
-                    return *this;
-                }
+    void  (ASDServerOperation::*function)       (ASDServerOperation::RequestRec const& request, ASDServerOperation::ResponseRec* response) const;
 };
 
 static  CacheTableRec const                     g_cache[] = {
@@ -122,49 +82,7 @@ static  CacheTableRec const                     g_cache[] = {
     {"/orbital.html",   "text/html",        "private, max-age=3600", "/orbital.html",       &ASDServerOperation::replyOrbital},
     {"/streaming.html", "text/html",        "private, max-age=3600", "/streaming.html",     NULL},
     {"/webcam.html",    "text/html",        "private, max-age=3600", "/webcam.html",        NULL},
-    {"/rpc.json",       "application/json", "no-cache",              "",                    &ASDServerOperation::replyJSONRPC},
     {"/default.css",    "text/css",         "private, max-age=3600", "/css/default.css",    NULL}
-};
-static  MethodTableRec const                    g_method[] = {
-    {"system.rpcEcho",                      &ASDServerRPC::system::rpcEcho},
-    {"observer.getVersion",                 &ASDServerRPC::observer::getVersion},
-    {"observer.getSession",                 &ASDServerRPC::observer::getSession},
-    {"observer.setManualRotator",           &ASDServerRPC::observer::setManualRotator},
-    {"observer.getManualRotator",           &ASDServerRPC::observer::getManualRotator},
-    {"observer.setManualTransceiver",       &ASDServerRPC::observer::setManualTransceiver},
-    {"observer.getManualTransceiver",       &ASDServerRPC::observer::getManualTransceiver},
-    {"observer.setManualTNC",               &ASDServerRPC::observer::setManualTNC},
-    {"observer.getManualTNC",               &ASDServerRPC::observer::getManualTNC},
-    {"observer.setNORAD",                   &ASDServerRPC::observer::setNORAD},
-    {"observer.getNORAD",                   &ASDServerRPC::observer::getNORAD},
-    {"observer.setMode",                    &ASDServerRPC::observer::setMode},
-    {"observer.getMode",                    &ASDServerRPC::observer::getMode},
-    {"observer.getTime",                    &ASDServerRPC::observer::getTime},
-    {"observer.getObserverCallsign",        &ASDServerRPC::observer::getObserverCallsign},
-    {"observer.getObserverPosition",        &ASDServerRPC::observer::getObserverPosition},
-    {"observer.getObserverDirection",       &ASDServerRPC::observer::getObserverDirection},
-    {"observer.getObserverFrequency",       &ASDServerRPC::observer::getObserverFrequency},
-    {"observer.getSatellitePosition",       &ASDServerRPC::observer::getSatellitePosition},
-    {"observer.getSatelliteDirection",      &ASDServerRPC::observer::getSatelliteDirection},
-    {"observer.getSatelliteFrequency",      &ASDServerRPC::observer::getSatelliteFrequency},
-    {"observer.getSatelliteDopplerShift",   &ASDServerRPC::observer::getSatelliteDopplerShift},
-    {"observer.getSatelliteAOSLOS",         &ASDServerRPC::observer::getSatelliteAOSLOS},
-    {"observer.getSatelliteMEL",            &ASDServerRPC::observer::getSatelliteMEL},
-    {"observer.getRotatorStart",            &ASDServerRPC::observer::getRotatorStart},
-    {"observer.getError",                   &ASDServerRPC::observer::getError},
-    {"observer.isValidRotator",             &ASDServerRPC::observer::isValidRotator},
-    {"observer.isValidTransceiver",         &ASDServerRPC::observer::isValidTransceiver},
-    {"observer.isValidTNC",                 &ASDServerRPC::observer::isValidTNC},
-    {"observer.controlSession",             &ASDServerRPC::observer::controlSession},
-    {"observer.excludeSession",             &ASDServerRPC::observer::excludeSession},
-    {"observer.setRotatorAzimuth",          &ASDServerRPC::observer::setRotatorAzimuth},
-    {"observer.setRotatorElevation",        &ASDServerRPC::observer::setRotatorElevation},
-    {"observer.setTransceiverMode",         &ASDServerRPC::observer::setTransceiverMode},
-    {"observer.setTransceiverSender",       &ASDServerRPC::observer::setTransceiverSender},
-    {"observer.setTransceiverReceiver",     &ASDServerRPC::observer::setTransceiverReceiver},
-    {"observer.setTNCMode",                 &ASDServerRPC::observer::setTNCMode},
-    {"observer.sendTNCPacket",              &ASDServerRPC::observer::sendTNCPacket},
-    {"observer.requestCommand",             &ASDServerRPC::observer::requestCommand}
 };
 static  char const* const                       g_shrink[] = {
     COOKIE_SHRINK_HARDWARE,
@@ -205,9 +123,6 @@ static  char const* const                       g_shrink[] = {
         }
     }
     if (error == tgs::TGSERROR_OK) {
-        for (i = 0; i < lengthof(g_method); ++i) {
-            _method[g_method[i].name] = g_method[i].method;
-        }
         _database = database;
     }
     if (error != tgs::TGSERROR_OK) {
@@ -218,12 +133,11 @@ static  char const* const                       g_shrink[] = {
 
 /*public */void ASDServerOperation::close(void)
 {
-    _method.clear();
     _cache.clear();
     return;
 }
 
-/*public */void ASDServerOperation::replyRoot(RequestRec const& request, ResponseRec* response)
+/*public */void ASDServerOperation::replyRoot(RequestRec const& request, ResponseRec* response) const
 {
     artsatd& daemon(artsatd::getInstance());
     insensitive::map<std::string, std::string>::const_iterator it;
@@ -275,7 +189,7 @@ static  char const* const                       g_shrink[] = {
     return;
 }
 
-/*public */void ASDServerOperation::replyHardware(RequestRec const& request, ResponseRec* response)
+/*public */void ASDServerOperation::replyHardware(RequestRec const& request, ResponseRec* response) const
 {
     artsatd& daemon(artsatd::getInstance());
     insensitive::map<std::string, std::string>::const_iterator it;
@@ -318,7 +232,7 @@ static  char const* const                       g_shrink[] = {
     return;
 }
 
-/*public */void ASDServerOperation::replyOrbital(RequestRec const& request, ResponseRec* response)
+/*public */void ASDServerOperation::replyOrbital(RequestRec const& request, ResponseRec* response) const
 {
     artsatd& daemon(artsatd::getInstance());
     insensitive::map<std::string, std::string>::const_iterator it;
@@ -390,46 +304,6 @@ static  char const* const                       g_shrink[] = {
     return;
 }
 
-/*public */void ASDServerOperation::replyJSONRPC(RequestRec const& request, ResponseRec* response)
-{
-    rapidjson::Document idoc;
-    rapidjson::Document odoc;
-    rapidjson::Value::ValueIterator it;
-    rapidjson::Value result;
-    rapidjson::StringBuffer buffer;
-    Writer<rapidjson::StringBuffer> writer(buffer);
-    
-    if (!idoc.Parse<0>(request.content.c_str()).HasParseError()) {
-        if (idoc.IsArray()) {
-            odoc.SetArray();
-            for (it = idoc.Begin(); it != idoc.End(); ++it) {
-                processJSONRPC(*it, &result, odoc.GetAllocator());
-                if (!result.IsNull()) {
-                    odoc.PushBack(result, odoc.GetAllocator());
-                }
-            }
-            if (odoc.Empty()) {
-                odoc.SetNull();
-            }
-        }
-        else {
-            processJSONRPC(idoc, &odoc, odoc.GetAllocator());
-        }
-    }
-    else {
-        returnJSONRPC(JSONCODE_PARSEERROR, result, result, &odoc, odoc.GetAllocator());
-    }
-    if (!odoc.IsNull()) {
-        odoc.Accept(writer);
-        response->content = buffer.GetString();
-    }
-    else {
-        response->status = Server::response::no_content;
-        response->content.clear();
-    }
-    return;
-}
-
 /*private virtual */tgs::TGSError ASDServerOperation::onRequest(RequestRec const& request, ResponseRec* response)
 {
     insensitive::map<std::string, CacheRec>::const_iterator it;
@@ -496,22 +370,22 @@ static  char const* const                       g_shrink[] = {
     }
     else if ((it = query.find("azimuth")) != query.end()) {
         if ((error = valueizeAzimuth(it->second, &value)) == tgs::TGSERROR_OK) {
-            error = daemon.controlManualRotator(session, &controlRotatorAzimuth, &value);
+            error = daemon.controlManualRotator(session, &artsatd::controlRotatorAzimuth, &value);
         }
         bindError(CATEGORY_HARDWARE, error, category, message);
     }
     else if ((it = query.find("elevation")) != query.end()) {
         if ((error = valueizeElevation(it->second, &value)) == tgs::TGSERROR_OK) {
-            error = daemon.controlManualRotator(session, &controlRotatorElevation, &value);
+            error = daemon.controlManualRotator(session, &artsatd::controlRotatorElevation, &value);
         }
         bindError(CATEGORY_HARDWARE, error, category, message);
     }
     else if ((it = query.find("transceiver")) != query.end()) {
         if (it->second == "CW") {
-            bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &controlTransceiverModeCW, NULL), category, message);
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &artsatd::controlTransceiverModeCW, NULL), category, message);
         }
         else if (it->second == "FM") {
-            bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &controlTransceiverModeFM, NULL), category, message);
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTransceiver(session, &artsatd::controlTransceiverModeFM, NULL), category, message);
         }
         else {
             bindError(CATEGORY_HARDWARE, tgs::TGSERROR_INVALID_PARAM, category, message);
@@ -519,29 +393,29 @@ static  char const* const                       g_shrink[] = {
     }
     else if ((it = query.find("sender")) != query.end()) {
         if ((error = valueizeFrequency(it->second, &value)) == tgs::TGSERROR_OK) {
-            error = daemon.controlManualTransceiver(session, &controlTransceiverSender, &value);
+            error = daemon.controlManualTransceiver(session, &artsatd::controlTransceiverSender, &value);
         }
         bindError(CATEGORY_HARDWARE, error, category, message);
     }
     else if ((it = query.find("receiver")) != query.end()) {
         if ((error = valueizeFrequency(it->second, &value)) == tgs::TGSERROR_OK) {
-            error = daemon.controlManualTransceiver(session, &controlTransceiverReceiver, &value);
+            error = daemon.controlManualTransceiver(session, &artsatd::controlTransceiverReceiver, &value);
         }
         bindError(CATEGORY_HARDWARE, error, category, message);
     }
     else if ((it = query.find("tnc")) != query.end()) {
         if (it->second == "Command") {
-            bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCModeCommand, NULL), category, message);
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &artsatd::controlTNCModeCommand, NULL), category, message);
         }
         else if (it->second == "Converse") {
-            bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCModeConverse, NULL), category, message);
+            bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &artsatd::controlTNCModeConverse, NULL), category, message);
         }
         else {
             bindError(CATEGORY_HARDWARE, tgs::TGSERROR_INVALID_PARAM, category, message);
         }
     }
     else if ((it = query.find("packet")) != query.end()) {
-        bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &controlTNCPacket, &it->second), category, message);
+        bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &artsatd::controlTNCPacket, &it->second), category, message);
     }
     else if ((it = query.find("norad")) != query.end()) {
         bindError(CATEGORY_DATABASE, daemon.setNORAD(session, it->second), category, message);
@@ -735,114 +609,6 @@ static  char const* const                       g_shrink[] = {
     return;
 }
 
-/*private */void ASDServerOperation::processJSONRPC(rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const
-{
-    std::map<std::string, ASDServerRPC::Method>::const_iterator it;
-    rapidjson::Value jsonrpc;
-    rapidjson::Value method;
-    rapidjson::Value params;
-    rapidjson::Value iid;
-    rapidjson::Value result;
-    rapidjson::Value oid;
-    ASDServerRPC::Variant variant;
-    ASDServerRPC::Param mparam;
-    ASDServerRPC::Param mresult;
-    bool reply;
-    JSONCodeEnum code;
-    tgs::TGSError error;
-    
-    reply = true;
-    code = JSONCODE_OK;
-    if (request.IsObject()) {
-        if (request.HasMember("jsonrpc")) {
-            jsonrpc = request["jsonrpc"];
-            if (jsonrpc.IsString()) {
-                if (strcmp(jsonrpc.GetString(), JSON_VERSION) == 0) {
-                    if (request.HasMember("id")) {
-                        iid = request["id"];
-                        if (iid.IsInt() || iid.IsString()) {
-                            oid = iid;
-                        }
-                        else if (!iid.IsNull()) {
-                            code = JSONCODE_INVALIDREQUEST;
-                        }
-                    }
-                    else {
-                        reply = false;
-                    }
-                    if (code == JSONCODE_OK) {
-                        if (request.HasMember("method")) {
-                            method = request["method"];
-                            if (method.IsString()) {
-                                if ((it = _method.find(method.GetString())) != _method.end()) {
-                                    if (request.HasMember("params")) {
-                                        params = request["params"];
-                                        if (params.IsObject()) {
-                                            ASDServerRPC::toVariant(params, &variant);
-                                            mparam = boost::get<ASDServerRPC::Param>(variant);
-                                        }
-                                        else if (params.IsArray()) {
-                                            code = JSONCODE_INVALIDPARAMS;
-                                        }
-                                        else if (!params.IsNull()) {
-                                            code = JSONCODE_INVALIDREQUEST;
-                                        }
-                                    }
-                                    if (code == JSONCODE_OK) {
-                                        error = it->second(mparam, &mresult);
-                                        ASDServerRPC::toJSON(mresult, &result, allocator);
-                                        switch (error) {
-                                            case tgs::TGSERROR_OK:
-                                                // nop
-                                                break;
-                                            case tgs::TGSERROR_INVALID_PARAM:
-                                            case tgs::TGSERROR_INVALID_FORMAT:
-                                            case tgs::TGSERROR_NO_RESULT:
-                                                code = JSONCODE_INVALIDPARAMS;
-                                                break;
-                                            default:
-                                                code = JSONCODE_INTERNALERROR;
-                                                break;
-                                        }
-                                    }
-                                }
-                                else {
-                                    code = JSONCODE_METHODNOTFOUND;
-                                }
-                            }
-                            else {
-                                code = JSONCODE_INVALIDREQUEST;
-                            }
-                        }
-                        else {
-                            code = JSONCODE_INVALIDREQUEST;
-                        }
-                    }
-                }
-                else {
-                    code = JSONCODE_INVALIDREQUEST;
-                }
-            }
-            else {
-                code = JSONCODE_INVALIDREQUEST;
-            }
-        }
-        else {
-            code = JSONCODE_INVALIDREQUEST;
-        }
-    }
-    else {
-        code = JSONCODE_INVALIDREQUEST;
-    }
-    if (reply) {
-        returnJSONRPC(code, result, oid, response, allocator);
-    }
-    else {
-        response->SetNull();
-    }
-    return;
-}
-
 /*private static */tgs::TGSError ASDServerOperation::serializeCache(std::string const& file, std::string* result)
 {
     std::ifstream stream;
@@ -940,51 +706,6 @@ static  char const* const                       g_shrink[] = {
         error = tgs::TGSERROR_INVALID_PARAM;
     }
     return error;
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlRotatorAzimuth(ASDDeviceRotator& rotator, void const* info)
-{
-    return rotator->rotateAzimuthTo(*static_cast<int const*>(info));
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlRotatorElevation(ASDDeviceRotator& rotator, void const* info)
-{
-    return rotator->rotateElevationTo(*static_cast<int const*>(info));
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTransceiverModeCW(ASDDeviceTransceiver& transceiver, void const* info)
-{
-    return transceiver->selectModeBeacon();
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTransceiverModeFM(ASDDeviceTransceiver& transceiver, void const* info)
-{
-    return transceiver->selectModeCommunication();
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTransceiverSender(ASDDeviceTransceiver& transceiver, void const* info)
-{
-    return transceiver->setFrequencySender(*static_cast<int const*>(info));
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTransceiverReceiver(ASDDeviceTransceiver& transceiver, void const* info)
-{
-    return transceiver->setFrequencyReceiver(*static_cast<int const*>(info));
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTNCModeCommand(ASDDeviceTNC& tnc, void const* info)
-{
-    return tnc->selectModeCommand();
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTNCModeConverse(ASDDeviceTNC& tnc, void const* info)
-{
-    return tnc->selectModeConverse();
-}
-
-/*private static */tgs::TGSError ASDServerOperation::controlTNCPacket(ASDDeviceTNC& tnc, void const* info)
-{
-    return tnc->sendPacket(*static_cast<std::string const*>(info));
 }
 
 /*private static */void ASDServerOperation::bindError(std::string const& name, tgs::TGSError error, std::string* category, std::string* message)
@@ -1191,45 +912,4 @@ static  char const* const                       g_shrink[] = {
 /*private static */std::string ASDServerOperation::stringizeOnline(int param)
 {
     return (param >= 0) ? ((boost::format("%d") % param).str()) : ("-");
-}
-
-/*private static */void ASDServerOperation::returnJSONRPC(JSONCodeEnum code, rapidjson::Value& result, rapidjson::Value& id, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator)
-{
-    rapidjson::Value error;
-    
-    response->SetObject();
-    response->AddMember("jsonrpc", JSON_VERSION, allocator);
-    if (code == JSONCODE_OK) {
-        response->AddMember("result", result, allocator);
-    }
-    else {
-        error.SetObject();
-        error.AddMember("code", code, allocator);
-        switch (code) {
-            case JSONCODE_PARSEERROR:
-                error.AddMember("message", "Parse error", allocator);
-                break;
-            case JSONCODE_INVALIDREQUEST:
-                error.AddMember("message", "Invalid Request", allocator);
-                break;
-            case JSONCODE_METHODNOTFOUND:
-                error.AddMember("message", "Method not found", allocator);
-                break;
-            case JSONCODE_INVALIDPARAMS:
-                error.AddMember("message", "Invalid params", allocator);
-                break;
-            case JSONCODE_INTERNALERROR:
-                error.AddMember("message", "Internal error", allocator);
-                break;
-            default:
-                error.AddMember("message", "Server error", allocator);
-                break;
-        }
-        if (!result.IsNull()) {
-            error.AddMember("data", result, allocator);
-        }
-        response->AddMember("error", error, allocator);
-    }
-    response->AddMember("id", id, allocator);
-    return;
 }

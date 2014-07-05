@@ -57,6 +57,7 @@
 #include "ASDTLEClientInterface.h"
 #include "ASDServerDatabase.h"
 #include "ASDServerOperation.h"
+#include "ASDServerRPC.h"
 //<<<
 #include "ASDTLEPassFactory.h"
 #include "ASDRotationSolver.h"
@@ -92,6 +93,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
             int                                 serverDatabaseListen;
             std::string                         serverOperationPort;
             int                                 serverOperationListen;
+            std::string                         serverRPCPort;
+            int                                 serverRPCListen;
             int                                 sessionMaximum;
             int                                 sessionTimeout;
             bool                                sessionLocalonly;
@@ -185,8 +188,10 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                                                 _clientTle;
                 ASDNetworkServer                _serverDatabase;
                 ASDNetworkServer                _serverOperation;
+                ASDNetworkServer                _serverRPC;
                 ASDServerDatabase               _replierDatabase;
                 ASDServerOperation              _replierOperation;
+                ASDServerRPC                    _replierRPC;
                 //<<<
                 ASDTLEPassFactory               _passFactory;
                 ASDTLEPass                      _pass;
@@ -244,6 +249,15 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 tgs::TGSError                   controlManualTransceiver    (std::string const& session, tgs::TGSError (*function)(ASDDeviceTransceiver& transceiver, void const* info), void const* info);
                 tgs::TGSError                   controlManualTNC            (std::string const& session, tgs::TGSError (*function)(ASDDeviceTNC& tnc, void const* info), void const* info);
                 tgs::TGSError                   requestCommand              (std::string const& session, std::string const& command);
+        static  tgs::TGSError                   controlRotatorAzimuth       (ASDDeviceRotator& rotator, void const* info);
+        static  tgs::TGSError                   controlRotatorElevation     (ASDDeviceRotator& rotator, void const* info);
+        static  tgs::TGSError                   controlTransceiverModeCW    (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTransceiverModeFM    (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTransceiverSender    (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTransceiverReceiver  (ASDDeviceTransceiver& transceiver, void const* info);
+        static  tgs::TGSError                   controlTNCModeCommand       (ASDDeviceTNC& tnc, void const* info);
+        static  tgs::TGSError                   controlTNCModeConverse      (ASDDeviceTNC& tnc, void const* info);
+        static  tgs::TGSError                   controlTNCPacket            (ASDDeviceTNC& tnc, void const* info);
     private:
         explicit                                artsatd                     (void);
         virtual                                 ~artsatd                    (void);

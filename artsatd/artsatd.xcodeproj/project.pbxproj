@@ -74,9 +74,8 @@
 		C3892EC4191A8D2600BC79C7 /* ASDPluginINVADER.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3892EC2191A8D2600BC79C7 /* ASDPluginINVADER.cpp */; };
 		C3999F751794838100955327 /* artsatd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3999F731794838100955327 /* artsatd.cpp */; };
 		C3B05C841923DCB400A110B6 /* ASDDeviceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3B05C821923DCB400A110B6 /* ASDDeviceInterface.cpp */; };
+		C3B4BB521967046000523FBB /* ASDServerRPC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3B4BB501967046000523FBB /* ASDServerRPC.cpp */; };
 		C3D9ABCA177DF71800A8A6C4 /* ASDTLEClientInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3D9ABC8177DF71600A8A6C4 /* ASDTLEClientInterface.cpp */; };
-		C3E8B3CA18C30BB10061702D /* ASDServerRPC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3E8B3C618C30BB10061702D /* ASDServerRPC.cpp */; };
-		C3E8B3CB18C30BB10061702D /* ASDServerRPCMethod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3E8B3C818C30BB10061702D /* ASDServerRPCMethod.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -230,12 +229,10 @@
 		C3999F741794838100955327 /* artsatd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = artsatd.h; sourceTree = "<group>"; };
 		C3B05C821923DCB400A110B6 /* ASDDeviceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDDeviceInterface.cpp; sourceTree = "<group>"; };
 		C3B05C831923DCB400A110B6 /* ASDDeviceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDDeviceInterface.h; sourceTree = "<group>"; };
+		C3B4BB501967046000523FBB /* ASDServerRPC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDServerRPC.cpp; sourceTree = "<group>"; };
+		C3B4BB511967046000523FBB /* ASDServerRPC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDServerRPC.h; sourceTree = "<group>"; };
 		C3D9ABC8177DF71600A8A6C4 /* ASDTLEClientInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDTLEClientInterface.cpp; sourceTree = "<group>"; };
 		C3D9ABC9177DF71700A8A6C4 /* ASDTLEClientInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDTLEClientInterface.h; sourceTree = "<group>"; };
-		C3E8B3C618C30BB10061702D /* ASDServerRPC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDServerRPC.cpp; sourceTree = "<group>"; };
-		C3E8B3C718C30BB10061702D /* ASDServerRPC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDServerRPC.h; sourceTree = "<group>"; };
-		C3E8B3C818C30BB10061702D /* ASDServerRPCMethod.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDServerRPCMethod.cpp; sourceTree = "<group>"; };
-		C3E8B3C918C30BB10061702D /* ASDServerRPCMethod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDServerRPCMethod.h; sourceTree = "<group>"; };
 		C3E8B3CE18C30D2B0061702D /* prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefix.pch; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -432,14 +429,12 @@
 				C31409C317812D8D00F320FE /* ASDServerDatabase.cpp */,
 				C31409C71781303900F320FE /* ASDServerOperation.h */,
 				C31409C61781303900F320FE /* ASDServerOperation.cpp */,
+				C3B4BB511967046000523FBB /* ASDServerRPC.h */,
+				C3B4BB501967046000523FBB /* ASDServerRPC.cpp */,
 				C3892EC0191A8B4D00BC79C7 /* ASDPluginInterface.h */,
 				C3892EBF191A8B4D00BC79C7 /* ASDPluginInterface.cpp */,
 				C3892EC3191A8D2600BC79C7 /* ASDPluginINVADER.h */,
 				C3892EC2191A8D2600BC79C7 /* ASDPluginINVADER.cpp */,
-				C3E8B3C718C30BB10061702D /* ASDServerRPC.h */,
-				C3E8B3C618C30BB10061702D /* ASDServerRPC.cpp */,
-				C3E8B3C918C30BB10061702D /* ASDServerRPCMethod.h */,
-				C3E8B3C818C30BB10061702D /* ASDServerRPCMethod.cpp */,
 				4110EB5318F25C3700756032 /* ASDTLEPass.h */,
 				4110EB5218F25C3700756032 /* ASDTLEPass.cpp */,
 				4110EB5618F26CA000756032 /* ASDTLEPassFactory.h */,
@@ -745,8 +740,6 @@
 				C31409C81781303900F320FE /* ASDServerOperation.cpp in Sources */,
 				C3999F751794838100955327 /* artsatd.cpp in Sources */,
 				C380CAA217ABCEA0004AFB64 /* ASDTLEClientCelestrak.cpp in Sources */,
-				C3E8B3CA18C30BB10061702D /* ASDServerRPC.cpp in Sources */,
-				C3E8B3CB18C30BB10061702D /* ASDServerRPCMethod.cpp in Sources */,
 				C35DC8C118D8B07A003370D0 /* IRXDaemon.cpp in Sources */,
 				C35DC8C218D8B07A003370D0 /* ExtentManager.cpp in Sources */,
 				C35DC8C318D8B07A003370D0 /* getmntopts.c in Sources */,
@@ -786,6 +779,7 @@
 				C35DC96018D8B085003370D0 /* cNoradSDP4.cpp in Sources */,
 				C35DC96118D8B085003370D0 /* cNoradSGP4.cpp in Sources */,
 				C35DC96218D8B085003370D0 /* cOrbit.cpp in Sources */,
+				C3B4BB521967046000523FBB /* ASDServerRPC.cpp in Sources */,
 				C35DC96318D8B085003370D0 /* stdafx.cpp in Sources */,
 				C35DC96618D8B085003370D0 /* TGSOrbitInterface.cpp in Sources */,
 				C35DC96718D8B085003370D0 /* TGSOrbitTLE.cpp in Sources */,

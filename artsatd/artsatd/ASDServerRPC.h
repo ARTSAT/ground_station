@@ -50,42 +50,111 @@
 #ifndef __ASD_SERVERRPC_H
 #define __ASD_SERVERRPC_H
 
-#include "TGSType.h"
+#include "ASDNetworkServer.h"
 #include "document.h"
 
-namespace ASDServerRPC {
-
-enum VariantTypeEnum {
-    VARIANTTYPE_BOOL,
-    VARIANTTYPE_INT,
-    VARIANTTYPE_DOUBLE,
-    VARIANTTYPE_STRING,
-    VARIANTTYPE_LIST,
-    VARIANTTYPE_MAP,
-    VARIANTTYPE_BLANK,
-    VARIANTTYPE_LIMIT
+class ASDServerRPC : public ASDNetworkServer::Notifier {
+    private:
+        enum VariantTypeEnum {
+            VARIANTTYPE_BOOL,
+            VARIANTTYPE_INT,
+            VARIANTTYPE_DOUBLE,
+            VARIANTTYPE_STRING,
+            VARIANTTYPE_LIST,
+            VARIANTTYPE_MAP,
+            VARIANTTYPE_BLANK,
+            VARIANTTYPE_LIMIT
+        };
+        enum JSONCodeEnum {
+            JSONCODE_OK                         = 0,
+            JSONCODE_PARSEERROR                 = -32700,
+            JSONCODE_INVALIDREQUEST             = -32600,
+            JSONCODE_METHODNOTFOUND             = -32601,
+            JSONCODE_INVALIDPARAMS              = -32602,
+            JSONCODE_INTERNALERROR              = -32603
+        };
+    
+    private:
+        typedef boost::make_recursive_variant<
+            bool,
+            int,
+            double,
+            std::string,
+            std::list<boost::recursive_variant_>,
+            std::map<std::string, boost::recursive_variant_>,
+            boost::blank
+        >::type                                 Variant;
+        typedef std::map<std::string, Variant>  Param;
+    public:
+        typedef boost::function<
+            tgs::TGSError(ASDServerRPC const*, Param const& param, Param* result)
+        >                                       Method;
+    
+    private:
+                std::map<std::string, Method>   _method;
+                std::string                     _database;
+    
+    public:
+        explicit                                ASDServerRPC                (void);
+        virtual                                 ~ASDServerRPC               (void);
+                tgs::TGSError                   open                        (std::string const& database);
+                void                            close                       (void);
+                tgs::TGSError                   rpcEcho                     (Param const& param, Param* result) const;
+                tgs::TGSError                   getVersion                  (Param const& param, Param* result) const;
+                tgs::TGSError                   getSession                  (Param const& param, Param* result) const;
+                tgs::TGSError                   setManualRotator            (Param const& param, Param* result) const;
+                tgs::TGSError                   getManualRotator            (Param const& param, Param* result) const;
+                tgs::TGSError                   setManualTransceiver        (Param const& param, Param* result) const;
+                tgs::TGSError                   getManualTransceiver        (Param const& param, Param* result) const;
+                tgs::TGSError                   setManualTNC                (Param const& param, Param* result) const;
+                tgs::TGSError                   getManualTNC                (Param const& param, Param* result) const;
+                tgs::TGSError                   setNORAD                    (Param const& param, Param* result) const;
+                tgs::TGSError                   getNORAD                    (Param const& param, Param* result) const;
+                tgs::TGSError                   setMode                     (Param const& param, Param* result) const;
+                tgs::TGSError                   getMode                     (Param const& param, Param* result) const;
+                tgs::TGSError                   getTime                     (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverCallsign         (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverPosition         (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverDirection        (Param const& param, Param* result) const;
+                tgs::TGSError                   getObserverFrequency        (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatellitePosition        (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteDirection       (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteFrequency       (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteDopplerShift    (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteAOSLOS          (Param const& param, Param* result) const;
+                tgs::TGSError                   getSatelliteMEL             (Param const& param, Param* result) const;
+                tgs::TGSError                   getRotatorStart             (Param const& param, Param* result) const;
+                tgs::TGSError                   getError                    (Param const& param, Param* result) const;
+                tgs::TGSError                   isValidRotator              (Param const& param, Param* result) const;
+                tgs::TGSError                   isValidTransceiver          (Param const& param, Param* result) const;
+                tgs::TGSError                   isValidTNC                  (Param const& param, Param* result) const;
+                tgs::TGSError                   controlSession              (Param const& param, Param* result) const;
+                tgs::TGSError                   excludeSession              (Param const& param, Param* result) const;
+                tgs::TGSError                   setRotatorAzimuth           (Param const& param, Param* result) const;
+                tgs::TGSError                   setRotatorElevation         (Param const& param, Param* result) const;
+                tgs::TGSError                   setTransceiverMode          (Param const& param, Param* result) const;
+                tgs::TGSError                   setTransceiverSender        (Param const& param, Param* result) const;
+                tgs::TGSError                   setTransceiverReceiver      (Param const& param, Param* result) const;
+                tgs::TGSError                   setTNCMode                  (Param const& param, Param* result) const;
+                tgs::TGSError                   sendTNCPacket               (Param const& param, Param* result) const;
+                tgs::TGSError                   requestCommand              (Param const& param, Param* result) const;
+    private:
+        virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
+                void                            replyJSON                   (RequestRec const& request, ResponseRec* response) const;
+                void                            processJSON                 (rapidjson::Value& request, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator) const;
+        static  void                            returnJSON                  (JSONCodeEnum code, rapidjson::Value& result, rapidjson::Value& id, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator);
+        static  void                            toVariant                   (rapidjson::Value const& param, Variant* result);
+        static  void                            toJSON                      (Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator);
+        static  tgs::TGSError                   updateSession               (Param const& param, std::string* session, Param* result);
+        template <typename T>
+        static  tgs::TGSError                   getParam                    (Param const& param, std::string const& key, T* result);
+        static  tgs::TGSError                   getParam                    (Param const& param, std::string const& key, int* result);
+        template <typename T>
+        static  void                            setResult                   (T const& param, std::string const& key, Param* result);
+        static  tgs::TGSError                   setError                    (tgs::TGSError error, Param* result);
+    private:
+                                                ASDServerRPC                (ASDServerRPC const&);
+                ASDServerRPC&                   operator=                   (ASDServerRPC const&);
 };
-
-typedef boost::make_recursive_variant<
-    bool,
-    int,
-    double,
-    std::string,
-    std::list<boost::recursive_variant_>,
-    std::map<std::string, boost::recursive_variant_>,
-    boost::blank
->::type Variant;
-typedef std::map<
-    std::string,
-    Variant
-> Param;
-typedef boost::function<
-    tgs::TGSError(Param const& param, Param* result)
-> Method;
-
-extern  void                    toVariant           (rapidjson::Value const& param, Variant* result);
-extern  void                    toJSON              (Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator);
-
-}// end of namespace
 
 #endif
