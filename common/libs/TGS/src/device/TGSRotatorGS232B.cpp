@@ -118,17 +118,19 @@ namespace tgs {
     
     if (1200 <= baud && baud <= 9600) {
         if ((error = super::open(port, baud, false, verbose)) == TGSERROR_OK) {
-            usleep(1000000);
-            flushRead();
             if ((error = write("")) == TGSERROR_OK) {
-                if ((error = read(&response)) == TGSERROR_OK) {
-                    if (response == "?>") {
-                        if (verbose) {
-                            std::cout << "TGSRotatorGS232B::open [port : " << port << ", baud : " << baud << "]" << std::endl;
+                usleep(1000000);
+                flushRead();
+                if ((error = write("")) == TGSERROR_OK) {
+                    if ((error = read(&response)) == TGSERROR_OK) {
+                        if (response == "?>") {
+                            if (verbose) {
+                                std::cout << "TGSRotatorGS232B::open [port : " << port << ", baud : " << baud << "]" << std::endl;
+                            }
                         }
-                    }
-                    else {
-                        error = TGSERROR_INVALID_STATE;
+                        else {
+                            error = TGSERROR_INVALID_STATE;
+                        }
                     }
                 }
             }

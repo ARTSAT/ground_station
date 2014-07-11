@@ -278,7 +278,10 @@ namespace tgs {
     if (result != NULL) {
         if ((error = select(table, "count(*)", format, condition, ap)) == TGSERROR_OK) {
             if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                error = readInteger(0, result);
+                if ((error = readInteger(0, result)) == TGSERROR_NO_RESULT) {
+                    error = TGSERROR_OK;
+                    *result = 0;
+                }
                 while (step() == TGSERROR_WAIT_RESULT);
             }
             else if (error == TGSERROR_OK) {
@@ -409,7 +412,12 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = checkColumn(result)) == TGSERROR_OK) {
-        *result = sqlite3_column_int(_statement, column);
+        if (sqlite3_column_type(_statement, column) != SQLITE_NULL) {
+            *result = sqlite3_column_int(_statement, column);
+        }
+        else {
+            error = TGSERROR_NO_RESULT;
+        }
     }
     return error;
 }
@@ -419,7 +427,12 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = checkColumn(result)) == TGSERROR_OK) {
-        *result = sqlite3_column_double(_statement, column);
+        if (sqlite3_column_type(_statement, column) != SQLITE_NULL) {
+            *result = sqlite3_column_double(_statement, column);
+        }
+        else {
+            error = TGSERROR_NO_RESULT;
+        }
     }
     return error;
 }
@@ -430,11 +443,16 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = checkColumn(result)) == TGSERROR_OK) {
-        if ((temp = reinterpret_cast<char const*>(sqlite3_column_text(_statement, column))) != NULL) {
-            *result = temp;
+        if (sqlite3_column_type(_statement, column) != SQLITE_NULL) {
+            if ((temp = reinterpret_cast<char const*>(sqlite3_column_text(_statement, column))) != NULL) {
+                *result = temp;
+            }
+            else {
+                result->clear();
+            }
         }
         else {
-            result->clear();
+            error = TGSERROR_NO_RESULT;
         }
     }
     return error;

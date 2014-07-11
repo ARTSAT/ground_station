@@ -1027,6 +1027,186 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
+/*public */tgs::TGSError ASDServerRPC::setName(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getName(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::setCallsign(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getCallsign(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::setRadioBeacon(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getRadioBeacon(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::setRadioSender(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getRadioSender(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::setRadioReceiver(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getRadioReceiver(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::setOrbitData(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getOrbitData(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getCount(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getField(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getFieldByName(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getFieldByCallsign(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getNORADByName(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getNORADByCallsign(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+    }
+    return error;
+}
+
 /*private static */tgs::TGSError ASDServerRPC::updateSession(Param const& param, std::string* session, Param* result)
 {
     std::string string;

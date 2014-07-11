@@ -517,6 +517,178 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   session <std::string>: session ID
                  */
                 tgs::TGSError                   requestCommand              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.setName
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 *   name <std::string>: satellite's name
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   setName                     (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getName
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 * result:
+                 *   session <std::string>: session ID
+                 *   name <std::string>: satellite's name
+                 */
+                tgs::TGSError                   getName                     (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.setCallsign
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 *   callsign <std::string>: satellite's callsign
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   setCallsign                 (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getCallsign
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 * result:
+                 *   session <std::string>: session ID
+                 *   callsign <std::string>: satellite's callsign
+                 */
+                tgs::TGSError                   getCallsign                 (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.setRadioBeacon
+                 * params:
+                 *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 *   mode <std::string>: satellite's callsign
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   setRadioBeacon              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getRadioBeacon
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getRadioBeacon              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.setRadioSender
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   setRadioSender              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getRadioSender
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getRadioSender              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.setRadioReceiver
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   setRadioReceiver            (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getRadioReceiver
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getRadioReceiver            (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.setOrbitData
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   setOrbitData                (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getOrbitData
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getOrbitData                (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getCount
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getCount                    (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getField
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getField                    (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getFieldByName
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getFieldByName              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getFieldByCallsign
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getFieldByCallsign          (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getNORADByName
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getNORADByName              (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   database.getNORADByCallsign
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 */
+                tgs::TGSError                   getNORADByCallsign          (std::string const& host, Param const& param, Param* result) const;
     private:
         virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
                 void                            replyJSON                   (RequestRec const& request, ResponseRec* response) const;

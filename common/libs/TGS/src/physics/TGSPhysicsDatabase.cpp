@@ -278,11 +278,27 @@ static  char const*         g_hasUpdate[][2] = {
                 if (error == TGSERROR_OK) {
                     if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], std::string(""), norad)) == TGSERROR_OK) {
                         if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                            if ((error = readText(0, &name)) == TGSERROR_OK) {
-                                if ((error = readText(1, &one)) == TGSERROR_OK) {
-                                    if ((error = readText(2, &two)) == TGSERROR_OK) {
+                            if ((error = readText(0, &name)) == TGSERROR_NO_RESULT) {
+                                error = TGSERROR_OK;
+                                name.clear();
+                            }
+                            if (error == TGSERROR_OK) {
+                                if ((error = readText(1, &one)) == TGSERROR_NO_RESULT) {
+                                    error = TGSERROR_OK;
+                                    one.clear();
+                                }
+                                if (error == TGSERROR_OK) {
+                                    if ((error = readText(2, &two)) == TGSERROR_NO_RESULT) {
+                                        error = TGSERROR_OK;
+                                        two.clear();
+                                    }
+                                    if (error == TGSERROR_OK) {
                                         if (time != NULL) {
-                                            if ((error = readText(3, &string)) == TGSERROR_OK) {
+                                            if ((error = readText(3, &string)) == TGSERROR_NO_RESULT) {
+                                                error = TGSERROR_OK;
+                                                string.clear();
+                                            }
+                                            if (error == TGSERROR_OK) {
                                                 if ((error = date.parse(TIME_FORMAT, string)) == TGSERROR_OK) {
                                                     *time = date;
                                                 }
@@ -361,7 +377,7 @@ static  char const*         g_hasUpdate[][2] = {
                             if ((error = readField(0, &field)) == TGSERROR_OK) {
                                 vector.push_back(field);
                             }
-                            if (error != TGSERROR_OK) {
+                            else {
                                 while (step() == TGSERROR_WAIT_RESULT);
                                 break;
                             }
@@ -411,6 +427,9 @@ static  char const*         g_hasUpdate[][2] = {
             if ((error = readInteger(0, &value)) == TGSERROR_OK) {
                 result = !!value;
             }
+            else if (error == TGSERROR_NO_RESULT) {
+                error = TGSERROR_OK;
+            }
             while (step() == TGSERROR_WAIT_RESULT);
             if (error == TGSERROR_OK) {
                 if (result) {
@@ -453,7 +472,10 @@ static  char const*         g_hasUpdate[][2] = {
     if (result != NULL) {
         if ((error = select(TABLE_PHYSICS, format[1][0], &format[0], std::string(""), norad)) == TGSERROR_OK) {
             if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                error = readText(0, result);
+                if ((error = readText(0, result)) == TGSERROR_NO_RESULT) {
+                    error = TGSERROR_OK;
+                    result->clear();
+                }
                 while (step() == TGSERROR_WAIT_RESULT);
             }
             else if (error == TGSERROR_OK) {
@@ -483,9 +505,21 @@ static  char const*         g_hasUpdate[][2] = {
             if ((error = buildQuery("", &format[1], 3, &string)) == TGSERROR_OK) {
                 if ((error = select(TABLE_PHYSICS, string, &format[0], std::string(""), norad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                        if ((error = readText(0, &radio.mode)) == TGSERROR_OK) {
-                            if ((error = readInteger(1, &radio.frequency)) == TGSERROR_OK) {
-                                if ((error = readInteger(2, &radio.drift)) == TGSERROR_OK) {
+                        if ((error = readText(0, &radio.mode)) == TGSERROR_NO_RESULT) {
+                            error = TGSERROR_OK;
+                            radio.mode.clear();
+                        }
+                        if (error == TGSERROR_OK) {
+                            if ((error = readInteger(1, &radio.frequency)) == TGSERROR_NO_RESULT) {
+                                error = TGSERROR_OK;
+                                radio.frequency = -1;
+                            }
+                            if (error == TGSERROR_OK) {
+                                if ((error = readInteger(2, &radio.drift)) == TGSERROR_NO_RESULT) {
+                                    error = TGSERROR_OK;
+                                    radio.drift = INT_MIN;
+                                }
+                                if (error == TGSERROR_OK) {
                                     *result = radio;
                                 }
                             }
@@ -522,7 +556,7 @@ static  char const*         g_hasUpdate[][2] = {
                             if ((error = readField(0, &field)) == TGSERROR_OK) {
                                 vector.push_back(field);
                             }
-                            if (error != TGSERROR_OK) {
+                            else {
                                 while (step() == TGSERROR_WAIT_RESULT);
                                 break;
                             }
@@ -553,10 +587,14 @@ static  char const*         g_hasUpdate[][2] = {
             if ((error = buildOrder("", &g_field[0], true, -1, -1, &condition)) == TGSERROR_OK) {
                 if ((error = select(TABLE_PHYSICS, g_field[0][0], &g_field[index], condition, key.c_str())) == TGSERROR_OK) {
                     while ((error = step()) == TGSERROR_WAIT_RESULT) {
-                        if ((error = readInteger(0, &norad)) == TGSERROR_OK) {
+                        if ((error = readInteger(0, &norad)) == TGSERROR_NO_RESULT) {
+                            error = TGSERROR_OK;
+                            norad = -1;
+                        }
+                        if (error == TGSERROR_OK) {
                             vector.push_back(norad);
                         }
-                        if (error != TGSERROR_OK) {
+                        else {
                             while (step() == TGSERROR_WAIT_RESULT);
                             break;
                         }
@@ -581,22 +619,82 @@ static  char const*         g_hasUpdate[][2] = {
     std::string two;
     TGSError error(TGSERROR_OK);
     
-    if ((error = readInteger(column, &result->norad)) == TGSERROR_OK) {
-        if ((error = readText(++column, &result->name)) == TGSERROR_OK) {
-            if ((error = readText(++column, &result->callsign)) == TGSERROR_OK) {
-                if ((error = readText(++column, &result->beacon.mode)) == TGSERROR_OK) {
-                    if ((error = readInteger(++column, &result->beacon.frequency)) == TGSERROR_OK) {
-                        if ((error = readInteger(++column, &result->beacon.drift)) == TGSERROR_OK) {
-                            if ((error = readText(++column, &result->sender.mode)) == TGSERROR_OK) {
-                                if ((error = readInteger(++column, &result->sender.frequency)) == TGSERROR_OK) {
-                                    if ((error = readInteger(++column, &result->sender.drift)) == TGSERROR_OK) {
-                                        if ((error = readText(++column, &result->receiver.mode)) == TGSERROR_OK) {
-                                            if ((error = readInteger(++column, &result->receiver.frequency)) == TGSERROR_OK) {
-                                                if ((error = readInteger(++column, &result->receiver.drift)) == TGSERROR_OK) {
-                                                    if ((error = readText(++column, &string)) == TGSERROR_OK) {
+    if ((error = readInteger(column, &result->norad)) == TGSERROR_NO_RESULT) {
+        error = TGSERROR_OK;
+        result->norad = -1;
+    }
+    if (error == TGSERROR_OK) {
+        if ((error = readText(++column, &result->name)) == TGSERROR_NO_RESULT) {
+            error = TGSERROR_OK;
+            result->name.clear();
+        }
+        if (error == TGSERROR_OK) {
+            if ((error = readText(++column, &result->callsign)) == TGSERROR_NO_RESULT) {
+                error = TGSERROR_OK;
+                result->callsign.clear();
+            }
+            if (error == TGSERROR_OK) {
+                if ((error = readText(++column, &result->beacon.mode)) == TGSERROR_NO_RESULT) {
+                    error = TGSERROR_OK;
+                    result->beacon.mode.clear();
+                }
+                if (error == TGSERROR_OK) {
+                    if ((error = readInteger(++column, &result->beacon.frequency)) == TGSERROR_NO_RESULT) {
+                        error = TGSERROR_OK;
+                        result->beacon.frequency = -1;
+                    }
+                    if (error == TGSERROR_OK) {
+                        if ((error = readInteger(++column, &result->beacon.drift)) == TGSERROR_NO_RESULT) {
+                            error = TGSERROR_OK;
+                            result->beacon.drift = INT_MIN;
+                        }
+                        if (error == TGSERROR_OK) {
+                            if ((error = readText(++column, &result->sender.mode)) == TGSERROR_NO_RESULT) {
+                                error = TGSERROR_OK;
+                                result->sender.mode.clear();
+                            }
+                            if (error == TGSERROR_OK) {
+                                if ((error = readInteger(++column, &result->sender.frequency)) == TGSERROR_NO_RESULT) {
+                                    error = TGSERROR_OK;
+                                    result->sender.frequency = -1;
+                                }
+                                if (error == TGSERROR_OK) {
+                                    if ((error = readInteger(++column, &result->sender.drift)) == TGSERROR_NO_RESULT) {
+                                        error = TGSERROR_OK;
+                                        result->sender.drift = INT_MIN;
+                                    }
+                                    if (error == TGSERROR_OK) {
+                                        if ((error = readText(++column, &result->receiver.mode)) == TGSERROR_NO_RESULT) {
+                                            error = TGSERROR_OK;
+                                            result->receiver.mode.clear();
+                                        }
+                                        if (error == TGSERROR_OK) {
+                                            if ((error = readInteger(++column, &result->receiver.frequency)) == TGSERROR_NO_RESULT) {
+                                                error = TGSERROR_OK;
+                                                result->receiver.frequency = -1;
+                                            }
+                                            if (error == TGSERROR_OK) {
+                                                if ((error = readInteger(++column, &result->receiver.drift)) == TGSERROR_NO_RESULT) {
+                                                    error = TGSERROR_OK;
+                                                    result->receiver.drift = INT_MIN;
+                                                }
+                                                if (error == TGSERROR_OK) {
+                                                    if ((error = readText(++column, &string)) == TGSERROR_NO_RESULT) {
+                                                        error = TGSERROR_OK;
+                                                        string.clear();
+                                                    }
+                                                    if (error == TGSERROR_OK) {
                                                         if ((error = result->time.parse(TIME_FORMAT, string)) == TGSERROR_OK) {
-                                                            if ((error = readText(++column, &one)) == TGSERROR_OK) {
-                                                                if ((error = readText(++column, &two)) == TGSERROR_OK) {
+                                                            if ((error = readText(++column, &one)) == TGSERROR_NO_RESULT) {
+                                                                error = TGSERROR_OK;
+                                                                one.clear();
+                                                            }
+                                                            if (error == TGSERROR_OK) {
+                                                                if ((error = readText(++column, &two)) == TGSERROR_NO_RESULT) {
+                                                                    error = TGSERROR_OK;
+                                                                    two.clear();
+                                                                }
+                                                                if (error == TGSERROR_OK) {
                                                                     error = convert(result->name, one, two, &result->tle);
                                                                 }
                                                             }

@@ -62,11 +62,11 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
     public:
         struct RadioRec {
             std::string                     mode;
-            int                             frequency;
-            int                             drift;
+            int                             frequency;  // 0 <= N, -1 is invalid
+            int                             drift;      // INT_MIN < N <= INT_MAX, INT_MIN is invalid
         };
         struct FieldRec {
-            int                             norad;
+            int                             norad;      // 0 <= N, -1 is invalid
             std::string                     name;
             std::string                     callsign;
             RadioRec                        beacon;

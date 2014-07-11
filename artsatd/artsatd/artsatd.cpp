@@ -51,7 +51,7 @@
 #include "TGSTNCTNC555.h"
 #include "ASDTLEClientCelestrak.h"
 
-#define VERSION_STRING                          ("4.4")
+#define VERSION_STRING                          ("4.4.2")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -868,6 +868,15 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         }
         if (expire) {
             if ((monitor.error = _database.getField(_state.field.norad, &_state.field)) == tgs::TGSERROR_OK) {
+                if (_state.field.beacon.drift == INT_MIN) {
+                    _state.field.beacon.drift = 0;
+                }
+                if (_state.field.sender.drift == INT_MIN) {
+                    _state.field.sender.drift = 0;
+                }
+                if (_state.field.receiver.drift == INT_MIN) {
+                    _state.field.receiver.drift = 0;
+                }
                 if ((monitor.error = _state.orbit.setOrbitData(_state.field.tle)) == tgs::TGSERROR_OK) {
                     if ((monitor.error = _passFactory.setOrbitData(_state.field.tle)) == tgs::TGSERROR_OK) {
                         resetRotator();
@@ -902,7 +911,15 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 switchTransceiver(MODETRANSCEIVER_COMMUNICATION);
             }
             if (!_state.manualTNC) {
-                switchTNC(MODETNC_CONVERSE, (_state.field.norad >= 0) ? (_state.field.callsign) : (_config.observerCallsign));
+                if (_state.field.norad < 0) {
+                    switchTNC(MODETNC_CONVERSE, _config.observerCallsign);
+                }
+                else if (!_state.field.callsign.empty()) {
+                    switchTNC(MODETNC_CONVERSE, _state.field.callsign);
+                }
+                else {
+                    switchTNC(MODETNC_CONVERSE, "CQ");
+                }
             }
             break;
         default:
@@ -919,15 +936,27 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             if ((monitor.error = _state.orbit.getSatellitePosition(&monitor.latitude, &monitor.longitude, &monitor.altitude)) == tgs::TGSERROR_OK) {
                 if ((monitor.error = _state.orbit.getSatelliteDirection(&monitor.azimuth, &monitor.elevation)) == tgs::TGSERROR_OK) {
                     if ((monitor.error = _state.orbit.getDopplerRatio(&monitor.dopplerSender, &monitor.dopplerReceiver)) == tgs::TGSERROR_OK) {
-                        monitor.beacon = (_state.field.beacon.frequency + _state.field.beacon.drift) * monitor.dopplerReceiver;
-                        monitor.sender = (_state.field.sender.frequency + _state.field.sender.drift) * monitor.dopplerSender;
-                        monitor.receiver = (_state.field.receiver.frequency + _state.field.receiver.drift) * monitor.dopplerReceiver;
+                        if (_state.field.beacon.frequency >= 0) {
+                            monitor.beacon = (_state.field.beacon.frequency + _state.field.beacon.drift) * monitor.dopplerReceiver;
+                        }
+                        if (_state.field.sender.frequency >= 0) {
+                            monitor.sender = (_state.field.sender.frequency + _state.field.sender.drift) * monitor.dopplerSender;
+                        }
+                        if (_state.field.receiver.frequency >= 0) {
+                            monitor.receiver = (_state.field.receiver.frequency + _state.field.receiver.drift) * monitor.dopplerReceiver;
+                        }
                         switch (_state.mode) {
                             case MODE_CW_TEST:
                             case MODE_FM_TEST:
-                                beacon = _state.field.beacon.frequency;
-                                sender = _state.field.sender.frequency;
-                                receiver = _state.field.receiver.frequency;
+                                if (_state.field.beacon.frequency >= 0) {
+                                    beacon = _state.field.beacon.frequency;
+                                }
+                                if (_state.field.sender.frequency >= 0) {
+                                    sender = _state.field.sender.frequency;
+                                }
+                                if (_state.field.receiver.frequency >= 0) {
+                                    receiver = _state.field.receiver.frequency;
+                                }
                                 break;
                             default:
                                 beacon = monitor.beacon;
