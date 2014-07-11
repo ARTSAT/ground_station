@@ -130,7 +130,25 @@ static  MethodTableRec const                    g_method[] = {
     {"observer.setTransceiverReceiver",     &ASDServerRPC::setTransceiverReceiver},
     {"observer.setTNCMode",                 &ASDServerRPC::setTNCMode},
     {"observer.sendTNCPacket",              &ASDServerRPC::sendTNCPacket},
-    {"observer.requestCommand",             &ASDServerRPC::requestCommand}
+    {"observer.requestCommand",             &ASDServerRPC::requestCommand},
+    {"database.setName",                    &ASDServerRPC::setName},
+    {"database.getName",                    &ASDServerRPC::getName},
+    {"database.setCallsign",                &ASDServerRPC::setCallsign},
+    {"database.getCallsign",                &ASDServerRPC::getCallsign},
+    {"database.setRadioBeacon",             &ASDServerRPC::setRadioBeacon},
+    {"database.getRadioBeacon",             &ASDServerRPC::getRadioBeacon},
+    {"database.setRadioSender",             &ASDServerRPC::setRadioSender},
+    {"database.getRadioSender",             &ASDServerRPC::getRadioSender},
+    {"database.setRadioReceiver",           &ASDServerRPC::setRadioReceiver},
+    {"database.getRadioReceiver",           &ASDServerRPC::getRadioReceiver},
+    {"database.setOrbitData",               &ASDServerRPC::setOrbitData},
+    {"database.getOrbitData",               &ASDServerRPC::getOrbitData},
+    {"database.getCount",                   &ASDServerRPC::getCount},
+    {"database.getField",                   &ASDServerRPC::getField},
+    {"database.getFieldByName",             &ASDServerRPC::getFieldByName},
+    {"database.getFieldByCallsign",         &ASDServerRPC::getFieldByCallsign},
+    {"database.getNORADByName",             &ASDServerRPC::getNORADByName},
+    {"database.getNORADByCallsign",         &ASDServerRPC::getNORADByCallsign}
 };
 
 /*public */ASDServerRPC::ASDServerRPC(void)
@@ -1033,6 +1051,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1040,9 +1059,23 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getName(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    tgs::TGSPhysicsDatabase database;
+    int norad;
+    std::string name;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                if ((error = database.getName(norad, &name)) == tgs::TGSERROR_OK) {
+                    setResult(name, "name", result);
+                }
+                database.close();
+            }
+            if (error != tgs::TGSERROR_OK) {
+                error = setError(error, result);
+            }
+        }
     }
     return error;
 }
@@ -1053,6 +1086,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1060,9 +1094,23 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getCallsign(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    tgs::TGSPhysicsDatabase database;
+    int norad;
+    std::string callsign;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                if ((error = database.getCallsign(norad, &callsign)) == tgs::TGSERROR_OK) {
+                    setResult(callsign, "callsign", result);
+                }
+                database.close();
+            }
+            if (error != tgs::TGSERROR_OK) {
+                error = setError(error, result);
+            }
+        }
     }
     return error;
 }
@@ -1073,6 +1121,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1083,6 +1132,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1093,6 +1143,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1103,6 +1154,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1113,6 +1165,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1123,6 +1176,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1133,6 +1187,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1143,6 +1198,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1150,9 +1206,20 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getCount(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    tgs::TGSPhysicsDatabase database;
+    int count;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+            if ((error = database.getCount(&count)) == tgs::TGSERROR_OK) {
+                setResult(count, "count", result);
+            }
+            database.close();
+        }
+        if (error != tgs::TGSERROR_OK) {
+            error = setError(error, result);
+        }
     }
     return error;
 }
@@ -1163,6 +1230,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1173,6 +1241,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1183,6 +1252,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1193,6 +1263,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }
@@ -1203,6 +1274,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
     }
     return error;
 }

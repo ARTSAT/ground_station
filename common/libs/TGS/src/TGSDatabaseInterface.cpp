@@ -412,7 +412,7 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = checkColumn(result)) == TGSERROR_OK) {
-        if (sqlite3_column_type(_statement, column) != SQLITE_NULL) {
+        if (sqlite3_column_bytes(_statement, column) > 0) {
             *result = sqlite3_column_int(_statement, column);
         }
         else {
@@ -427,7 +427,7 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = checkColumn(result)) == TGSERROR_OK) {
-        if (sqlite3_column_type(_statement, column) != SQLITE_NULL) {
+        if (sqlite3_column_bytes(_statement, column) > 0) {
             *result = sqlite3_column_double(_statement, column);
         }
         else {
@@ -443,7 +443,7 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = checkColumn(result)) == TGSERROR_OK) {
-        if (sqlite3_column_type(_statement, column) != SQLITE_NULL) {
+        if (sqlite3_column_bytes(_statement, column) > 0) {
             if ((temp = reinterpret_cast<char const*>(sqlite3_column_text(_statement, column))) != NULL) {
                 *result = temp;
             }

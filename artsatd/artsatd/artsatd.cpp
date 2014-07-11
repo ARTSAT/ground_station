@@ -1534,11 +1534,12 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*private */tgs::TGSError artsatd::operateRotator(ir::IRXTime const& time, double azimuth, double elevation)
+/*private */void artsatd::operateRotator(ir::IRXTime const& time, double azimuth, double elevation)
 {
-    tgs::TGSError error(tgs::TGSERROR_OK);
+    tgs::TGSError error;
     
     if (time >= _state.timeRotator + ir::IRXTimeDiff(_config.intervalRotator)) {
+        error = tgs::TGSERROR_OK;
         if (!std::isnan(azimuth) && !std::isnan(elevation)) {
             if (std::round(azimuth) != std::round(_state.azimuth) || std::round(elevation) != std::round(_state.elevation)) {
                 if (_rotator.isValid()) {
@@ -1556,51 +1557,46 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             _state.timeRotator = time;
         }
     }
-    else {
-        error = tgs::TGSERROR_WAIT_RESULT;
-    }
-    return error;
+    return;
 }
 
-/*private */tgs::TGSError artsatd::operateTransceiver(ir::IRXTime const& time, double sender, double receiver)
+/*private */void artsatd::operateTransceiver(ir::IRXTime const& time, double sender, double receiver)
 {
-    tgs::TGSError error(tgs::TGSERROR_OK);
+    tgs::TGSError serror;
+    tgs::TGSError rerror;
     
     if (time >= _state.timeTransceiver + ir::IRXTimeDiff(_config.intervalTransceiver)) {
+        serror = tgs::TGSERROR_OK;
+        rerror = tgs::TGSERROR_OK;
         if (!std::isnan(sender)) {
             if (std::round(sender) != std::round(_state.sender)) {
                 if (_transceiver.isValid()) {
-                    if ((error = _transceiver->setFrequencySender(std::round(sender))) != tgs::TGSERROR_OK) {
-                        log(LOG_WARNING, "can't operate transceiver sender frequency [%s]", error.print().c_str());
+                    if ((serror = _transceiver->setFrequencySender(std::round(sender))) != tgs::TGSERROR_OK) {
+                        log(LOG_WARNING, "can't operate transceiver sender frequency [%s]", serror.print().c_str());
                     }
                 }
-                if (error == tgs::TGSERROR_OK) {
+                if (serror == tgs::TGSERROR_OK) {
                     _state.sender = sender;
                 }
             }
         }
-        if (error == tgs::TGSERROR_OK) {
-            if (!std::isnan(receiver)) {
-                if (std::round(receiver) != std::round(_state.receiver)) {
-                    if (_transceiver.isValid()) {
-                        if ((error = _transceiver->setFrequencyReceiver(std::round(receiver))) != tgs::TGSERROR_OK) {
-                            log(LOG_WARNING, "can't operate transceiver receiver frequency [%s]", error.print().c_str());
-                        }
+        if (!std::isnan(receiver)) {
+            if (std::round(receiver) != std::round(_state.receiver)) {
+                if (_transceiver.isValid()) {
+                    if ((rerror = _transceiver->setFrequencyReceiver(std::round(receiver))) != tgs::TGSERROR_OK) {
+                        log(LOG_WARNING, "can't operate transceiver receiver frequency [%s]", rerror.print().c_str());
                     }
-                    if (error == tgs::TGSERROR_OK) {
-                        _state.receiver = receiver;
-                    }
+                }
+                if (rerror == tgs::TGSERROR_OK) {
+                    _state.receiver = receiver;
                 }
             }
         }
-        if (error == tgs::TGSERROR_OK) {
+        if (serror == tgs::TGSERROR_OK && rerror == tgs::TGSERROR_OK) {
             _state.timeTransceiver = time;
         }
     }
-    else {
-        error = tgs::TGSERROR_WAIT_RESULT;
-    }
-    return error;
+    return;
 }
 
 /*private */tgs::TGSError artsatd::operateTNC(ir::IRXTime const& time, std::string const& command)

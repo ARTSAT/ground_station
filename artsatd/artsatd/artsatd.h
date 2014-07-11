@@ -284,8 +284,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 void                            switchTransceiver           (ModeTransceiverEnum mode);
                 void                            switchTNC                   (ModeTNCEnum mode, std::string const& callsign);
                 void                            operateSession              (ir::IRXTime const& time);
-                tgs::TGSError                   operateRotator              (ir::IRXTime const& time, double azimuth, double elevation);
-                tgs::TGSError                   operateTransceiver          (ir::IRXTime const& time, double sender, double receiver);
+                void                            operateRotator              (ir::IRXTime const& time, double azimuth, double elevation);
+                void                            operateTransceiver          (ir::IRXTime const& time, double sender, double receiver);
                 tgs::TGSError                   operateTNC                  (ir::IRXTime const& time, std::string const& command);
                 void                            operateLog                  (ir::IRXTime const& time, int norad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info);
                 void                            resetRotator                (void);

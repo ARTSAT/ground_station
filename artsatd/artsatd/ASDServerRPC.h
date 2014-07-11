@@ -244,7 +244,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   time <std::string>: current time
+                 *   time <std::string "YYYY/MM/DD hh:mm:ss UTC">: current time
                  */
                 tgs::TGSError                   getTime                     (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -348,8 +348,8 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   aos <std::string>: satellite's next AOS time
-                 *   los <std::string>: satellite's next LOS time
+                 *   aos <std::string "YYYY/MM/DD hh:mm:ss UTC">: satellite's next AOS time
+                 *   los <std::string "YYYY/MM/DD hh:mm:ss UTC">: satellite's next LOS time
                  */
                 tgs::TGSError                   getSatelliteAOSLOS          (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -369,7 +369,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   start <std::string>: next rotation start time
+                 *   start <std::string "YYYY/MM/DD hh:mm:ss UTC">: next rotation start time
                  */
                 tgs::TGSError                   getRotatorStart             (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -567,7 +567,9 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   norad <int>: NORAD number
-                 *   mode <std::string>: satellite's callsign
+                 *   mode <std::string>: beacon mode
+                 *   frequency <int>: beacon frequency
+                 *   drift <int>: beacon frequency drift
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -577,8 +579,12 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getRadioBeacon
                  * params:
                  *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
+                 *   mode <std::string>: beacon mode
+                 *   frequency <int>: beacon frequency
+                 *   drift <int>: beacon frequency drift
                  */
                 tgs::TGSError                   getRadioBeacon              (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -586,6 +592,10 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setRadioSender
                  * params:
                  *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 *   mode <std::string>: sender mode
+                 *   frequency <int>: sender frequency
+                 *   drift <int>: sender frequency drift
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -595,8 +605,12 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getRadioSender
                  * params:
                  *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
+                 *   mode <std::string>: sender mode
+                 *   frequency <int>: sender frequency
+                 *   drift <int>: sender frequency drift
                  */
                 tgs::TGSError                   getRadioSender              (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -604,6 +618,10 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setRadioReceiver
                  * params:
                  *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
+                 *   mode <std::string>: receiver mode
+                 *   frequency <int>: receiver frequency
+                 *   drift <int>: receiver frequency drift
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -613,8 +631,12 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getRadioReceiver
                  * params:
                  *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
+                 *   mode <std::string>: receiver mode
+                 *   frequency <int>: receiver frequency
+                 *   drift <int>: receiver frequency drift
                  */
                 tgs::TGSError                   getRadioReceiver            (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -622,6 +644,10 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setOrbitData
                  * params:
                  *   [session <std::string>: session ID]
+                 *   name <std::string>: TLE name
+                 *   one <std::string>: TLE line 1
+                 *   two <std::string>: TLE line 2
+                 *   time <std::string "YYYY/MM/DD hh:mm:ss UTC">: update time
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -631,8 +657,13 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getOrbitData
                  * params:
                  *   [session <std::string>: session ID]
+                 *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
+                 *   name <std::string>: TLE name
+                 *   one <std::string>: TLE line 1
+                 *   two <std::string>: TLE line 2
+                 *   time <std::string "YYYY/MM/DD hh:mm:ss UTC">: update time
                  */
                 tgs::TGSError                   getOrbitData                (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -642,6 +673,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
+                 *   count <int>: data count
                  */
                 tgs::TGSError                   getCount                    (std::string const& host, Param const& param, Param* result) const;
                 /*
