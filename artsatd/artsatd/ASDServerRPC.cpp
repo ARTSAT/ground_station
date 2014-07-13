@@ -202,25 +202,26 @@ static  MethodTableRec const                    g_method[] = {
     rapidjson::StringBuffer buffer;
     Writer<rapidjson::StringBuffer> writer(buffer);
     
-    if (!idoc.Parse<0>(request.content.c_str()).HasParseError()) {
-        if (idoc.IsArray()) {
-            odoc.SetArray();
-            for (it = idoc.Begin(); it != idoc.End(); ++it) {
-                processJSON(request.host, *it, &result, odoc.GetAllocator());
-                if (!result.IsNull()) {
-                    odoc.PushBack(result, odoc.GetAllocator());
-                }
-            }
-            if (odoc.Empty()) {
-                odoc.SetNull();
-            }
-        }
-        else {
-            processJSON(request.host, idoc, &odoc, odoc.GetAllocator());
-        }
+    if (idoc.Parse<0>(request.content.c_str()).HasParseError()) {
+        returnJSON(JSONCODE_PARSEERROR, result, result, &odoc, odoc.GetAllocator());
+    }
+    else if (!idoc.IsArray()) {
+        processJSON(request.host, idoc, &odoc, odoc.GetAllocator());
+    }
+    else if (idoc.Empty()) {
+        returnJSON(JSONCODE_INVALIDREQUEST, result, result, &odoc, odoc.GetAllocator());
     }
     else {
-        returnJSON(JSONCODE_PARSEERROR, result, result, &odoc, odoc.GetAllocator());
+        odoc.SetArray();
+        for (it = idoc.Begin(); it != idoc.End(); ++it) {
+            processJSON(request.host, *it, &result, odoc.GetAllocator());
+            if (!result.IsNull()) {
+                odoc.PushBack(result, odoc.GetAllocator());
+            }
+        }
+        if (odoc.Empty()) {
+            odoc.SetNull();
+        }
     }
     if (!odoc.IsNull()) {
         odoc.Accept(writer);
@@ -247,11 +248,11 @@ static  MethodTableRec const                    g_method[] = {
     Variant variant;
     Param mparam;
     Param mresult;
-    bool reply;
+    bool notification;
     JSONCodeEnum code;
     tgs::TGSError error;
     
-    reply = true;
+    notification = false;
     code = JSONCODE_OK;
     if (request.IsObject()) {
         if (request.HasMember("jsonrpc")) {
@@ -268,27 +269,27 @@ static  MethodTableRec const                    g_method[] = {
                         }
                     }
                     else {
-                        reply = false;
+                        notification = true;
                     }
                     if (code == JSONCODE_OK) {
                         if (request.HasMember("method")) {
                             method = request["method"];
                             if (method.IsString()) {
-                                if ((it = _method.find(method.GetString())) != _method.end()) {
-                                    if (request.HasMember("params")) {
-                                        params = request["params"];
-                                        if (params.IsObject()) {
-                                            toVariant(params, &variant);
-                                            mparam = boost::get<Param>(variant);
-                                        }
-                                        else if (params.IsArray()) {
-                                            code = JSONCODE_INVALIDPARAMS;
-                                        }
-                                        else if (!params.IsNull()) {
-                                            code = JSONCODE_INVALIDREQUEST;
-                                        }
+                                if (request.HasMember("params")) {
+                                    params = request["params"];
+                                    if (params.IsObject()) {
+                                        toVariant(params, &variant);
+                                        mparam = boost::get<Param>(variant);
                                     }
-                                    if (code == JSONCODE_OK) {
+                                    else if (params.IsArray()) {
+                                        code = JSONCODE_INVALIDPARAMS;
+                                    }
+                                    else if (!params.IsNull()) {
+                                        code = JSONCODE_INVALIDREQUEST;
+                                    }
+                                }
+                                if (code == JSONCODE_OK) {
+                                    if ((it = _method.find(method.GetString())) != _method.end()) {
                                         error = it->second(this, host, mparam, &mresult);
                                         toJSON(mresult, &result, allocator);
                                         switch (error) {
@@ -305,9 +306,9 @@ static  MethodTableRec const                    g_method[] = {
                                                 break;
                                         }
                                     }
-                                }
-                                else {
-                                    code = JSONCODE_METHODNOTFOUND;
+                                    else {
+                                        code = JSONCODE_METHODNOTFOUND;
+                                    }
                                 }
                             }
                             else {
@@ -334,11 +335,11 @@ static  MethodTableRec const                    g_method[] = {
     else {
         code = JSONCODE_INVALIDREQUEST;
     }
-    if (reply) {
-        returnJSON(code, result, oid, response, allocator);
+    if (notification && code == JSONCODE_OK) {
+        response->SetNull();
     }
     else {
-        response->SetNull();
+        returnJSON(code, result, oid, response, allocator);
     }
     return;
 }
