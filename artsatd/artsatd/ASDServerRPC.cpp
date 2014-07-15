@@ -596,13 +596,21 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setNORAD(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
     std::string query;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        if ((error = getParam(param, "query", &query)) == tgs::TGSERROR_OK) {
-            if ((error = artsatd::getInstance().setNORAD(session, query)) != tgs::TGSERROR_OK) {
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = artsatd::getInstance().setNORAD(session, norad)) != tgs::TGSERROR_OK) {
                 error = setError(error, result);
+            }
+        }
+        else if (error == tgs::TGSERROR_NO_RESULT) {
+            if ((error = getParam(param, "query", &query)) == tgs::TGSERROR_OK) {
+                if ((error = artsatd::getInstance().setNORAD(session, query)) != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
             }
         }
     }
@@ -1354,6 +1362,10 @@ template <typename T>
 
 /*private static */tgs::TGSError ASDServerRPC::setError(tgs::TGSError error, Param* result)
 {
-    (*result)["message"] = error.print();
+    Param object;
+    
+    object["code"] = error;
+    object["message"] = error.print();
+    (*result)["error"] = object;
     return tgs::TGSERROR_FAILED;
 }

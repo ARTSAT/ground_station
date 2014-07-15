@@ -199,7 +199,8 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   observer.setNORAD
                  * params:
                  *   [session <std::string>: session ID]
-                 *   query <std::string>: NORAD number or satellite's name
+                 *   [norad <int>: NORAD number] *1
+                 *   [query <std::string>: NORAD number or satellite's name] *1
                  * result:
                  *   session <std::string>: session ID
                  */
