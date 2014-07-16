@@ -727,10 +727,10 @@ static  char const* const                       g_shrink[] = {
 
 /*private static */std::string ASDServerOperation::stringizeLatitude(double param)
 {
-    std::string result("-       -");
+    std::string result("-      -");
     
     if (!std::isnan(param)) {
-        result = (boost::format("%s %7.3lf") % ((param >= 0.0) ? ("N") : ("S")) % std::abs(param)).str();
+        result = (boost::format("%s %6.3lf") % ((param >= 0.0) ? ("N") : ("S")) % std::abs(param)).str();
     }
     return result + "&deg;";
 }
@@ -740,12 +740,6 @@ static  char const* const                       g_shrink[] = {
     std::string result("-       -");
     
     if (!std::isnan(param)) {
-        if (param < -180.0) {
-            param += 360.0;
-        }
-        else if (param >= 180.0) {
-            param -= 360.0;
-        }
         result = (boost::format("%s %7.3lf") % ((param >= 0.0) ? ("E") : ("W")) % std::abs(param)).str();
     }
     return result + "&deg;";

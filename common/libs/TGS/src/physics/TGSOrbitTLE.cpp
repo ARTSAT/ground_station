@@ -201,7 +201,7 @@ namespace tgs {
     
     if ((error = super::setObserverPosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
         error = TGSERROR_OK;
-        Zeptomoby::OrbitTools::cSite site(latitude, longitude, altitude);
+        Zeptomoby::OrbitTools::cSite site(fmod(latitude, 360.0), fmod(longitude, 360.0), altitude);
         if (_site != NULL) {
             *_site = site;
         }
@@ -217,16 +217,23 @@ namespace tgs {
 
 /*public virtual */TGSError TGSOrbitTLE::getObserverPosition(double* latitude, double* longitude, double* altitude) const
 {
+    double value;
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getObserverPosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
         error = TGSERROR_OK;
         if (_site != NULL) {
             if (latitude != NULL) {
-                *latitude = _site->LatitudeDeg();
+                *latitude = fmod(_site->LatitudeDeg(), 360.0);
             }
             if (longitude != NULL) {
-                *longitude = _site->LongitudeDeg();
+                if ((value = fmod(_site->LongitudeDeg(), 360.0)) < -180.0) {
+                    value += 360.0;
+                }
+                else if (value >= 180.0) {
+                    value -= 360.0;
+                }
+                *longitude = value;
             }
             if (altitude != NULL) {
                 *altitude = _site->AltitudeKm();
@@ -241,16 +248,23 @@ namespace tgs {
 
 /*public virtual */TGSError TGSOrbitTLE::getSatellitePosition(double* latitude, double* longitude, double* altitude) const
 {
+    double value;
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getSatellitePosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
         if ((error = cacheSatellite()) == TGSERROR_OK) {
             Zeptomoby::OrbitTools::cGeoTime geo(*_seci);
             if (latitude != NULL) {
-                *latitude = geo.LatitudeDeg();
+                *latitude = fmod(geo.LatitudeDeg(), 360.0);
             }
             if (longitude != NULL) {
-                *longitude = geo.LongitudeDeg();
+                if ((value = fmod(geo.LongitudeDeg(), 360.0)) < -180.0) {
+                    value += 360.0;
+                }
+                else if (value >= 180.0) {
+                    value -= 360.0;
+                }
+                *longitude = value;
             }
             if (altitude != NULL) {
                 *altitude = geo.AltitudeKm();
