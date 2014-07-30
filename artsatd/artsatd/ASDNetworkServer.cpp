@@ -49,6 +49,7 @@
 
 namespace boost { namespace network { namespace uri {
 namespace details {
+
 template <
 typename Map
 >
@@ -73,6 +74,7 @@ struct key_value_sequence_mod
     spirit::qi::rule<uri::const_iterator, key_type()> key;
     spirit::qi::rule<uri::const_iterator, mapped_type()> value;
 };
+
 }
 
 template <
@@ -85,6 +87,7 @@ Map &query_map_mod(const uri &uri_, Map &map) {
     spirit::qi::parse(boost::begin(range), boost::end(range), parser, map);
     return map;
 }
+
 }}}
 
 class ASDNetworkServer::Responder {

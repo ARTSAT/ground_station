@@ -61,6 +61,10 @@ struct TLERec {
     char                        one[70];
     char                        two[70];
 };
+struct SCDRec {
+    std::string                 description;
+    std::string                 information;
+};
 
 template <typename T>
 class va_ref {

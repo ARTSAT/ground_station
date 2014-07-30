@@ -39,6 +39,37 @@
     </td>
 </tr>
 <tr>
+    <td>Record Detail</td>
+    <td class="telemetry">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="record_detail" />
+            <input type="submit" name="command" value="DDS (enable)" <!_DF /> />
+            <input type="submit" name="command" value="DDS (disable)" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
+    <td>Detail Data</td>
+    <td class="telemetry">
+        <form action="" method="get">
+            <input type="hidden" name="category" value="detail_data" />
+            <select name="value" <!_DF />>
+            <!DA />
+            </select>
+            <input type="submit" name="command" value="PTD" <!_DF /> />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="edit" value="remove" <!_DF /> />
+            <input type="submit" name="edit" value="clear" <!_DF /> />
+            &nbsp;&nbsp;offset : <input type="text" size="7" maxlength="7" name="offset" value="<!DO />" <!_RO /> />
+            &nbsp;&nbsp;count : <select name="count" <!_DF />>
+            <option value="1" <!_K1 />>1</option>
+            <option value="6" <!_K6 />>6</option>
+            <option value="12" <!_K12 />>12</option>
+            </select>
+            <input type="submit" name="edit" value="append" <!_DF /> />
+        </form>
+    </td>
+</tr>
+<tr>
     <td>Boot Mode</td>
     <td class="mission">
         <form action="" method="get">

@@ -68,6 +68,9 @@ class ASDPluginINVADER : public ASDPluginInterface {
             std::string                         address;
             std::string                         offset;
             std::string                         count;
+            std::string                         ptd_address;
+            std::string                         ptd_offset;
+            std::string                         ptd_count;
             std::string                         mode;
             std::string                         text;
             std::string                         vm;
@@ -101,6 +104,9 @@ class ASDPluginINVADER : public ASDPluginInterface {
                 tgs::TGSError                   queuePTI                    (std::string const& session);
                 tgs::TGSError                   queuePTR                    (std::string const& session, std::string const& address);
                 tgs::TGSError                   queuePTR                    (std::string const& session, int address);
+                tgs::TGSError                   queueDDS                    (std::string const& session, bool param);
+                tgs::TGSError                   queuePTD                    (std::string const& session, std::string const& address);
+                tgs::TGSError                   queuePTD                    (std::string const& session, int address);
                 tgs::TGSError                   queueGWABootMode            (std::string const& session, std::string const& mode);
                 tgs::TGSError                   queueGWABootMode            (std::string const& session, int mode);
                 tgs::TGSError                   queueGRSBootMode            (std::string const& session);

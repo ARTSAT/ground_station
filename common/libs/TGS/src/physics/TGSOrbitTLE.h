@@ -51,10 +51,12 @@
 #include "TGSOrbitInterface.h"
 
 namespace Zeptomoby { namespace OrbitTools {
+
 class cOrbit;
 class cJulian;
 class cSite;
 class cEciTime;
+
 }}
 namespace tgs {
 

@@ -373,6 +373,36 @@ static DurationRec const g_duration[] = {
                 }
             }
         }
+        else if (type == "record_detail") {
+            if (command == "DDS (enable)") {
+                queueDDS(session, true);
+            }
+            else if (command == "DDS (disable)") {
+                queueDDS(session, false);
+            }
+        }
+        else if (type == "detail_data") {
+            if (command == "PTD") {
+                if ((it = query.find("value")) != query.end()) {
+                    queuePTD(session, it->second);
+                    context.ptd_address = it->second;
+                }
+            }
+            else if ((it = query.find("edit")) != query.end()) {
+                if (it->second == "remove") {
+                }
+                else if (it->second == "clear") {
+                }
+                else if (it->second == "append") {
+                    if ((it = query.find("offset")) != query.end()) {
+                        context.ptd_offset = it->second;
+                    }
+                    if ((it = query.find("count")) != query.end()) {
+                        context.ptd_count = it->second;
+                    }
+                }
+            }
+        }
         else if (type == "boot_mode") {
             if (command == "GRS") {
                 queueGRSBootMode(session);
@@ -626,8 +656,30 @@ static DurationRec const g_duration[] = {
     }
     boost::replace_first(*response, "<!TA />", string);
     
+    preset.clear();
+    if (0 < context.ptd_offset.size() && context.ptd_offset.size() <= 7 && boost::all(context.ptd_offset, boost::is_digit())) {
+        if (0 < context.ptd_count.size() && boost::all(context.ptd_count, boost::is_digit())) {
+            offset = boost::lexical_cast<int>(context.ptd_offset);
+            count = boost::lexical_cast<int>(context.ptd_count);
+            for (; count > 0; --count, offset += 50) {
+                preset.push_back((boost::format("%07d") % offset).str());
+            }
+        }
+    }
+    string.clear();
+    for (it = preset.begin(); it != preset.end(); ++it) {
+        string += "<option value='" + *it + "'";
+        if (*it == context.ptd_address) {
+            string += " selected";
+        }
+        string += ">" + *it + "</option>";
+    }
+    boost::replace_first(*response, "<!DA />", string);
+    
     boost::replace_first(*response, "<!OF />", context.offset);
+    boost::replace_first(*response, "<!DO />", context.ptd_offset);
     boost::replace_first(*response, "<!_C" + context.count + " />", "selected");
+    boost::replace_first(*response, "<!_K" + context.ptd_count + " />", "selected");
     boost::replace_first(*response, "<!_M" + context.mode + " />", "selected");
     boost::replace_first(*response, "<!_T" + context.text + " />", "selected");
     boost::replace_first(*response, "<!TP />", context.param);
@@ -687,6 +739,42 @@ static DurationRec const g_duration[] = {
     
     if (0 <= address && address <= 9999999) {
         error = artsatd::getInstance().requestCommand(session, "c-c-g-ptr-" + (boost::format("%07d") % address).str());
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*private */tgs::TGSError ASDPluginINVADER::queueDDS(std::string const& session, bool param)
+{
+    if (param) {
+        return artsatd::getInstance().requestCommand(session, "c-c-g-dds-0");
+    }
+    else {
+        return artsatd::getInstance().requestCommand(session, "c-c-g-dds-1");
+    }
+}
+
+/*private */tgs::TGSError ASDPluginINVADER::queuePTD(std::string const& session, std::string const& address)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (1 <= address.size() && address.size() <= 7 && boost::all(address, boost::is_digit())) {
+        error = queuePTD(session, boost::lexical_cast<int>(address));
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*private */tgs::TGSError ASDPluginINVADER::queuePTD(std::string const& session, int address)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (0 <= address && address <= 9999999) {
+        error = artsatd::getInstance().requestCommand(session, "c-c-g-ptd-" + (boost::format("%07d") % address).str());
     }
     else {
         error = tgs::TGSERROR_INVALID_PARAM;

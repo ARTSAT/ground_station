@@ -51,6 +51,7 @@
 #include "IRXTime.h"
 
 namespace insensitive {
+
 template <class T>
 struct less : public std::less<T> {
 };
@@ -71,11 +72,13 @@ struct less<std::wstring> : public std::binary_function<std::wstring, std::wstri
 template <class K, class V, class C = less<K>, class A = std::allocator<std::pair<K const, V> > >
 struct map : public std::map<K, V, C, A> {
 };
-}
 
+}
 namespace boost { namespace network { namespace http {
+
 template <class T>
 class server;
+
 }}}
 
 class ASDNetworkServer {
