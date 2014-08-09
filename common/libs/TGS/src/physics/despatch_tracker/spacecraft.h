@@ -3,106 +3,89 @@
 * Title     : 
 * Programmer: Motki Kimura
 * Belonging : 
-* Date      : 2014.7.29
+* Date      : 2014.8.3
 * Language  : C++
 *********************************************************************************
 * class to calculate the position & velocity of the spacecraft in the sun-centerd
-* inertial coordinate
+* inertial coordinate and in the geo coord
 *
 ********************************************************************************/
+
 #ifndef SPACECRAFT_H_
 #define SPACECRAFT_H_
 
 
 #include "spacecraft.h"
+#include "tf.h"
 #include "planet.h"
-#include "stochastic.h"
 
-#include <iostream>
-#include <fstream>
 #include <cmath>
-#include <stdio.h>
+#include <iostream>
 using namespace std;
 
 #include "eigen-eigen-6b38706d90a9/eigen/Core"
 using namespace Eigen;
 
 
-class SpacecraftCalculator 
-{
+class SpacecraftCalculator {
 	public:
+		SpacecraftCalculator (void);
+		virtual ~SpacecraftCalculator (void);
 		
-		SpacecraftCalculator (void);							// constructer
+		void setSpacecraftOrbitInfo (double epochMjd, const double (&posEci)[3], const double (&velEci)[3]);
+		void getSpacecraftOrbitInfo (double* epochMjd, double* posEci, double* velEci) const;
+		void setSpacecraftParams (double ballisticCoeff, double txFrequency);
+		void getSpacecraftParams (double* ballisticCoeff, double* txFrequency) const;
 		
-		void init (VectorXd& x, Planet earth, int error = 0);	// init spacecraft using constants (if error=1, error is added)
-		void init (VectorXd& x, 
-				  Vector3d posECenterd, Vector3d velECenterd, 
-				  Planet earth);								// init spacecraft state using variables
-				  
-		void integrate (double dt, VectorXd& x, Planet earth);	// integrate spacecraft state: x+ = x + x'*dt
+		void setObserverGeoCoord (double latitude, double longitude, double altitude);
+		void getObserverGeoCoord (double* latitude, double* longitude, double* altitude) const;
 		
-		// calculate right ascension, declination and doppler shift observed at Earth center
-		//-- if (scState.size () > 6): calculation of sigma points (UKF)
-		//-- else if (error = 1): add white noise
-		//-- else: calculate true value
-		void calcGeometry (Vector3d& ans, VectorXd x, Planet earth, int error = 0);
-		void calcDoppler (double &ans, VectorXd x, Planet earth, int error = 0);
+		void setSpacecraftState (double secondsFromEpoch, const double (&posSci)[3], const double (&velSci)[3]);
+		void setSpacecraftState (double secondsFromEpoch, Vector3d const& posSci, Vector3d const& velSci);
+		double getSpacecraftState (double* posSci, double* velSci) const;
+		double getSpacecraftState (Vector3d* posSci, Vector3d* velSci) const;
 		
-		double distanceEarthCenterd (VectorXd x, Planet earth);	// calculate the distance the spacecraft and earth
-
-		void fileOutStatus (double t, VectorXd x, Planet earth);
-		void fileOutMeasurements (double t, Vector3d trueGeometry, Vector3d measuredGeometry);
-		void test (double duration);
+		void getEpochTime (double* epochMjd) const;
+		void getSecondsFromEpoch (double* secondsFromEpoch) const;
 		
-		static const double ObsAngleDev;	// mesurement error dev of doppler shift [Hz] 
-		static const double ObsDopplerDev;	// mesurement error dev of angles [deg]
+		void getGeometryEarthCentered (double *declination, double* rightAscension, double decError = 0.0, double raError = 0.0) const;
+		void getDopplerFreqEarthCentered (double *dopplerFrequency, double error = 0.0) const;
+		void getDistanceEarthCentered (double* distance, double error = 0.0) const;
+		void getSpacecraftRelativeSpeed (double* speed) const;
+		void getSpacecraftGeoCoord (double* latitude, double* longitude, double* altitude) const;
+		void getSpacecraftDirection (double* elevation, double* azimuth, double eleError = 0.0, double aziError = 0.0) const;
+		void getDopplerFrequency (double* dopplerFrequency, double error = 0.0) const;
 		
-		static const double ScRadioFreq;	// spacecraft radio frequency [Hz]
+		void resetSpacecraftState (void);
+		double integrateSpacecraftState (double dt, double srpErrorRatio = 0.0);
 		
-		static const double DepartureMjd;	// departure in Modified Julian day [day]
-	
-
+		void test1 (int periodDay);
+		void test2 (int periodDay);
+						
 	private:
+		double epochMjd_;
+		double secondsFromEpoch_;
+		double initialPosEci_[3], initialVelEci_[3];
+		double ballisticCoeff_, txFrequency_;
+		double observerGeoCoord_[3];
+		Planet earth_;
+		VectorXd spacecraftState_;
 		
-		Stochastic noise_;
-
-		void calcGravityFromEarth (Vector3d& ans, VectorXd x, Planet earth);
-		void calcGravityFromSun (Vector3d& ans, VectorXd x);
-		void calcSolarPressure (Vector3d& ans, VectorXd x);
+		void calcInitialScState (Vector3d* posSci, Vector3d* velSci) const;
+		void calcSpacecraftStateDerivative (VectorXd* scStateDerivative, VectorXd const& scState, double srpErrorRatio) const;
+		void calcSolarGravityAcc (Vector3d* acceleration, VectorXd const& scState) const;
+		void calcSolarRadiationPressureAcc (Vector3d* acceleration, VectorXd const& scState, double srpErrorRatio) const;
+		void calcEarthGravityAcc (Vector3d* acceleration, VectorXd const& scState) const;
 		
-		int firstWriteStatus;
-		int firstWriteMeasurements;	
-		
-		// spacecraft initial position and velocity in Earth Centerd Inertial coordinate [m] [m/s]
-		static const double InitPosX;
-		static const double InitPosY;
-		static const double InitPosZ;
-		static const double InitVelX;
-		static const double InitVelY;
-		static const double InitVelZ;
-		
-		// error of the spacecraft initial position and velocity in Earth Centerd Inertial coordinate [m] [m/s]
-		static const double ErrorPosX;
-		static const double ErrorPosY;
-		static const double ErrorPosZ;
-		static const double ErrorVelX;
-		static const double ErrorVelY;
-		static const double ErrorVelZ;
-		
-		static const double SrpFlucRatioMax;// fluctuation of Solar Radiation Pressure: [-FlucRatio, +FlucRatio]
-		
-		static const double ScMass;			// [kg]
-		static const double ScArea;			// [m^s]
-		
-		static const double SecondsPerDay;	// [sec]
-		static const double Pi;	
-		static const double LightSpeed;		// [m/s]
-		static const double Obliquity;		// Earth obliquity [rad]
-		static const double MueEarth;		// Geocentric gravitational constant [m^3 s^(-2)]
-		static const double MueSun;			// Heliocentric gravitational constant [m^3 s^(-2)]
-		
-		static const double SrpG1;			// parameter for SRP (Solar Radiation Pressure)
-		static const double SrpCoeff;		// parameter for SRP
+		void calcObserverPosEci (Vector3d* obsPosEci) const;
+		void calcObserverVelEci (Vector3d* obsVelEci) const;
+		void calcSpacecraftPosEci (Vector3d* scPosEci) const;
+		void calcSpacecraftVelEci (Vector3d* scVelEci) const;
+		void calcSpacecraftPosEcef (Vector3d* scPosEcef) const;
+		void calcSpacecraftRelativePosEnu (Vector3d* scPosEnu) const;
+		void calcGeometry (double* lat, double* lon, Vector3d const& relativePos, double latError, double lonError) const;
+		void calcDopplerFrequency (double* dopplerFrequency, Vector3d const& relativePos, Vector3d const& relativeVel, double error) const;
 };
+
 
 #endif

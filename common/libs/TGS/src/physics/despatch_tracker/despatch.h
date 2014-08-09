@@ -3,7 +3,7 @@
 * Title     : 
 * Programmer: Motki Kimura
 * Belonging : 
-* Date      : 2014.7.29
+* Date      : 2014.8.7
 * Language  : C++
 *********************************************************************************
 * class to calculate the mode of DESPATCH
@@ -12,26 +12,30 @@
 #ifndef DESPATCH_H_
 #define DESPATCH_H_
 
-#include "despatch.h"
-#include "spacecraft.h"
+#include "tf.h"
+#include "tracker.h"
 
-class DespatchCalculator : public SpacecraftCalculator {
+#include <string>
 
+class DespatchTracker : public SpacecraftTracker {
 	public:
+		DespatchTracker (void);
+		DespatchTracker (double departureMjd ,SCDRec const& scd);
+		~DespatchTracker (void);
 		
-		int mode (double periodFromDeparture);
+		void setDepartureTime (double departureMjd);
+		void getDepartureTime (double* departureMjd) const;
+		
+		int setTargetTime (double unixtime);
+		void getDespatchMode (string* mode) const;
+		
+		void test (double unixtime_s, double unixtime_e, double outputDt);
 	
 	private:
+		static const double SecondsBeaconEnd_;
 		
-		static const double PeriodMorse;
-		static const double PeriodBaudot;
-		static const double PeriodBeacon;
-		
-		static const int NotDefined;
-		static const int Morse;
-		static const int Baudot;
-		static const int Beacon;
-		static const int RadioStop;
+		double departureMjd_;		
+		void calcSecondsFromDeparture (double* secondsFromDeparture) const;
 };
 
 #endif

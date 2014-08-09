@@ -3,372 +3,268 @@
 * Title     : 
 * Programmer: Motki Kimura
 * Belonging : 
-* Date      : 2014.7.29
+* Date      : 2014.8.3
 * Language  : C++
 *********************************************************************************
-* class to calculate the position & velocity of the spacecraft in the sun-senterd
+* class to calculate the position & velocity of the spacecraft in the sun-centerd
 * inertial coordinate
 *
 ********************************************************************************/
 #include "spacecraft.h"
 
+#define	SC_POSITION	block (0, 0, 3, 1)
+#define	SC_VELOCITY	block (3, 0, 3, 1)
 
-#define SC_POSITION x.block (0, 0, 3, 1)	// position of the spacecraft
-#define SC_VELOCITY x.block (3, 0, 3, 1)	// velocoty of the spacecraft
-
-//***************************************************************
-// Departure in Modified Julian Day
-//***************************************************************
-const double SpacecraftCalculator:: DepartureMjd = 56992.264444;
-
-//***************************************************************
-// Spacecraft initial condition
-//***************************************************************
-const double SpacecraftCalculator:: InitPosX = 10718921.0; 
-const double SpacecraftCalculator:: InitPosY = 747344.0;
-const double SpacecraftCalculator:: InitPosZ = -1050332.0;
-
-const double SpacecraftCalculator:: InitVelX =  5616.853;
-const double SpacecraftCalculator:: InitVelY =  6764.471;
-const double SpacecraftCalculator:: InitVelZ =  -4193.746;
-
-//***************************************************************
-// Error of the soacecraft initial consition
-//***************************************************************
-const double SpacecraftCalculator:: ErrorPosX = 100000.0;
-const double SpacecraftCalculator:: ErrorPosY = 100000.0;
-const double SpacecraftCalculator:: ErrorPosZ = 100000.0;
-
-const double SpacecraftCalculator:: ErrorVelX = 100.0;
-const double SpacecraftCalculator:: ErrorVelY = 100.0;
-const double SpacecraftCalculator:: ErrorVelZ = 100.0;
-
-//***************************************************************
-// Measurement noise
-//***************************************************************
-const double SpacecraftCalculator:: ObsDopplerDev = 1000.0;
-const double SpacecraftCalculator:: ObsAngleDev = 10.0;
-
-//***************************************************************
-// Disturbances
-//***************************************************************
-const double SpacecraftCalculator:: SrpFlucRatioMax = 1.0;
-
-//***************************************************************
-// Spacecraft specifications
-//***************************************************************
-const double SpacecraftCalculator:: ScArea = 0.5 * 0.5;
-const double SpacecraftCalculator:: ScMass = 35.0;
-const double SpacecraftCalculator:: ScRadioFreq = 437.325e6;
-
-// Other constants
-const double SpacecraftCalculator:: SecondsPerDay = 24.0 * 3600.0;
-const double SpacecraftCalculator:: Pi = 3.14159265359;
-const double SpacecraftCalculator:: LightSpeed = 299792458.0;
-const double SpacecraftCalculator:: Obliquity = -23.44 * (Pi / 180.0);
-const double SpacecraftCalculator:: MueEarth = 3.986004418e14;
-const double SpacecraftCalculator:: MueSun = 1.32712442099e20;
-
-const double SpacecraftCalculator:: SrpG1 = 1.0e14;
-const double SpacecraftCalculator:: SrpCoeff = 1.0;
-
-
-SpacecraftCalculator:: SpacecraftCalculator (void)
+SpacecraftCalculator:: SpacecraftCalculator (void): epochMjd_ (0.0), secondsFromEpoch_ (0.0), 
+													ballisticCoeff_ (100.0), txFrequency_ (0.0), 
+													earth_ ("earth", epochMjd_), spacecraftState_ (VectorXd:: Zero (6))
 {
-	firstWriteStatus = 1;
-	firstWriteMeasurements = 1;
-}
-
-
-void SpacecraftCalculator:: init (VectorXd& x, Planet earth, int error)
-{
-	// calculate init condition of the earth
-	earth.calcOrbitAt (0.0);
-
-	// spacecraft's initial condition
-	const int X = 0, Y = 1, Z = 2;
-	Vector3d posECenterd, velECenterd;
-	posECenterd[X] = InitPosX;	posECenterd[Y] = InitPosY;	posECenterd[Z] = InitPosZ;
-	velECenterd[X] = InitVelX;	velECenterd[Y] = InitVelY;	velECenterd[Z] = InitVelZ;
-
-	// if error = 1, error is added to initial condition
-	if (error) {
-		posECenterd[X] += ErrorPosX;	posECenterd[Y] += ErrorPosY;	posECenterd[Z] += ErrorPosZ;
-		velECenterd[X] += ErrorVelX;	velECenterd[Y] += ErrorVelY;	velECenterd[Z] += ErrorVelZ;
+	for (int i = 0; i < 3; i++) {
+		initialPosEci_[i] = 0.0;
+		initialVelEci_[i] = 0.0;
 	}
-
-	// transform to sun centerd inertial coordinate
-	Matrix3d C; 
-	C <<
-		1.0,	0.0,				0.0,
-		0.0,	cos (Obliquity),	-sin (Obliquity),
-		0.0,	sin (Obliquity),	cos (Obliquity); 
-
-	SC_POSITION = earth.pos_ + C * posECenterd;
-	SC_VELOCITY = earth.vel_ + C * velECenterd;
-}
-
-
-void SpacecraftCalculator:: init (VectorXd& x, Vector3d posECenterd, Vector3d velECenterd, Planet earth)
-{
-	// calculate init condition of the earth
-	earth.calcOrbitAt (0.0);
 	
-	// transform to sun centerd inertial coordinate
-	Matrix3d C; 
-	C <<
-		1.0,	0.0,				0.0,
-		0.0,	cos (Obliquity),	-sin (Obliquity),
-		0.0,	sin (Obliquity),	cos (Obliquity); 
-
-	SC_POSITION = earth.pos_ + C * posECenterd;
-	SC_VELOCITY = earth.vel_ + C * velECenterd;
+	for (int i = 0; i < 3; i++) {
+		observerGeoCoord_[i] = 0.0;
+	}
 }
 
-
-void SpacecraftCalculator:: integrate (double dt, VectorXd &x, Planet earth)
+SpacecraftCalculator:: ~SpacecraftCalculator (void)
 {
-	Vector3d gravityEarth;
-	Vector3d gravitySun;
-	Vector3d solarPressure;
-
-	calcGravityFromEarth (gravityEarth, x, earth);
-	calcGravityFromSun (gravitySun, x);
-	calcSolarPressure (solarPressure, x);
 	
-	// total accelaration
-	Vector3d acceleration;
-	acceleration = gravityEarth + gravitySun + solarPressure;
-
-	SC_POSITION += SC_VELOCITY * dt;
-	SC_VELOCITY += acceleration * dt;
 }
 
-
-void SpacecraftCalculator:: calcGravityFromEarth (Vector3d& ans, VectorXd x, Planet earth)
+void SpacecraftCalculator:: setSpacecraftOrbitInfo (double epochMjd, const double (&posEci)[3], const double (&velEci)[3])
 {
-	Vector3d relativePos = SC_POSITION - earth.pos_;
-	double distance = relativePos.norm ();
-
-	double gravityEarth = MueEarth / (distance * distance);
-
-	ans = -1.0 * gravityEarth * (relativePos / distance);
+	epochMjd_ = epochMjd;
+	earth_.setEpoch (epochMjd_);
+	
+	for (int i = 0; i < 3; i++) {
+		initialPosEci_[i] = posEci[i];
+		initialVelEci_[i] = velEci[i];
+	}
+	
+	Vector3d posSci, velSci;
+	calcInitialScState (&posSci, &velSci);
+	
+	setSpacecraftState (0.0, posSci, velSci);
 }
 
-
-void SpacecraftCalculator:: calcGravityFromSun (Vector3d& ans, VectorXd x)
+void SpacecraftCalculator:: getSpacecraftOrbitInfo	(double* epochMjd, double* posEci, double* velEci) const
 {
-	double distance = SC_POSITION.norm ();
-
-	double gravitySun = MueSun / (distance * distance);
-
-	ans = -1.0 * gravitySun * (SC_POSITION / distance);
+	*epochMjd = epochMjd_;
+	
+	for (int i = 0; i < 3; i++) {
+		posEci[i] = initialPosEci_[i];
+		velEci[i] = initialVelEci_[i];
+	}	
 }
 
-
-void SpacecraftCalculator:: calcSolarPressure (Vector3d& ans, VectorXd x)
+void SpacecraftCalculator:: setSpacecraftParams	(double ballisticCoeff, double txFrequency)
 {
-	double distance = SC_POSITION.norm ();
-
-	// cannon-ball model
-	double solarPressure = SrpCoeff * SrpG1 * (ScArea / ScMass) / (distance * distance);
-
-	double ratio;	// fluctuation ratio
-
-	// calculate sigma points (UKF)
-	if(x.size() > 6) {
-		ratio = x[6];
-	}
-	// calculate true value
-	else {
-		ratio = noise_.plusMinus (SrpFlucRatioMax);
-	}
-
-	solarPressure = (1.0 + ratio) * solarPressure;
-
-	ans = -1.0 * solarPressure * (SC_POSITION / distance);
+	ballisticCoeff_ = ballisticCoeff;
+	txFrequency_ = txFrequency;
 }
 
-
-void SpacecraftCalculator:: calcGeometry (Vector3d &ans, VectorXd x, Planet earth, int error)
+void SpacecraftCalculator:: getSpacecraftParams	(double* ballisticCoeff, double* txFrequency) const
 {
-	Vector3d relativePos, relativeVel;
-	relativePos = SC_POSITION - earth.pos_;
-	relativeVel = SC_VELOCITY - earth.vel_;
-
-	const int X = 0, Y = 1, Z = 2;
-	const int RightAscension = 0, Declination = 1, Doppler = 2;
-
-	ans[RightAscension] = atan2 (relativePos[Y], relativePos[X]);
-	ans[Declination] = atan2 (relativePos[Z], sqrt (relativePos[X] * relativePos[X] + relativePos[Y] * relativePos[Y]));
-	
-	double radialVel = relativeVel.dot (relativePos / relativePos.norm ());	// ray velocity
-	ans[Doppler] = ScRadioFreq * (radialVel / LightSpeed);
-	
-	// measurement noise
-	Vector3d n;
-	// calculate sigma points (UKF)
-	if (x.size () > 6) {
-		n[RightAscension] = x[6];
-		n[Declination] = x[7];
-		n[Doppler] = x[8];
-	}
-	// calculate white noise
-	else if (error) {
-		n[RightAscension] = noise_.whiteNoise (ObsAngleDev * (Pi / 180.0));
-		n[Declination] = noise_.whiteNoise (ObsAngleDev * (Pi / 180.0));
-		n[Doppler] = noise_.whiteNoise (ObsDopplerDev);
-	}
-	// calculate true value
-	else {
-		n[RightAscension] = 0.0;
-		n[Declination] = 0.0;
-		n[Doppler] = 0.0;
-	}
-
-	ans = ans + n;
+	*ballisticCoeff = ballisticCoeff_;
+	*txFrequency = txFrequency_;
 }
 
-void SpacecraftCalculator:: calcDoppler (double &ans, VectorXd x, Planet earth, int error)
+void SpacecraftCalculator:: setSpacecraftState (double secondsFromEpoch, const double (&posSci)[3], const double (&velSci)[3])
 {
-	Vector3d relativePos, relativeVel;
-	relativePos = SC_POSITION - earth.pos_;
-	relativeVel = SC_VELOCITY - earth.vel_;
+	secondsFromEpoch_ = secondsFromEpoch;
+	earth_.setTargetTime (secondsFromEpoch_);
 	
-	double radialVel = relativeVel.dot (relativePos / relativePos.norm ());	// ray velocity
-	ans = ScRadioFreq * (radialVel / LightSpeed);
-
-	// measurement noise
-	double n;
-	// calculate sigma points (UKF)
-	if (x.size () > 6) {
-		n = x[6];
-	}
-	// calculate white noise
-	else if (error) {
-		n = noise_.whiteNoise (ObsDopplerDev);
-	}
-	// calculate true value
-	else {
-		n = 0.0;
-	}
-
-	ans = ans + n;
+	Vector3d posSciVec (posSci);
+	Vector3d velSciVec (velSci);
+	
+	spacecraftState_.SC_POSITION = posSciVec;
+	spacecraftState_.SC_VELOCITY = velSciVec;
 }
 
-double SpacecraftCalculator:: distanceEarthCenterd (VectorXd x, Planet earth)
+void SpacecraftCalculator:: setSpacecraftState	(double secondsFromEpoch, Vector3d const& posSci, Vector3d const& velSci)
 {
-	Vector3d relativePos;
-	relativePos = SC_POSITION - earth.pos_;
+	secondsFromEpoch_ = secondsFromEpoch;
+	earth_.setTargetTime (secondsFromEpoch_);
 	
-	double d = relativePos.norm ();
-	
-	return d;
+	spacecraftState_.SC_POSITION = posSci;
+	spacecraftState_.SC_VELOCITY = velSci;
 }
 
-
-void SpacecraftCalculator:: fileOutStatus (double t, VectorXd x, Planet earth)
+double SpacecraftCalculator:: getSpacecraftState (double* posSci, double* velSci) const
 {
-	ofstream fout ("spacecraft.csv",ios::out|ios::app);
-	if (!fout) {
-		printf ("[ERROR] Cannot open spacecraft.csv\n");
-		printf ("[ERROR] Program stopped\n");
-		exit (1);
+	for (int i = 0; i < 3; i++) {
+		posSci[i] = (spacecraftState_.SC_POSITION) [i];
+		velSci[i] = (spacecraftState_.SC_VELOCITY) [i];
 	}
-
-	if (firstWriteStatus) {
-		fout << "day," << "t[s],"
-			 << "x[m]," << "y[m]," << "z[m]," 
-			 << "u[m/s]," << "v[m/s]," << "w[m/s],"
-			 << "x_e[m]," << "y_e[m]," << "z_e[m]," 
-			 << "u_e[m/s]," << "v_e[m/s]," << "w_e[m/s]," 
-			 << "thetaG[deg]"
-			 << endl;
-
-		firstWriteStatus = 0;
-	}
-
-	fout << t / SecondsPerDay << ",";
-	fout << t << ",";
 	
-	for(int i=0; i<6; i++)	fout << x[i] << ",";
-	
-	for(int i=0; i<3; i++)	fout << earth.pos_[i] << ",";
-	for(int i=0; i<3; i++)	fout << earth.vel_[i] << ",";
-	fout << earth.thetaG_ * (180.0 / Pi) << endl;
-
-	fout.close();
+	return secondsFromEpoch_;
 }
 
-
-void SpacecraftCalculator:: fileOutMeasurements (double t, Vector3d trueGeometry, Vector3d measuredGeometry)
+double SpacecraftCalculator:: getSpacecraftState (Vector3d* posSci, Vector3d* velSci) const
 {
-	ofstream fout ("measurements.csv",ios::out|ios::app);
-	if (!fout) {
-		printf ("[ERROR] Cannot open measurements.csv\n");
-		printf ("[ERROR] Program stopped\n");
-		exit (1);
-	}
-
-	if (firstWriteMeasurements) {
-		fout << "day," << "t[s],"
-			 << "lon[deg]," << "lat[deg]," << "doppler[Hz]," 
-			 << "lon_m[deg]," << "lat_m[deg]," << "doppler_m[Hz]"
-			 << endl;
-
-		firstWriteMeasurements = 0;
-	}
-
-	fout << t / SecondsPerDay << ",";
-	fout << t << ",";
+	*posSci = spacecraftState_.SC_POSITION;
+	*velSci = spacecraftState_.SC_VELOCITY;
 	
-	fout << trueGeometry[0] * (180.0 / Pi) << ",";
-	fout << trueGeometry[1] * (180.0 / Pi) << ",";
-	fout << trueGeometry[2]  << ",";
-
-	fout << measuredGeometry[0] * (180.0 / Pi) << ",";
-	fout << measuredGeometry[1] * (180.0 / Pi) << ",";
-	fout << measuredGeometry[2];
-
-	fout << endl;
-
-	fout.close();
+	return secondsFromEpoch_;
 }
 
-
-void SpacecraftCalculator::test (double duration)
+void SpacecraftCalculator:: getEpochTime (double* epochMjd) const
 {
-	Planet earth ("earth", DepartureMjd);
+	*epochMjd = epochMjd_;
+}
+
+void SpacecraftCalculator:: getSecondsFromEpoch (double* secondsFromEpoch) const
+{
+	*secondsFromEpoch = secondsFromEpoch_;
+}
+
+void SpacecraftCalculator:: resetSpacecraftState (void)
+{
+	Vector3d posSci, velSci;
+	calcInitialScState (&posSci, &velSci);
 	
-	VectorXd x (6);
-	this->init (x, earth, 0);
+	setSpacecraftState (0.0, posSci, velSci);
+}
 
-	Vector3d trueZ, measuredZ;
-	this->calcGeometry (trueZ, x, earth, 0);
-	this->calcGeometry (measuredZ, x, earth, 1);
+double SpacecraftCalculator:: integrateSpacecraftState (double dt, double srpErrorRatio)
+{
+	//Rrunge-Kutta
+	VectorXd k1 (6), k2 (6), k3 (6), k4 (6);
+	
+	calcSpacecraftStateDerivative (&k1, spacecraftState_, srpErrorRatio);
+	calcSpacecraftStateDerivative (&k2, spacecraftState_ + k1 * 0.5 * dt, srpErrorRatio);
+	calcSpacecraftStateDerivative (&k3, spacecraftState_ + k2 * 0.5 * dt, srpErrorRatio);
+	calcSpacecraftStateDerivative (&k4, spacecraftState_ + k3 * dt, srpErrorRatio);
+	
+	spacecraftState_ = spacecraftState_ + (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0 * dt;
+	
+	secondsFromEpoch_ += dt;
+	earth_.setTargetTime (secondsFromEpoch_);
+	
+	return secondsFromEpoch_;
+}
 
-	double dt;
+void SpacecraftCalculator:: test1 (int periodDay)
+{
+	// set orbit information
+	const double EpochMjd = 56992.264444;
+	const double PosEci[3] = {10718921.0, 747344.0, -1050332.0};
+	const double VelEci[3] = {5616.853  , 6764.471,  -4193.746};
+	setSpacecraftOrbitInfo (EpochMjd, PosEci, VelEci);
+	
+	// set parameters
+	const double Frequency = 437.325e6f;
+	const double BallisticCoeff = 150.0;
+	setSpacecraftParams (BallisticCoeff, Frequency);
+	
+	// variables
+	Vector3d scPos, scVel;
+	double declination, ra, doppler, distance, speed;
+	
+	const double Dt = 60.0;
+	const double SecondsDay = 3600.0 * 24.0;
+	const int NDay = static_cast<int> (SecondsDay / Dt); 
 	double t = 0.0;
-
+	int n = 0;
+	
+	cout << "day, x, y, z, u, v, w, declination, RA, doppler, distance, speed" << endl;
+	
 	do {
-
-		this->fileOutStatus (t, x, earth);
-		this->fileOutMeasurements (t, trueZ, measuredZ);
-
-		if (t < 1.0 * 24.0 * 3600.0) {
-			dt = 60.0;
-		}
-		else {
-			dt = 3600.0;
-		}
-
-		t += dt;
-		earth.calcOrbitAt (t);
-		this->integrate (dt, x, earth);
-
-		this->calcGeometry (trueZ, x, earth);
-		this->calcGeometry (measuredZ, x, earth, 1);
 		
-	}
-	while (t < duration);
+		getSpacecraftState (&scPos, &scVel);
+		getGeometryEarthCentered (&declination, &ra);
+		getDopplerFreqEarthCentered (&doppler);
+		getDistanceEarthCentered (&distance);
+		getSpacecraftRelativeSpeed (&speed);
+		
+		if (n % NDay == 0) {
+			cout << n / NDay + 1 << ",";
+			cout << scPos[0] << "," << scPos[1] << "," << scPos[2] << ",";
+			cout << scVel[0] << "," << scVel[1] << "," << scVel[2] << ",";
+			cout << declination << "," << ra << ",";
+			cout << doppler << ",";
+			cout << distance << ",";
+			cout << speed;
+			cout << endl;
+		}
+		
+		t = integrateSpacecraftState (Dt);
+		
+		n++;
+		
+	} while (t < SecondsDay * static_cast<double> (periodDay));
+}
+
+void SpacecraftCalculator:: calcInitialScState (Vector3d* posSci, Vector3d* velSci) const
+{
+	const double Pi = M_PI;
+	const double Obliquity = - 23.44 * Pi / 180.0;
+	
+	Planet earth ("earth", epochMjd_);
+	earth.setTargetTime (0.0);
+	Vector3d earthPos, earthVel;
+	earth.getPosition (&earthPos);
+	earth.getVelocity (&earthVel);
+	
+	Vector3d posEciVec (initialPosEci_);
+	Vector3d velEciVec (initialVelEci_);
+	
+	Matrix3d C;
+	tf:: calcDcm (&C, 0, -1.0 * Obliquity);
+	
+	*posSci = earthPos + C * posEciVec;		// convert from ECI to SCI
+	*velSci = earthVel + C * velEciVec;		// convert from ECI to SCI
+}
+
+void SpacecraftCalculator:: calcSpacecraftStateDerivative (VectorXd* scStateDerivative, VectorXd const& scState, double srpErrorRatio) const
+{
+	scStateDerivative->SC_POSITION = scState.SC_VELOCITY;
+	
+	Vector3d solarGravityAcc, srpAcc, earthGravityAcc;
+	calcSolarGravityAcc (&solarGravityAcc, scState);
+	calcSolarRadiationPressureAcc (&srpAcc, scState, srpErrorRatio);
+	calcEarthGravityAcc (&earthGravityAcc, scState);
+	
+	scStateDerivative->SC_VELOCITY = solarGravityAcc + srpAcc + earthGravityAcc;
+}
+
+void SpacecraftCalculator:: calcSolarGravityAcc (Vector3d* acceleration, VectorXd const& scState) const
+{
+	const double MueSun = 1.32712442099e20;
+	
+	double distance = (scState.SC_POSITION).norm ();
+	double solarGravity = MueSun / (distance * distance);
+
+	*acceleration = -1.0 * solarGravity * (scState.SC_POSITION / distance);
+}
+
+void SpacecraftCalculator:: calcSolarRadiationPressureAcc (Vector3d* acceleration, VectorXd const& scState, double srpErrorRatio) const
+{
+	const double SrpG1 = 1.0e14;
+	const double SrpCoeff = 1.0;
+	
+	double distance = (scState.SC_POSITION).norm ();
+	
+	// cannon-ball SRP model
+	double srpForce = SrpCoeff * SrpG1 / ballisticCoeff_ / (distance * distance);
+	srpForce = srpForce * (1.0 + srpErrorRatio);
+	
+	*acceleration = -1.0 * srpForce * (scState.SC_POSITION / distance);
+}
+
+void SpacecraftCalculator:: calcEarthGravityAcc (Vector3d* acceleration, VectorXd const& scState) const
+{
+	const double MueEarth = 3.986004418e14;
+	
+	Vector3d earthPos;
+	earth_.getPosition (&earthPos);
+	
+	Vector3d relativePos = scState.SC_POSITION - earthPos;
+	double distance = relativePos.norm ();
+	double earthGravity = MueEarth / (distance * distance);
+	
+	*acceleration = -1.0 * earthGravity * (relativePos / distance);
 }

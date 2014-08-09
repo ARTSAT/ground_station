@@ -3,7 +3,7 @@
 * Title     : 
 * Programmer: Motki Kimura
 * Belonging : 
-* Date      : 2014.3.20
+* Date      : 2014.8.2
 * Language  : C++
 *********************************************************************************
 * class to calculate the position & velocity of the planets around the sun
@@ -14,62 +14,66 @@
 #define PLANET_H_
 
 #include "planet.h"
+#include "tf.h"
 
 #include "eigen-eigen-6b38706d90a9/eigen/Core"
 using namespace Eigen;
 
-#include <stdio.h>
-#include <string.h>
-#include <iostream>
-#include <fstream>
 #include <cmath>
+#include <string>
+#include <iostream>
 using namespace std;
 
-class Planet 
-{
+
+class Planet {
 	public:
-		Vector3d pos_, vel_;	// Earth position and velocity in Sun Cernerd Inertial coordinate [m], [m/s]
-		double thetaG_;			// Greenwich Sideral Time (only for Earth) [rad]
-
-
-		Planet (char const* planetName, double t0Mjd);	// constructor
 		Planet (void);
-		void init (char const* planetName, double t0Mjd);	// initialization
-
-		void calcOrbitAt (double t);				// calculate the planet orbit
+		Planet (string planet, double epochMjd);
+		~Planet (void);
+		int setPlanetName (string planet);
+		void getPlanetName (string* planet) const;
 		
-		void fileOut (double t);
-		void test (double perido, double dt);
-
-
+		void setEpoch (double epochMjd);
+		void getEpoch (double *epochMjd) const;
+		void setTargetTime (double time);
+		void getTargetTime (double *time) const;
+		
+		void getPosition (double* position) const;
+		void getPosition (Vector3d* position) const;
+		void getVelocity (double* velocity) const;
+		void getVelocity (Vector3d* velocity) const;
+		void getGst (double *gst) const;
+		
+		void test (int periodDay);
+	
 	private:
-
-		double t0Mjd_;			// epoch in Modified Julian Day
-		char planetName_[32];	// planet nema
-
-		void calcPosVelAt (double t);							// calculate planet velocity and position
-		void calcThetaGAt (double t);							// calculate Greenwich Sideral Time (only for Earth) [rad]
-		double solveKeplerEq (double secondsFromEpoch);			// solve Kepler equation
-		void calcDcm (int axis, double angle, Matrix3d &ans);	// calculate Directional Cosine Matrix
-
-
-		// six elements f the planet oebit
-		double a_;	// semi major axis [m]
-		double e_;	// eccentricity
-		double i_;	// inclination [rad]
-		double w_;	// argument of perihelion [rad]
-		double W_;	// longitude of the ascending node [rad]
-		double M0_;	// mean anomaly [rad]
-
-		double epoch_;	// epoch at mean anomary [MJD]
-		double n_;		// mean motion [rad/s]
-
-		int firstWrite;
+		static const string NotDefined_;
+		static const string Invalid_;
 		
-		static const double SecondsPerDay;	// [sec]
-		static const double Pi;
-		static const double AU;				// astronomical unit[m]
-		static const double MueSun;			// Heliocentric gravitational constant [m^3 s^(-2)]
+		string planet_;		// name of the planet
+		double epochMjd_;	// epoch in Modified Julian Day
+		
+		double a_;			// semi major axis
+		double e_;			// eccectricity
+		double i_;			// inclination
+		double w_;			// augument of perihelion
+		double W_;			// longitude of the ascending node
+		double M0_;			// mean anomaly
+		
+		double t0Mjd_;		// epoch at mean anomaly in Modified Julian Day
+		double n_;			// mean motion
+		
+		Vector3d position_;	// planet position in Sun Centerd Inertial coordinate in meter
+		Vector3d velocity_;	// planet velocity in Sun Centerd Inertial coordinate in m/s
+		double gst_;		// Greenwich Sedial Time in rad
+		
+		double time_;		// target time from epoch in second
+		
+		int initOrbitElements (void);
+		int calcPositionVelocity (void);
+		void calcGst (void);
+		void solveKeplerEq (double* ans) const;
+		int planetNameIsValid (void) const;
 };
 
 #endif

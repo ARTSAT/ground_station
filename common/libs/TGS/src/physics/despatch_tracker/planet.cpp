@@ -3,7 +3,7 @@
 * Title     : 
 * Programmer: Motki Kimura
 * Belonging : 
-* Date      : 2014.3.20
+* Date      : 2014.8.2
 * Language  : C++
 *********************************************************************************
 * class to calculate the position & velocity of the planets around the sun
@@ -12,32 +12,135 @@
 ********************************************************************************/
 #include "planet.h"
 
-const double Planet:: SecondsPerDay = 24.0 * 3600.0;
-const double Planet:: Pi = 3.14159265359;
-const double Planet:: AU =  149597870700.0;
-const double Planet:: MueSun = 1.32712442099e20;
+const string Planet:: NotDefined_ = "not defined";
+const string Planet:: Invalid_ = "invalid";
 
-
-Planet:: Planet (char const* planetName, double t0Mjd)
+Planet:: Planet (void): planet_ (NotDefined_), epochMjd_ (0.0), 
+						position_ (Vector3d:: Zero (3)), velocity_ (Vector3d:: Zero (3)), 
+						gst_ (0.0), time_ (0.0)
 {
-	init (planetName, t0Mjd);
+	
 }
 
-
-Planet:: Planet (void)
+Planet:: Planet (string planet, double epochMjd): planet_ (planet), epochMjd_ (epochMjd), 
+												  position_ (Vector3d:: Zero (3)), velocity_ (Vector3d:: Zero (3)), 
+												  gst_ (0.0), time_ (0.0)
 {
-	return;
+	initOrbitElements ();
 }
 
-
-void Planet:: init (char const* planetName, double t0Mjd)
+Planet:: ~Planet (void) 
 {
-	t0Mjd_ = t0Mjd;
+	
+}
 
-	strcpy (planetName_, planetName);
+int Planet:: setPlanetName (string planet)
+{
+	planet_ = planet;
+	
+	const int Failed = 1;
+	if (initOrbitElements () == Failed) {
+		return 1;
+	}
+	
+	return 0;
+}
 
-	// Earth (reference: Rika-Nenpyo H.26)
-	if (strcmp (planetName, "earth") == 0) {
+void Planet:: getPlanetName (string *planet) const
+{
+	*planet = planet_;
+}
+
+void Planet:: setEpoch (double epochMjd)
+{
+	epochMjd_ = epochMjd;
+}
+
+void Planet:: getEpoch (double *epochMjd) const
+{
+	*epochMjd = epochMjd_;
+}
+
+void Planet:: setTargetTime (double time)
+{	
+	time_ = time;
+	
+	calcPositionVelocity ();
+	calcGst ();
+}
+
+void Planet:: getTargetTime (double *time) const
+{
+	*time = time_;
+}
+
+void Planet:: getPosition (double* position) const
+{
+	for (int i = 0; i < 3; i++) {
+		position[i] = position_[i];
+	}
+}
+
+void Planet:: getPosition (Vector3d* position) const
+{
+	*position = position_;
+}
+
+void Planet:: getVelocity (double* velocity) const
+{
+	for (int i = 0; i < 3; i++) {
+		velocity[i] = velocity_[i];
+	}
+}
+
+void Planet:: getVelocity (Vector3d* velocity) const
+{
+	*velocity = velocity_;
+}
+
+void Planet:: getGst (double *gst) const
+{
+	*gst = gst_;
+}
+
+void Planet:: test (int periodDay)
+{
+	const double SecondsPerDay = 24.0 * 3600.0;
+	
+	// init
+	setPlanetName ("earth");
+	setEpoch (56992.264444);
+	
+	double pos[3], vel[3], gst;
+	
+	cout << "day, x, y, z, u, v, w, gst" << endl;
+	
+	for (int day = 0; day < periodDay; day++) {
+		
+		double t = static_cast<double> (day) * SecondsPerDay;
+		
+		setTargetTime (t);
+		
+		getPosition (pos);
+		getVelocity (vel);
+		getGst (&gst);
+		
+		// output
+		cout << day+1 << ",";
+		cout << pos[0] << "," << pos[1] << "," << pos[2] << ",";
+		cout << vel[0] << "," << vel[1] << "," << vel[2] << ",";
+		cout << gst << endl;
+	}
+}
+
+int Planet:: initOrbitElements (void)
+{
+	const double Pi = M_PI;
+	const double AU =  149597870700.0;
+	const double MueSun = 1.32712442099e20;
+	
+	// Earth (Rika-nenpyo 2014)
+	if (planet_ == "earth") {
 		a_ = 1.0 * AU;
 		e_ = 0.0167;
 		i_ = 0.002 * Pi / 180.0;
@@ -45,12 +148,12 @@ void Planet:: init (char const* planetName, double t0Mjd)
 		W_ = 174.838 * Pi / 180.0 + Pi;
 		M0_ = 137.350 * Pi /180.0;
 
-		epoch_ = (2456800.5 - 2400000.5);	// MJD = JD - 2 400 000.5
+		t0Mjd_ = (2456800.5 - 2400000.5);	// MJD = JD - 2 400 000.5
 		n_ = sqrt (MueSun / (a_ * a_ * a_));
 	}
-
-	// 1999JU3 (reference: 2014/3/20 http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=162173)
-	else if (strcmp (planetName, "1999ju3") == 0) {
+	
+	// 1999JU3 (http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=162173, 20/3/2014)
+	else if (planet_ == "1999ju3") {
 		a_ = 1.1895 * AU;
 		e_ = 0.1902;
 		i_ = 5.883 * Pi / 180.0;
@@ -58,37 +161,46 @@ void Planet:: init (char const* planetName, double t0Mjd)
 		W_ = 251.614 * Pi / 180.0;
 		M0_ = 322.370 * Pi /180.0;
 
-		epoch_ = (2456800.5 - 2400000.5);	// MJD = JD - 2 400 000.5
+		t0Mjd_ = (2456800.5 - 2400000.5);	// MJD = JD - 2 400 000.5
 		n_ = sqrt (MueSun / (a_ * a_ * a_));
 	}
+	
 	// ...
-	//else if (strcmp (planetName, "???") == 0) {
+	//else if (planet == ???) {
 	//
 	//}
 	
-	// Not defined
-	else {
-		printf ("[ERROR] Cannot init planet %s\n", planetName);
-		printf ("[ERROR] Program stopped\n");
-		exit (1);
+	else if (planet_ == NotDefined_) {
+		a_ = e_ = i_ = w_ = W_ = M0_ = 0.0;
+		t0Mjd_ = n_ = 0.0;
 	}
-
-	firstWrite = 1;
-
-	calcOrbitAt (0.0);
+	
+	else {
+		planet_ = Invalid_;
+		
+		a_ = e_ = i_ = w_ = W_ = M0_ = 0.0;
+		t0Mjd_ = n_ = 0.0;
+	}
+	
+	if (!planetNameIsValid ()) {
+		return 1;
+	}
+	
+	return 0;
 }
 
-
-void Planet:: calcOrbitAt (double t)
-{
-	calcPosVelAt (t);
-	calcThetaGAt (t);
-}
-
-
-void Planet:: calcPosVelAt (double t)
-{
-	double E = solveKeplerEq (t + (t0Mjd_ - epoch_) * SecondsPerDay);
+int Planet:: calcPositionVelocity (void)
+{	
+	if (!planetNameIsValid ()) {
+		position_ << Vector3d:: Zero (3);
+		velocity_ << Vector3d:: Zero (3);
+		
+		return 1;
+	}
+	
+	double E;
+	solveKeplerEq (&E);
+	
 	double dotE = n_ / (1.0 - e_ * cos (E));
 
 	const int X = 0, Y = 1, Z = 2;
@@ -103,134 +215,88 @@ void Planet:: calcPosVelAt (double t)
 	velPerigee[Z] = 0.0;
 	
 	Matrix3d C1;
-	calcDcm (Z, -w_, C1);
+	tf:: calcDcm (&C1, Z, -w_);
 	Matrix3d C2;
-	calcDcm (X, -i_, C2);
+	tf:: calcDcm (&C2, X, -i_);
 	Matrix3d C3;
-	calcDcm (Z, -W_, C3);
+	tf:: calcDcm (&C3, Z, -W_);
 
 	// transform to the value in Sun Centerd Inertial coordinate
-	pos_ = C3 * C2 * C1 * posPerigee;
-	vel_ = C3 * C2 * C1 * velPerigee;
+	position_ = C3 * C2 * C1 * posPerigee;
+	velocity_ = C3 * C2 * C1 * velPerigee;
+	
+	return 0;
 }
 
-
-void Planet:: calcThetaGAt (double t)
+void Planet:: calcGst (void)
 {
-	// reference: http://ja.wikipedia.org/wiki/%E6%81%92%E6%98%9F%E6%99%82
-	if (strcmp (planetName_, "earth") == 0) {
-		double jd = t0Mjd_ + 2400000.5;	// JD = MJD + 2 400 000.5
-		double tjd = jd - 2440000.5;	// Truncated JD = JD - 2 440 000.5;
-		tjd += t / SecondsPerDay;
+	const double Pi = M_PI;
+	const double SecondsPerDay = 24.0 * 3600.0;
+	
+	double jd;
+	tf:: convertMjdToJd (&jd, epochMjd_);
+	
+	double tjd;
+	tf:: convertJdToTjd (&tjd, jd);
+	tjd += time_ / SecondsPerDay;
 
-		thetaG_ = (0.671262 + 1.0027379094 * tjd) * 2.0 * Pi;
-		thetaG_ = fmod (thetaG_, 2.0 * Pi);
-	}
-	else {
-		thetaG_ = 0.0;
-	}
+	gst_ = (0.671262 + 1.0027379094 * tjd) * 2.0 * Pi;	// http://ja.wikipedia.org/wiki/%E6%81%92%E6%98%9F%E6%99%82
+	tf:: normalizeRadian (&gst_);
 }
 
-
-double Planet:: solveKeplerEq (double secondsFromEpoch)
+void Planet:: solveKeplerEq (double* ans) const
 {
-	double M = M0_ + n_ * secondsFromEpoch;
+	const double SecondsPerDay = 24.0 * 3600.0;
+	
+	double secondsFromT0 = time_ + (epochMjd_ - t0Mjd_) * SecondsPerDay;
+	double M = M0_ + n_ * secondsFromT0;
 
 	double E;	// Eccentric anomaly
 	double tmpE = M;
 	
-	for (int i = 0; i < 500; i++) {
-		E = M + e_ * sin (tmpE);
+	const int Loop = 500;
+	const double Res = 1.0e-9;
+	
+	int i = 0;
+	do {
 		
-		if (abs (E - tmpE) < 1.0e-9) {
-			break;
-		}
-
+		E = M + e_ * sin (tmpE);
 		tmpE = E;
 		
-		if (i == 500 - 1) {
-			printf ("[ERROR] Cannot solve Kepler Eq\n");
-			printf ("[ERROR] Program stopped\n");
-			exit (1);
+		try {
+			if (i > Loop) {
+				throw ("[ERROR] Cannot solve Kepler eq.");
+			}
 		}
-	}
-
-	return E;
-}
-
-
-void Planet:: calcDcm (int axis, double angle, Matrix3d &ans)
-{
-	const int X = 0, Z = 2;
-
-	switch (axis) {
-
-		// angle[rad] around x-axis
-		case X:
-			ans <<
-				1.0,          0.0,         0.0,
-				0.0,  cos (angle), sin (angle),
-				0.0, -sin (angle), cos (angle);
-			break;
+		catch (char const* e) {
+			cout << e << endl;
+			
+			*ans = 0.0;
+			return;
+		}
 		
-		// angle[rad] around z-axis
-		case Z:
-			ans << 
-				 cos (angle), sin (angle), 0.0,
-				-sin (angle), cos (angle), 0.0,
-				         0.0,         0.0, 1.0;
-			break;
+		i++;
+	} while (abs (E - tmpE) > Res);
+	
+	*ans = E;
+}
+
+int Planet:: planetNameIsValid (void) const
+{
+	try {
+		if (planet_ == Invalid_) {
+			throw ("[ERROR] Specified planet name is not valid");
+		}
+		else if (planet_ == NotDefined_) {
+			throw ("[ERROR] Planet name is not defined");
+		}
+	} 
+	catch (char const* e) {
+		cout << e << endl;
+		cout << "[ERROR] Use setPlanetName method with a valid planet name" << endl;
 		
-		default:
-			break;
+		return 0;
 	}
-}
-
-
-void Planet:: fileOut (double t)
-{
-	char fileName[32];
-	sprintf (fileName, "%s.csv", planetName_);
-
-	ofstream fout (fileName, ios:: out | ios:: app);
-	if (!fout) {
-		printf ("[ERROR] Cannot open %s\n", fileName);
-		printf ("[ERROR] Program stopped\n");
-		exit (1);
-	}
-
-	if(firstWrite) {
-		fout << "MJD," << "day," << "t[s]," 
-			 << "x[m]," << "y[m]," << "z[m]," 
-			 << "u[m/s]," << "v[m/s]," << "w[m/s],"
-			 << "thetaG[deg]"
-			 << endl;
-
-		firstWrite = 0;
-	}
-
-	fout << t0Mjd_ + (t / SecondsPerDay) << ",";
-	fout << (t / SecondsPerDay) << ",";
-	fout << t << ",";
-	for(int i = 0; i < 3; i++) { fout << pos_[i] << ","; }
-	for(int i = 0; i < 3; i++) { fout << vel_[i] << ","; }
-	fout << thetaG_ * (180.0 / Pi) << endl;
-
-	fout.close();
-}
-
-
-void Planet:: test (double period, double dt)
-{
-	cout << planetName_ << endl;
-
-	double t = 0.0;
-
-	do {
-		this->calcOrbitAt (t);
-		this->fileOut (t);
-
-		t += dt;
-	}
-	while (t < period);
+	
+	return 1;
 }

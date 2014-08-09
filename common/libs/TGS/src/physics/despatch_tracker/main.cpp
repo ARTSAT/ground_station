@@ -1,208 +1,158 @@
-#include <iostream>
-#include <cstdlib>
-#include <cstring>
-#include <stdio.h>
-using namespace std;
-
-#include "tracker.h"
-
 /***************************************************
 Cammand Line Auguments:
  
-arg[1]: orbitinfo_filename
-arg[2]: obs_unixtime[sec]
-arg[3]: obs_latitude [deg]
-arg[4]: obs_longitude [deg]
-arg[5]: obs_altitude [m]
+arg[1]: latitude  [deg]
+arg[2]: longitude [deg]
+arg[3]: altitude  [m]
+arg[4]: unixtime  [sec]
 
 OR
 
-arg[1]: orbitinfo_filename
-arg[2]: obs_unixtime_start[sec]
-arg[3]: obs_unixtime_end[sec]
-arg[4]: obs_latitude [deg]
-arg[5]: obs_longitude [deg]
-arg[6]: obs_altitude [m]
-arg[7]: dt [sec] (optional, default:60)
+arg[1]: latitude       [deg]
+arg[2]: longitude      [deg]
+arg[3]: altitude       [m]
+arg[4]: unixtime_start [sec]
+arg[5]: unixtime_end   [sec]
 
 ****************************************************/
+#include "despatch.h"
 
-void testPointSearch (SpacecraftTracker sc_tracker, int argc, char* argv[]);
-void testRangeSearch (SpacecraftTracker sc_tracker, int argc, char* argv[]);
+#include <iostream>
+#include <cstdlib>
+#include <string>
+#include <cmath>
+using namespace std;
 
-int argIsValid (int argc, char* argv[]);
-
-void showOrbitInfo (char* scId, char* orbitId, double departureMjd, double initPos[3], double initVel[3]);
-
-int main (int argc, char* argv[])
-{
-	// check the command line auguments (if necessary)
-	if (!argIsValid (argc, argv)) {
-		return 1;
-	}
-	
-	
-	// [1] init spacecraft orbit using orbit information file
-	SpacecraftTracker sc_tracker (argv[1]);
-	// ----- end of [1]
-	
-	
-	// check the spacecraft orbit configuration (if necessary)
-	char scId[64], orbitId[64];
-	double departureMjd, initPos[3], initVel[3];
-	sc_tracker.getOrbitInfo (scId, orbitId, departureMjd, initPos, initVel);
-	showOrbitInfo (scId, orbitId, departureMjd, initPos, initVel);
-	
-	
-	// [2] track the spacecraft
-	
-	// (2.a) case of Point search
-	if (argc == 6) { testPointSearch (sc_tracker, argc, argv); }
-	
-	// (2.b) case of Range search
-	if (argc == 7 || argc == 8) { testRangeSearch (sc_tracker, argc, argv); }
-	
-	// ----- end of [2]
-	
-	return 0;
-}
-
-
-void testPointSearch (SpacecraftTracker sc_tracker, int argc, char* argv[])
-{
-	double unixtime;
-	double latitude, longitude, altitude;
-	
-	double ele, azi, freq, distance;
-	int mode;
-	
-	unixtime = atof (argv[2]);
-	latitude = atof (argv[3]);
-	longitude = atof (argv[4]);
-	altitude = atof (argv[5]);
-	
-	sc_tracker.getTarget (unixtime, latitude, longitude, altitude,
-					      ele, azi, freq, distance, mode);
-	
-	printf ("\n");
-	printf ("----- Point Search Results -----\n");
-	printf ("unixtime, elevation[deg], azimuth[deg], frequency[Hz], distance[m], mode\n");
-	printf ("%.2lf, %.1lf, %.1lf, %.0lf, %.0lf, %d\n", unixtime, ele, azi, freq, distance, mode);
-	printf ("\n");
-}
-
-
-void testRangeSearch (SpacecraftTracker sc_tracker, int argc, char* argv[])
-{
-	double unixtime_s, unixtime_e, dt;
-	double latitude, longitude, altitude;
-	
-	vector<double> unixtime, ele, azi, freq, distance;
-	vector<int> mode;
-	
-	unixtime_s = atof (argv[2]);
-	unixtime_e = atof (argv[3]);
-	latitude = atof (argv[4]);
-	longitude = atof (argv[5]);
-	altitude = atof (argv[6]);
-	
-	switch (argc) {
-	
-	case 7:
-		sc_tracker.getTarget (unixtime_s, unixtime_e, latitude, longitude, altitude,
-					          unixtime, ele, azi, freq, distance, mode);
-		break;
-		
-	case 8:
-		dt = atof (argv[7]);
-		sc_tracker.getTarget (unixtime_s, unixtime_e, latitude, longitude, altitude,
-					          unixtime, ele, azi, freq, distance, mode, dt);
-		break;
-	
-	default: 
-		break;
-	}
-	
-	printf ("\n");
-	printf ("----- Range Search Results -----\n");
-	printf ("unixtime, elevation[deg], azimuth[deg], frequency[Hz], distance[m], mode\n");
-	for (int i = 0; i < unixtime.size (); i++) {
-		printf ("%.2lf, %.1lf, %.1lf, %.0lf, %.0lf, %d\n", unixtime[i], ele[i], azi[i], freq[i], distance[i], mode[i]);
-	}
-	printf ("\n");
-}
-
+#define	DEG_TO_RAD(deg)	deg*M_PI/180.0
+#define RAD_TO_DEG(rad)	rad*180.0/M_PI
 
 int argIsValid (int argc, char* argv[])
 {
-
 	switch (argc) {
+		
+	case 5:
+		cout << endl;
+		cout << "----- Command Line Auguments -----" << endl;
+		cout << "latitude: "  << argv[1] << endl;
+		cout << "longitude: " << argv[2] << endl;
+		cout << "altitude: "  << argv[3] << endl;
+		cout << "unixtime: "  << argv[4] << endl;
+		return 1;
 		
 	case 6:
 		cout << endl;
 		cout << "----- Command Line Auguments -----" << endl;
-		cout << "orbitinfo_filename: " << argv[1] << endl;
-		cout << "obs_unixtime: " << argv[2] << endl;
-		cout << "obs_latitude: " << argv[3] << endl;
-		cout << "obs_longitude: " << argv[4] << endl;
-		cout << "obs_altitude: " << argv[5] << endl;
-		break;
-		
-	case 7:
-		cout << endl;
-		cout << "----- Command Line Auguments -----" << endl;
-		cout << "orbitinfo_filename: " << argv[1] << endl;
-		cout << "obs_unixtime_start: " << argv[2] << endl;
-		cout << "obs_unixtime_end: " << argv[3] << endl;
-		cout << "obs_latitude: " << argv[4] << endl;
-		cout << "obs_longitude: " << argv[5] << endl;
-		cout << "obs_altitude: " << argv[6] << endl;
-		break;
-	
-	case 8:
-		cout << endl;
-		cout << "----- Command Line Auguments -----" << endl;
-		cout << "orbitinfo_filename: " << argv[1] << endl;
-		cout << "obs_unixtime_start: " << argv[2] << endl;
-		cout << "obs_unixtime_end: " << argv[3] << endl;
-		cout << "obs_latitude: " << argv[4] << endl;
-		cout << "obs_longitude: " << argv[5] << endl;
-		cout << "obs_altitude: " << argv[6] << endl;
-		cout << "dt: " << argv[7] << endl;
-		break;
+		cout << "latitude: "       << argv[1] << endl;
+		cout << "longitude: "      << argv[2] << endl;
+		cout << "altitude: "       << argv[3] << endl;
+		cout << "unixtime_start: " << argv[4] << endl;
+		cout << "unixtime_end: "   << argv[5] << endl;
+		return 1;
 		
 	default: 
-		cout << "[Error] Please input auguments." << endl;
+		cout << "[Error] Please input auguments correctly" << endl;
 	
 		cout << "-----" << endl;
-		cout << "arg[1]: orbitinfo_filename" << endl;
-		cout << "arg[2]: obs_unixtime[sec]" << endl;
-		cout << "arg[3]: obs_latitude [deg]" << endl;
-		cout << "arg[4]: obs_longitude [deg]" << endl;
-		cout << "arg[5]: obs_altitude [m]" << endl;
+		cout << "arg[1]: latitude  [deg]" << endl;
+		cout << "arg[2]: longitude [deg]" << endl;
+		cout << "arg[3]: altitude  [m]"   << endl;
+		cout << "arg[4]: unixtime  [sec]" << endl;
 		
 		cout << "---or---" << endl;
-		cout << "arg[1]: orbitinfo_filename" << endl;
-		cout << "arg[2]: obs_unixtime_start[sec]" << endl;
-		cout << "arg[3]: obs_unixtime_end[sec]" << endl;
-		cout << "arg[4]: obs_latitude [deg]" << endl;
-		cout << "arg[5]: obs_longitude [deg]" << endl;
-		cout << "arg[6]: obs_altitude [m]" << endl;
-		cout << "arg[7]: dt [sec] (optional, default:60)" << endl;
-		return 0;
-	}		
-	
-	return 1;
+		cout << "arg[1]: latitude       [deg]" << endl;
+		cout << "arg[2]: longitude      [deg]" << endl;
+		cout << "arg[3]: altitude       [m]"   << endl;
+		cout << "arg[4]: unixtime_start [sec]" << endl;
+		cout << "arg[5]: unixtime_end   [sec]" << endl;
+		break;
+	}
+		
+	return 0;
 }
 
-
-void showOrbitInfo (char* scId, char* orbitId, double departureMjd, double initPos[3], double initVel[3])
-{	
-	printf ("\n");
-	printf ("----- Orbit Information -----\n");
-	printf ("Spacecraft id: %s\n", scId);
-	printf ("Orbit id: %s\n", orbitId);
-	printf ("Departure MJD: %.6lf\n", departureMjd);
-	printf ("Initial Position: %.1lf, %.1lf, %.1lf\n", initPos[0], initPos[1], initPos[2]);
-	printf ("Initial Velocity: %.3lf, %.3lf, %.3lf\n", initVel[0], initVel[1], initVel[2]);
+int main (int argc, char* argv[])
+{
+	// check the command line auguments
+	if (!argIsValid (argc, argv)) {
+		return 1;
+	}
+	
+	DespatchTracker tracker;	// based on :public SpacecraftTracker, :public SpacecraftCalculator
+	
+	// [1] init the departure time (necessary to get DESPATCH mode)
+	const double DepartureMjd = 56992.264444;
+	tracker.setDepartureTime (DepartureMjd);
+	// ---end of [1]
+	
+	// [2] init spacecraft orbit and parameters, observer geo-coord
+	DespatchTracker:: SCDRec scd;// SpaceCraft Description
+	scd.orbitInfo.epochMjd = DepartureMjd;
+	scd.orbitInfo.positionEci[0] = 10718921.0;
+	scd.orbitInfo.positionEci[1] =   747344.0;
+	scd.orbitInfo.positionEci[2] = -1050332.0;
+	scd.orbitInfo.velocityEci[0] =  5616.853;
+	scd.orbitInfo.velocityEci[1] =  6764.471;
+	scd.orbitInfo.velocityEci[2] = -4193.746;
+	const double TxFrequency = 437.325e6f;
+	scd.param.transmitterFrequency = TxFrequency;
+	scd.param.ballisticCoeff = 150.0;
+	
+	tracker.setSpacecraftInfo (scd);
+	tracker.setObserverGeoCoord (DEG_TO_RAD(atof (argv[1])), DEG_TO_RAD(atof (argv[2])), atof (argv[3]));
+	// ---end of [2]
+	
+	double unixtime;
+	double elevation, azimuth, doppler, distance;
+	double latitude, longitude, altitude;
+	string mode;
+	
+	double unixtime_s = atof (argv[4]);
+	double unixtime_e;
+	argc >5 ? unixtime_e = atof (argv[5]) : unixtime_e = unixtime_s;
+	
+	// [3] set time at first, then get values
+	const double outputDt = 3600.0;
+	double t = unixtime_s;
+	
+	cout << endl;
+	cout << "----- Results -----" << endl;
+	cout << "unixtime, elevation[deg], azimuth[deg], frequency[Hz], distance[m], latitude[deg], longitude[deg], altitude[m], mode" << endl;
+	
+	while (1) {
+		if (t > unixtime_e) {
+			cout << "finished" << endl;
+			break;
+		}
+		
+		if (tracker.setTargetTime (t) != 0) {
+			cout << "Range error, exit." << endl;
+			break;
+		}
+		
+		tracker.getTargetTime (&unixtime);
+		tracker.getSpacecraftDirection (&elevation, &azimuth);
+		tracker.getDopplerFrequency (&doppler);
+		tracker.getDistanceEarthCentered (&distance);
+		tracker.getSpacecraftGeoCoord (&latitude, &longitude, &altitude);
+		tracker.getDespatchMode (&mode);
+		
+		cout << setprecision (10);
+		cout << unixtime << ",";
+		cout << RAD_TO_DEG(elevation) << "," << RAD_TO_DEG(azimuth) << ",";
+		cout << TxFrequency + doppler << ",";
+		cout << distance << ",";
+		cout << RAD_TO_DEG(latitude) << "," << RAD_TO_DEG(longitude) << ",";
+		cout << altitude << ",";
+		cout << mode;
+		cout << endl;
+		
+		t += outputDt;
+	}
+	
+	// revert spacecraft position and velocity to the ones of the epoch (for next iteration)
+	tracker.resetSpacecraftState ();
+	
+	// ---end of [3]
+	
+	return 0;
 }
