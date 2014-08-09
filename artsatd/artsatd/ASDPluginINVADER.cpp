@@ -616,6 +616,9 @@ static DurationRec const g_duration[] = {
             else if (command == "TXS") {
                 artsatd::getInstance().requestCommand(session, "r-c-p-txs");
             }
+            else if (command == "WIL") {
+                artsatd::getInstance().requestCommand(session, "c-p-g-wil");
+            }
         }
         _mutex.lock();
         _command = context;
