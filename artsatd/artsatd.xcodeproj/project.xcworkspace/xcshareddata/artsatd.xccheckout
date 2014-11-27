@@ -10,31 +10,31 @@
 	<string>artsatd</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</key>
-		<string>http://vps.artsat.jp/git/artsat.git</string>
+		<key>71D6311FD11BB6953ECC066C37BB69F53FFD0903</key>
+		<string>https://github.com/ARTSAT/ground_station</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>ground_station/artsatd/artsatd.xcodeproj/project.xcworkspace</string>
+	<string>artsatd/artsatd.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</key>
-		<string>../../../..</string>
+		<key>71D6311FD11BB6953ECC066C37BB69F53FFD0903</key>
+		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>http://vps.artsat.jp/git/artsat.git</string>
+	<string>https://github.com/ARTSAT/ground_station</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</string>
+	<string>71D6311FD11BB6953ECC066C37BB69F53FFD0903</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>DBC22F52-732D-43D0-B05B-A4D7635EBB2A</string>
+			<string>71D6311FD11BB6953ECC066C37BB69F53FFD0903</string>
 			<key>IDESourceControlWCCName</key>
-			<string>artsat</string>
+			<string>artsatd_github</string>
 		</dict>
 	</array>
 </dict>

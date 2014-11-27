@@ -7,12 +7,12 @@
 **      Portions Copyright (C) <year> <author>
 **                                          <website>
 **                                          <e-mail>
-**      Version     C++03
+**      Version     C++11
 **      Website     http://iridium.jp/
 **      E-mail      zap00365@nifty.com
 **
 **      This source code is for Xcode.
-**      Xcode 5.1.1 (Apple LLVM 5.1)
+**      Xcode 6.1 (Apple LLVM 6.0)
 **
 **      IRXTime.cpp
 **

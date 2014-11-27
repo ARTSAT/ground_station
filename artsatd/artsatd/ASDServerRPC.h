@@ -10,12 +10,12 @@
 **      Portions Copyright (C) <year> <author>
 **                                          <website>
 **                                          <e-mail>
-**      Version     POSIX / C++03
+**      Version     POSIX / C++11
 **      Website     http://artsat.jp/
 **      E-mail      info@artsat.jp
 **
 **      This source code is for Xcode.
-**      Xcode 5.1.1 (Apple LLVM 5.1)
+**      Xcode 6.1 (Apple LLVM 6.0)
 **
 **      ASDServerRPC.h
 **
