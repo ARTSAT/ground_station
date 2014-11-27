@@ -6,7 +6,7 @@
 * Date      : 2014.8.7
 * Language  : C++
 *********************************************************************************
-* class to calculate the mode of DESPATCH
+* class to calculate the phase of DESPATCH
 *
 ********************************************************************************/
 #ifndef DESPATCH_H_
@@ -27,14 +27,16 @@ class DespatchTracker : public SpacecraftTracker {
 		void getDepartureTime (double* departureMjd) const;
 		
 		int setTargetTime (double unixtime);
-		void getDespatchMode (string* mode) const;
+		void getDespatchPhase (string* phase) const;
 		
 		void test (double unixtime_s, double unixtime_e, double outputDt);
 	
 	private:
+        static const double SecondsMorseEnd_;
+        static const double SecondsBaudotEnd_;
 		static const double SecondsBeaconEnd_;
 		
-		double departureMjd_;		
+		double departureMjd_;
 		void calcSecondsFromDeparture (double* secondsFromDeparture) const;
 };
 

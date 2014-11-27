@@ -73,7 +73,7 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
             RadioRec                        sender;
             RadioRec                        receiver;
             ir::IRXTime                     time;
-            TLERec                          tle;
+            OrbitData                       orbit;
         };
     
     public:
@@ -89,8 +89,8 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
                 TGSError                    getRadioSender                  (int norad, RadioRec* result);
                 TGSError                    setRadioReceiver                (int norad, RadioRec const& param);
                 TGSError                    getRadioReceiver                (int norad, RadioRec* result);
-                TGSError                    setOrbitData                    (TLERec const& param, ir::IRXTime const& time);
-                TGSError                    getOrbitData                    (int norad, TLERec* result, ir::IRXTime* time = NULL);
+                TGSError                    setOrbitData                    (OrbitData const& param, ir::IRXTime const& time);
+                TGSError                    getOrbitData                    (int norad, OrbitData* result, ir::IRXTime* time = NULL);
                 TGSError                    getCount                        (int* result);
                 TGSError                    getField                        (int norad, FieldRec* result);
                 TGSError                    getField                        (int limit, int offset, std::vector<FieldRec>* result);
@@ -108,7 +108,9 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
                 TGSError                    getRadio                        (int norad, char const* format[4][2], RadioRec* result);
                 TGSError                    getField                        (std::string const& key, int index, std::vector<FieldRec>* result);
                 TGSError                    getNORAD                        (std::string const& key, int index, std::vector<int>* result);
-                TGSError                    readField                       (int column, FieldRec* result);
+                TGSError                    readField                       (int column, FieldRec* result) const;
+                TGSError                    readInteger                     (int column, bool implicit, int* result) const;
+                TGSError                    readText                        (int column, bool implicit, std::string* result) const;
     private:
                                             TGSPhysicsDatabase              (TGSPhysicsDatabase const&);
                 TGSPhysicsDatabase&         operator=                       (TGSPhysicsDatabase const&);

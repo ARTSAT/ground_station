@@ -58,8 +58,8 @@ public:
     ASDTLEPassFactory();
     
     tgs::TGSError getNearestPass(ASDTLEPass* pass, ir::IRXTime const& param, const ASDRotationSolver& solver);
-    tgs::TGSError setOrbitData(tgs::TLERec const& param);
-    tgs::TGSError getOrbitData(tgs::TLERec* result) const;
+    tgs::TGSError setOrbitData(tgs::OrbitData const& param);
+    tgs::TGSError getOrbitData(tgs::OrbitData* result) const;
     tgs::TGSError setObserverPosition(double latitude, double longitude, double altitude);
     tgs::TGSError getObserverPosition(double* latitude, double* longitude, double* altitude) const;
     

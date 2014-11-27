@@ -234,93 +234,93 @@ function initializeButtons() {
             });
     });
     
-    $('#getSatellitePosition').on('click', function() {
+    $('#getSpacecraftPosition').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getSatellitePosition',
+        JSONRPCClient.call('observer.getSpacecraftPosition',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getSatellitePosition-result').val(JSON.stringify(result));
+                $('#getSpacecraftPosition-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getSatellitePosition-result').val(JSON.stringify(error));
+                $('#getSpacecraftPosition-result').val(JSON.stringify(error));
             });
     });
     
-    $('#getSatelliteDirection').on('click', function() {
+    $('#getSpacecraftDirection').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getSatelliteDirection',
+        JSONRPCClient.call('observer.getSpacecraftDirection',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getSatelliteDirection-result').val(JSON.stringify(result));
+                $('#getSpacecraftDirection-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getSatelliteDirection-result').val(JSON.stringify(error));
+                $('#getSpacecraftDirection-result').val(JSON.stringify(error));
             });
     });
     
-    $('#getSatelliteFrequency').on('click', function() {
+    $('#getSpacecraftFrequency').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getSatelliteFrequency',
+        JSONRPCClient.call('observer.getSpacecraftFrequency',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getSatelliteFrequency-result').val(JSON.stringify(result));
+                $('#getSpacecraftFrequency-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getSatelliteFrequency-result').val(JSON.stringify(error));
+                $('#getSpacecraftFrequency-result').val(JSON.stringify(error));
             });
     });
     
-    $('#getSatelliteDopplerShift').on('click', function() {
+    $('#getSpacecraftDopplerShift').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getSatelliteDopplerShift',
+        JSONRPCClient.call('observer.getSpacecraftDopplerShift',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getSatelliteDopplerShift-result').val(JSON.stringify(result));
+                $('#getSpacecraftDopplerShift-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getSatelliteDopplerShift-result').val(JSON.stringify(error));
+                $('#getSpacecraftDopplerShift-result').val(JSON.stringify(error));
             });
     });
     
-    $('#getSatelliteAOSLOS').on('click', function() {
+    $('#getSpacecraftAOSLOS').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getSatelliteAOSLOS',
+        JSONRPCClient.call('observer.getSpacecraftAOSLOS',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getSatelliteAOSLOS-result').val(JSON.stringify(result));
+                $('#getSpacecraftAOSLOS-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getSatelliteAOSLOS-result').val(JSON.stringify(error));
+                $('#getSpacecraftAOSLOS-result').val(JSON.stringify(error));
             });
     });
     
-    $('#getSatelliteMEL').on('click', function() {
+    $('#getSpacecraftMEL').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getSatelliteMEL',
+        JSONRPCClient.call('observer.getSpacecraftMEL',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getSatelliteMEL-result').val(JSON.stringify(result));
+                $('#getSpacecraftMEL-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getSatelliteMEL-result').val(JSON.stringify(error));
+                $('#getSpacecraftMEL-result').val(JSON.stringify(error));
             });
     });
     

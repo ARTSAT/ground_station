@@ -68,14 +68,14 @@ tgs::TGSError ASDTLEPassFactory::getNearestPass(ASDTLEPass* pass, ir::IRXTime co
     
     double azimuth, elevation;
     if (_orbit.setTargetTime(param) == tgs::TGSERROR_OK &&
-        _orbit.getSatelliteDirection(&azimuth, &elevation) == tgs::TGSERROR_OK) {
+        _orbit.getSpacecraftDirection(&azimuth, &elevation) == tgs::TGSERROR_OK) {
         ir::IRXTime aos = param;
 
         if (elevation > 0.0) {
             while (elevation >= 0.0) {
                 aos.subSecond(1);
                 if (_orbit.setTargetTime(aos) != tgs::TGSERROR_OK ||
-                    _orbit.getSatelliteDirection(&azimuth, &elevation) != tgs::TGSERROR_OK) {
+                    _orbit.getSpacecraftDirection(&azimuth, &elevation) != tgs::TGSERROR_OK) {
                     return tgs::TGSERROR_INVALID_STATE;
                 }
             }
@@ -85,7 +85,7 @@ tgs::TGSError ASDTLEPassFactory::getNearestPass(ASDTLEPass* pass, ir::IRXTime co
         while (elevation < 0.0) {
             aos.addSecond(1);
             if (_orbit.setTargetTime(aos) != tgs::TGSERROR_OK ||
-                _orbit.getSatelliteDirection(&azimuth, &elevation) != tgs::TGSERROR_OK) {
+                _orbit.getSpacecraftDirection(&azimuth, &elevation) != tgs::TGSERROR_OK) {
                 return tgs::TGSERROR_INVALID_STATE;
             }
             max_elevation = std::max(max_elevation, elevation);
@@ -103,9 +103,9 @@ tgs::TGSError ASDTLEPassFactory::getNearestPass(ASDTLEPass* pass, ir::IRXTime co
             
             if (_orbit.setTargetTime(t.addSecond(1)) != tgs::TGSERROR_OK)
                 return tgs::TGSERROR_INVALID_STATE;
-            if (_orbit.getSatelliteDirection(&state.azimuth, &state.elevation) != tgs::TGSERROR_OK)
+            if (_orbit.getSpacecraftDirection(&state.azimuth, &state.elevation) != tgs::TGSERROR_OK)
                 return tgs::TGSERROR_INVALID_STATE;
-            if (_orbit.getSatellitePosition(&state.latitude, &state.longitude, &state.altitude) != tgs::TGSERROR_OK)
+            if (_orbit.getSpacecraftPosition(&state.latitude, &state.longitude, &state.altitude) != tgs::TGSERROR_OK)
                 return tgs::TGSERROR_INVALID_STATE;
             if (_orbit.getDopplerRatio(&state.sender, &state.receiver) != tgs::TGSERROR_OK)
                 return tgs::TGSERROR_INVALID_STATE;
@@ -129,13 +129,13 @@ tgs::TGSError ASDTLEPassFactory::getNearestPass(ASDTLEPass* pass, ir::IRXTime co
     }
 }
 
-tgs::TGSError ASDTLEPassFactory::setOrbitData(tgs::TLERec const& param)
+tgs::TGSError ASDTLEPassFactory::setOrbitData(tgs::OrbitData const& param)
 {
     _cached_pass.reset();
     return _orbit.setOrbitData(param);
 }
 
-tgs::TGSError ASDTLEPassFactory::getOrbitData(tgs::TLERec* result) const
+tgs::TGSError ASDTLEPassFactory::getOrbitData(tgs::OrbitData* result) const
 {
     return _orbit.getOrbitData(result);
 }

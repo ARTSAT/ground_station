@@ -16,6 +16,8 @@ arg[5]: unixtime_end   [sec]
 
 ****************************************************/
 #include "despatch.h"
+#include "pass.h"
+#include "tf.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -79,32 +81,39 @@ int main (int argc, char* argv[])
 	
 	DespatchTracker tracker;	// based on :public SpacecraftTracker, :public SpacecraftCalculator
 	
-	// [1] init the departure time (necessary to get DESPATCH mode)
-	const double DepartureMjd = 56992.264444;
+	// [1] init the departure time (necessary to get DESPATCH phase)
+	const double DepartureMjd = 56991.265921;
 	tracker.setDepartureTime (DepartureMjd);
 	// ---end of [1]
 	
 	// [2] init spacecraft orbit and parameters, observer geo-coord
 	DespatchTracker:: SCDRec scd;// SpaceCraft Description
 	scd.orbitInfo.epochMjd = DepartureMjd;
-	scd.orbitInfo.positionEci[0] = 10718921.0;
-	scd.orbitInfo.positionEci[1] =   747344.0;
-	scd.orbitInfo.positionEci[2] = -1050332.0;
-	scd.orbitInfo.velocityEci[0] =  5616.853;
-	scd.orbitInfo.velocityEci[1] =  6764.471;
-	scd.orbitInfo.velocityEci[2] = -4193.746;
-	const double TxFrequency = 437.325e6f;
-	scd.param.transmitterFrequency = TxFrequency;
+	scd.orbitInfo.positionEci[0] = 10731986.0;
+	scd.orbitInfo.positionEci[1] =   669676.0;
+	scd.orbitInfo.positionEci[2] = -1056032.0;
+	scd.orbitInfo.velocityEci[0] =  5665.982;
+	scd.orbitInfo.velocityEci[1] =  6718.310;
+	scd.orbitInfo.velocityEci[2] = -4193.223;
 	scd.param.ballisticCoeff = 150.0;
-	
 	tracker.setSpacecraftInfo (scd);
+    /*
+    DespatchTracker:: SerializedSCDRec sscd =
+    {
+        "despatch",
+        "SCD1-DESPATCH-02SCD1-DESPATCH-02SCD1-DESPATCH-02SCD1-DESPATCH-02_ 56991.265921 10731986.0 669676.0 -1056032.0 5665.982 6718.310 -4193.223",
+        "150.0"
+    };
+    tracker.setSpacecraftInfo (sscd);
+    */
 	tracker.setObserverGeoCoord (DEG_TO_RAD(atof (argv[1])), DEG_TO_RAD(atof (argv[2])), atof (argv[3]));
 	// ---end of [2]
 	
 	double unixtime;
-	double elevation, azimuth, doppler, distance;
+	double elevation, azimuth, doppler_down, doppler_up, distance;
 	double latitude, longitude, altitude;
-	string mode;
+	double declination, rightascension;
+	string phase;
 	
 	double unixtime_s = atof (argv[4]);
 	double unixtime_e;
@@ -113,10 +122,12 @@ int main (int argc, char* argv[])
 	// [3] set time at first, then get values
 	const double outputDt = 3600.0;
 	double t = unixtime_s;
-	
+    
+	const double TxFrequency = 437.325e6f;
+    
 	cout << endl;
 	cout << "----- Results -----" << endl;
-	cout << "unixtime, elevation[deg], azimuth[deg], frequency[Hz], distance[m], latitude[deg], longitude[deg], altitude[m], mode" << endl;
+	cout << "unixtime, elevation[deg], azimuth[deg], frequency[Hz], distance[m], latitude[deg], longitude[deg], altitude[m], declination[deg], right ascension[deg], phase" << endl;
 	
 	while (1) {
 		if (t > unixtime_e) {
@@ -131,21 +142,25 @@ int main (int argc, char* argv[])
 		
 		tracker.getTargetTime (&unixtime);
 		tracker.getSpacecraftDirection (&elevation, &azimuth);
-		tracker.getDopplerFrequency (&doppler);
+		tracker.getDopplerRatio (&doppler_down, &doppler_up);
 		tracker.getDistanceEarthCentered (&distance);
 		tracker.getSpacecraftGeoCoord (&latitude, &longitude, &altitude);
-		tracker.getDespatchMode (&mode);
-		
+		tracker.getGeometryEarthCentered (&declination, &rightascension);
+		tracker.getDespatchPhase (&phase);
+	    
+        //if (elevation > 0.0) {
 		cout << setprecision (10);
 		cout << unixtime << ",";
 		cout << RAD_TO_DEG(elevation) << "," << RAD_TO_DEG(azimuth) << ",";
-		cout << TxFrequency + doppler << ",";
+		cout << doppler_down * TxFrequency << ",";
 		cout << distance << ",";
 		cout << RAD_TO_DEG(latitude) << "," << RAD_TO_DEG(longitude) << ",";
 		cout << altitude << ",";
-		cout << mode;
+		cout << RAD_TO_DEG(declination) << "," << RAD_TO_DEG(rightascension) << ",";
+		cout << phase;
 		cout << endl;
-		
+        //}
+        
 		t += outputDt;
 	}
 	
@@ -153,6 +168,75 @@ int main (int argc, char* argv[])
 	tracker.resetSpacecraftState ();
 	
 	// ---end of [3]
+
+	// [4] find next pass
+
+	PassFinder finder;
+    
+    double departureUnixtime;
+    tf:: convertMjdToUnixtime (&departureUnixtime, DepartureMjd);
+    finder.setDepartureTime (departureUnixtime);
+    
+	vector<Pass> passes = finder.findAll(&tracker, unixtime_s, unixtime_e, 60);
+
+	cout << endl;
+	cout << "----- Results -----" << endl;
+	cout << "AOS, LOS, TCA" << endl;
+	for (vector<Pass>::iterator it = passes.begin(); it != passes.end(); ++it) {
+		cout << it->AOS << "," << it->LOS << "," << it->TCA << endl;
+	}
+	cout << endl;
+
+	// ---end of [4]
+    
+    /*
+    // [5] calculate spacecraft position in ICRF frame
+    
+    const double SecondsPerDay = 3600.0 * 24.0;
+    
+    double pos_sc[3], vel_sc[3];
+    double pos_earth[3], vel_earth[3];
+    
+    tracker.resetSpacecraftState ();
+    tf:: convertMjdToUnixtime (&unixtime_s, DepartureMjd);
+    
+    cout << endl;
+	cout << "----- Results -----" << endl;
+	cout << "unixtime, x_sc[km], y_sc[km], z_sc[km], x_e[km], y_e[km], z_e[km], u_sc[m/s], v_sc[m/s], w_sc[m/s], u_e[m/s], v_e[m/s], w_e[m/s], distance[km]" << endl;
+	
+    t = unixtime_s;
+    unixtime_e = unixtime_s + 400.0 * SecondsPerDay; // 400 Days
+    
+	while (1) {
+		if (t > unixtime_e) {
+			cout << "finished" << endl;
+			break;
+		}
+		
+		if (tracker.setTargetTime (t) != 0) {
+			cout << "Range error, exit." << endl;
+			break;
+		}
+		
+		tracker.getSpacecraftState (pos_sc, vel_sc);
+        tracker.getEarthPosSci (pos_earth);
+        tracker.getEarthVelSci (vel_earth);
+        tracker.getDistanceEarthCentered (&distance);
+	    
+		cout << setprecision (10);
+		cout << t << ",";
+		cout << pos_sc[0] / 1000.0 << "," << pos_sc[1] / 1000.0 << "," << pos_sc[2] / 1000.0 << ",";
+        cout << pos_earth[0] / 1000.0 << "," << pos_earth[1] / 1000.0 << "," << pos_earth[2] / 1000.0 << ",";
+        cout << vel_sc[0] << "," << vel_sc[1] << "," << vel_sc[2] << ",";
+        cout << vel_earth[0] << "," << vel_earth[1] << "," << vel_earth[2] << ",";
+        cout << distance / 1000.0;
+		cout << endl;
+        
+		t += SecondsPerDay;
+	}
+    
+    // --end of [5]
+    */
 	
 	return 0;
 }

@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDTLEClientInterface.h
+**      ASDHTTPClientInterface.h
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,14 +44,14 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#ifndef __ASD_TLECLIENTINTERFACE_H
-#define __ASD_TLECLIENTINTERFACE_H
+#ifndef __ASD_HTTPCLIENTINTERFACE_H
+#define __ASD_HTTPCLIENTINTERFACE_H
 
 #include "TGSPhysicsDatabase.h"
 
-class ASDTLEClientInterface {
+class ASDHTTPClientInterface {
     public:
-        typedef ASDTLEClientInterface           self;
+        typedef ASDHTTPClientInterface          self;
     
     private:
                 tgs::TGSPhysicsDatabase         _database;
@@ -60,18 +60,18 @@ class ASDTLEClientInterface {
                 boost::thread                   _thread;
     
     public:
-        virtual                                 ~ASDTLEClientInterface      (void) = 0;
+        virtual                                 ~ASDHTTPClientInterface     (void) = 0;
                 tgs::TGSError                   open                        (std::string const& file, std::vector<std::string> const& url, int interval);
                 void                            close                       (void);
     protected:
-        explicit                                ASDTLEClientInterface       (void);
+        explicit                                ASDHTTPClientInterface      (void);
         virtual tgs::TGSError                   parse                       (std::string const& content, tgs::TGSPhysicsDatabase* database);
     private:
                 void                            thread                      (void);
                 void                            update                      (void);
     private:
-                                                ASDTLEClientInterface       (ASDTLEClientInterface const&);
-                ASDTLEClientInterface&          operator=                   (ASDTLEClientInterface const&);
+                                                ASDHTTPClientInterface      (ASDHTTPClientInterface const&);
+                ASDHTTPClientInterface&         operator=                   (ASDHTTPClientInterface const&);
 };
 
 #endif

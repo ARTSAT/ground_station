@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDTLEClientCelestrak.cpp
+**      ASDHTTPClientCelestrak.cpp
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,23 +44,23 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#include "ASDTLEClientCelestrak.h"
+#include "ASDHTTPClientCelestrak.h"
 
-/*public */ASDTLEClientCelestrak::ASDTLEClientCelestrak(void)
+/*public */ASDHTTPClientCelestrak::ASDHTTPClientCelestrak(void)
 {
 }
 
-/*public virtual */ASDTLEClientCelestrak::~ASDTLEClientCelestrak(void)
+/*public virtual */ASDHTTPClientCelestrak::~ASDHTTPClientCelestrak(void)
 {
     close();
 }
 
-/*protected virtual */tgs::TGSError ASDTLEClientCelestrak::parse(std::string const& content, tgs::TGSPhysicsDatabase* database)
+/*protected virtual */tgs::TGSError ASDHTTPClientCelestrak::parse(std::string const& content, tgs::TGSPhysicsDatabase* database)
 {
     ir::IRXTime time;
     std::string trim;
     std::vector<std::string> line;
-    tgs::TLERec tle;
+    tgs::OrbitData orbit;
     int i;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
@@ -74,8 +74,8 @@
                 boost::trim(line[i]);
             }
             for (i = 0; i < line.size(); i += 3) {
-                if ((error = tgs::convert(line[i + 0], line[i + 1], line[i + 2], &tle)) == tgs::TGSERROR_OK) {
-                    error = database->setOrbitData(tle, time);
+                if ((error = tgs::convertTLE(line[i + 0], line[i + 1], line[i + 2], &orbit)) == tgs::TGSERROR_OK) {
+                    error = database->setOrbitData(orbit, time);
                 }
                 if (error != tgs::TGSERROR_OK) {
                     break;

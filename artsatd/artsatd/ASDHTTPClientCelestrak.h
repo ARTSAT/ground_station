@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      TGSOrbitInterface.h
+**      ASDHTTPClientCelestrak.h
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,41 +44,24 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#ifndef __TGS_ORBITINTERFACE_H
-#define __TGS_ORBITINTERFACE_H
+#ifndef __ASD_HTTPCLIENTCELESTRAK_H
+#define __ASD_HTTPCLIENTCELESTRAK_H
 
-#include "TGSType.h"
-#include "IRXTime.h"
+#include "ASDHTTPClientInterface.h"
 
-namespace tgs {
-
-class TGSOrbitInterface {
+class ASDHTTPClientCelestrak : public ASDHTTPClientInterface {
     public:
-        typedef TGSOrbitInterface           self;
+        typedef ASDHTTPClientCelestrak          self;
+        typedef ASDHTTPClientInterface          super;
     
     public:
-        virtual                             ~TGSOrbitInterface              (void) = 0;
-        virtual TGSError                    setOrbitData                    (OrbitData const& param);
-        virtual TGSError                    getOrbitData                    (OrbitData* result) const;
-        virtual TGSError                    getID                           (int* result) const;
-        virtual TGSError                    getEpochTime                    (double* result/* julian date */) const;
-        virtual TGSError                    getEpochTime                    (ir::IRXTime* result/* unix time */) const;
-        virtual TGSError                    setTargetTime                   (ir::IRXTime const& param/* unix time */);
-        virtual TGSError                    getTargetTime                   (ir::IRXTime* result/* unix time */) const;
-        virtual TGSError                    setObserverPosition             (double latitude/* deg */, double longitude/* deg */, double altitude/* km */);
-        virtual TGSError                    getObserverPosition             (double* latitude/* deg */, double* longitude/* deg */, double* altitude/* km */) const;
-        virtual TGSError                    getSpacecraftPosition           (double* latitude/* deg */, double* longitude/* deg */, double* altitude/* km */) const;
-        virtual TGSError                    getSpacecraftDirection          (double* azimuth/* deg */, double* elevation/* deg */) const;
-        virtual TGSError                    getSpacecraftDistance           (double* distance/* km */) const;
-        virtual TGSError                    getSpacecraftSpeed              (double* speed/* km/s */) const;
-        virtual TGSError                    getDopplerRatio                 (double* sender/* % */, double* receiver/* % */) const;
+        explicit                                ASDHTTPClientCelestrak      (void);
+        virtual                                 ~ASDHTTPClientCelestrak     (void);
     protected:
-        explicit                            TGSOrbitInterface               (void);
+        virtual tgs::TGSError                   parse                       (std::string const& content, tgs::TGSPhysicsDatabase* database);
     private:
-                                            TGSOrbitInterface               (TGSOrbitInterface const&);
-                TGSOrbitInterface&          operator=                       (TGSOrbitInterface const&);
+                                                ASDHTTPClientCelestrak      (ASDHTTPClientCelestrak const&);
+                ASDHTTPClientCelestrak&         operator=                   (ASDHTTPClientCelestrak const&);
 };
-
-}// end of namespace
 
 #endif

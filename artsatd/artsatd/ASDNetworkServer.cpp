@@ -138,8 +138,18 @@ class ASDNetworkServer::Responder {
                             try {
                                 _thread->create_thread(boost::bind(&Server::run, _server.get()));
                             }
+                            catch (boost::exception& e) {
+                                artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", boost::diagnostic_information(e).c_str());
+                                error = tgs::TGSERROR_FAILED;
+                                break;
+                            }
                             catch (std::exception& e) {
                                 artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
+                                error = tgs::TGSERROR_FAILED;
+                                break;
+                            }
+                            catch (...) {
+                                artsatd::getInstance().log(LOG_EMERG, "thread start error [...]");
                                 error = tgs::TGSERROR_FAILED;
                                 break;
                             }
@@ -153,8 +163,16 @@ class ASDNetworkServer::Responder {
                     error = tgs::TGSERROR_NO_MEMORY;
                 }
             }
+            catch (boost::exception& e) {
+                artsatd::getInstance().log(LOG_EMERG, "server initialize error [%s]", boost::diagnostic_information(e).c_str());
+                error = tgs::TGSERROR_FAILED;
+            }
             catch (std::exception& e) {
                 artsatd::getInstance().log(LOG_EMERG, "server initialize error [%s]", e.what());
+                error = tgs::TGSERROR_FAILED;
+            }
+            catch (...) {
+                artsatd::getInstance().log(LOG_EMERG, "server initialize error [...]");
                 error = tgs::TGSERROR_FAILED;
             }
         }
@@ -177,8 +195,14 @@ class ASDNetworkServer::Responder {
         try {
             _server->stop();
         }
+        catch (boost::exception& e) {
+            artsatd::getInstance().log(LOG_EMERG, "server terminate error [%s]", boost::diagnostic_information(e).c_str());
+        }
         catch (std::exception& e) {
             artsatd::getInstance().log(LOG_EMERG, "server terminate error [%s]", e.what());
+        }
+        catch (...) {
+            artsatd::getInstance().log(LOG_EMERG, "server terminate error [...]");
         }
         if (_thread != NULL) {
             try {

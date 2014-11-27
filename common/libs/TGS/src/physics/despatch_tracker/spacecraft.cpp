@@ -16,7 +16,7 @@
 #define	SC_VELOCITY	block (3, 0, 3, 1)
 
 SpacecraftCalculator:: SpacecraftCalculator (void): epochMjd_ (0.0), secondsFromEpoch_ (0.0), 
-													ballisticCoeff_ (100.0), txFrequency_ (0.0), 
+													ballisticCoeff_ (100.0),  
 													earth_ ("earth", epochMjd_), spacecraftState_ (VectorXd:: Zero (6))
 {
 	for (int i = 0; i < 3; i++) {
@@ -60,16 +60,14 @@ void SpacecraftCalculator:: getSpacecraftOrbitInfo	(double* epochMjd, double* po
 	}	
 }
 
-void SpacecraftCalculator:: setSpacecraftParams	(double ballisticCoeff, double txFrequency)
+void SpacecraftCalculator:: setSpacecraftParams	(double ballisticCoeff)
 {
 	ballisticCoeff_ = ballisticCoeff;
-	txFrequency_ = txFrequency;
 }
 
-void SpacecraftCalculator:: getSpacecraftParams	(double* ballisticCoeff, double* txFrequency) const
+void SpacecraftCalculator:: getSpacecraftParams	(double* ballisticCoeff) const
 {
 	*ballisticCoeff = ballisticCoeff_;
-	*txFrequency = txFrequency_;
 }
 
 void SpacecraftCalculator:: setSpacecraftState (double secondsFromEpoch, const double (&posSci)[3], const double (&velSci)[3])
@@ -147,6 +145,36 @@ double SpacecraftCalculator:: integrateSpacecraftState (double dt, double srpErr
 	return secondsFromEpoch_;
 }
 
+void SpacecraftCalculator:: getSpacecraftPosEci (double* scPosEci) const
+{
+    Vector3d pos;
+    calcSpacecraftPosEci (&pos);
+    
+    for (int i = 0; i < 3; i++) {
+        scPosEci[i] = pos[i];
+    }
+}
+
+void SpacecraftCalculator:: getSpacecraftVelEci (double* scVelEci) const
+{
+    Vector3d vel;
+    calcSpacecraftVelEci (&vel);
+    
+    for (int i = 0; i < 3; i++) {
+        scVelEci[i] = vel[i];
+    }
+}
+
+void SpacecraftCalculator:: getEarthPosSci (double* earthPosSci) const
+{
+    earth_.getPosition (earthPosSci);
+}
+
+void SpacecraftCalculator:: getEarthVelSci (double* earthVelSci) const
+{
+    earth_.getVelocity (earthVelSci);
+}
+
 void SpacecraftCalculator:: test1 (int periodDay)
 {
 	// set orbit information
@@ -156,13 +184,12 @@ void SpacecraftCalculator:: test1 (int periodDay)
 	setSpacecraftOrbitInfo (EpochMjd, PosEci, VelEci);
 	
 	// set parameters
-	const double Frequency = 437.325e6f;
 	const double BallisticCoeff = 150.0;
-	setSpacecraftParams (BallisticCoeff, Frequency);
+	setSpacecraftParams (BallisticCoeff);
 	
 	// variables
 	Vector3d scPos, scVel;
-	double declination, ra, doppler, distance, speed;
+	double declination, ra, doppler_down, doppler_up, distance, speed;
 	
 	const double Dt = 60.0;
 	const double SecondsDay = 3600.0 * 24.0;
@@ -170,13 +197,15 @@ void SpacecraftCalculator:: test1 (int periodDay)
 	double t = 0.0;
 	int n = 0;
 	
+    const double Frequency = 437.325e6f;
+    
 	cout << "day, x, y, z, u, v, w, declination, RA, doppler, distance, speed" << endl;
 	
 	do {
 		
 		getSpacecraftState (&scPos, &scVel);
 		getGeometryEarthCentered (&declination, &ra);
-		getDopplerFreqEarthCentered (&doppler);
+		getDopplerRatioEarthCentered (&doppler_down, &doppler_up);
 		getDistanceEarthCentered (&distance);
 		getSpacecraftRelativeSpeed (&speed);
 		
@@ -185,7 +214,7 @@ void SpacecraftCalculator:: test1 (int periodDay)
 			cout << scPos[0] << "," << scPos[1] << "," << scPos[2] << ",";
 			cout << scVel[0] << "," << scVel[1] << "," << scVel[2] << ",";
 			cout << declination << "," << ra << ",";
-			cout << doppler << ",";
+			cout << (doppler_down - 1.0) * Frequency << ",";
 			cout << distance << ",";
 			cout << speed;
 			cout << endl;

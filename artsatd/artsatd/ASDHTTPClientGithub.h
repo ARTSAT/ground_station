@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDTLEClientCelestrak.h
+**      ASDHTTPClientGithub.h
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,24 +44,24 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#ifndef __ASD_TLECLIENTCELESTRAK_H
-#define __ASD_TLECLIENTCELESTRAK_H
+#ifndef __ASD_HTTPCLIENTGITHUB_H
+#define __ASD_HTTPCLIENTGITHUB_H
 
-#include "ASDTLEClientInterface.h"
+#include "ASDHTTPClientInterface.h"
 
-class ASDTLEClientCelestrak : public ASDTLEClientInterface {
+class ASDHTTPClientGithub : public ASDHTTPClientInterface {
     public:
-        typedef ASDTLEClientCelestrak           self;
-        typedef ASDTLEClientInterface           super;
+        typedef ASDHTTPClientGithub             self;
+        typedef ASDHTTPClientInterface          super;
     
     public:
-        explicit                                ASDTLEClientCelestrak       (void);
-        virtual                                 ~ASDTLEClientCelestrak      (void);
+        explicit                                ASDHTTPClientGithub         (void);
+        virtual                                 ~ASDHTTPClientGithub        (void);
     protected:
         virtual tgs::TGSError                   parse                       (std::string const& content, tgs::TGSPhysicsDatabase* database);
     private:
-                                                ASDTLEClientCelestrak       (ASDTLEClientCelestrak const&);
-                ASDTLEClientCelestrak&          operator=                   (ASDTLEClientCelestrak const&);
+                                                ASDHTTPClientGithub         (ASDHTTPClientGithub const&);
+                ASDHTTPClientGithub&            operator=                   (ASDHTTPClientGithub const&);
 };
 
 #endif

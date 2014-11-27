@@ -31,15 +31,12 @@ void SpacecraftCalculator:: getObserverGeoCoord (double* latitude, double* longi
 
 void SpacecraftCalculator:: getGeometryEarthCentered (double *declination, double* rightAscension, double decError, double raError) const
 {	
-	Vector3d earthPos;
-	earth_.getPosition (&earthPos);
-	
-	Vector3d relativePos = spacecraftState_.SC_POSITION - earthPos;
-	
-	calcGeometry (declination, rightAscension, relativePos, decError, raError);
+	Vector3d scPosEci;
+	calcSpacecraftPosEci (&scPosEci);
+	calcGeometry (declination, rightAscension, scPosEci, decError, raError);
 }
 
-void SpacecraftCalculator:: getDopplerFreqEarthCentered (double *dopplerFrequency, double error) const
+void SpacecraftCalculator:: getDopplerRatioEarthCentered (double* downlink, double* uplink) const
 {
 	Vector3d earthPos, earthVel;
 	earth_.getPosition (&earthPos);
@@ -48,7 +45,7 @@ void SpacecraftCalculator:: getDopplerFreqEarthCentered (double *dopplerFrequenc
 	Vector3d relativePos = spacecraftState_.SC_POSITION - earthPos;
 	Vector3d relativeVel = spacecraftState_.SC_VELOCITY - earthVel;
 	
-	calcDopplerFrequency (dopplerFrequency, relativePos, relativeVel, error);
+	calcDopplerRatio (downlink, uplink, relativePos, relativeVel);
 }
 
 void SpacecraftCalculator:: getDistanceEarthCentered (double* distance, double error) const
@@ -107,7 +104,7 @@ void SpacecraftCalculator:: getSpacecraftDirection (double* elevation, double* a
 	calcGeometry (elevation, azimuth, scRelativePosEnu, eleError, aziError);
 }
 
-void SpacecraftCalculator:: getDopplerFrequency (double* dopplerFrequency, double error) const
+void SpacecraftCalculator:: getDopplerRatio (double* downlink, double* uplink) const
 {
 	Vector3d scPosEci, scVelEci;
 	calcSpacecraftPosEci (&scPosEci);
@@ -121,7 +118,7 @@ void SpacecraftCalculator:: getDopplerFrequency (double* dopplerFrequency, doubl
 	scRelativePosEci = scPosEci - obsPosEci;
 	scRelativeVelEci = scVelEci - obsVelEci;
 	
-	calcDopplerFrequency (dopplerFrequency, scRelativePosEci, scRelativeVelEci, error);
+	calcDopplerRatio (downlink, uplink, scRelativePosEci, scRelativeVelEci);
 }
 
 void SpacecraftCalculator:: test2 (int periodDay)
@@ -133,9 +130,8 @@ void SpacecraftCalculator:: test2 (int periodDay)
 	setSpacecraftOrbitInfo (EpochMjd, PosEci, VelEci);
 	
 	// set parameters
-	const double Frequency = 437.325e6f;
 	const double BallisticCoeff = 150.0;
-	setSpacecraftParams (BallisticCoeff, Frequency);
+	setSpacecraftParams (BallisticCoeff);
 	
 	// set observer position
 	const double Pi = M_PI;
@@ -144,7 +140,7 @@ void SpacecraftCalculator:: test2 (int periodDay)
 	
 	// variables
 	Vector3d scPos, scVel;
-	double ele, azi, doppler;
+	double ele, azi, doppler_down, doppler_up;
 	double lat, lon, alt;
 	
 	const double Dt = 60.0;
@@ -154,18 +150,20 @@ void SpacecraftCalculator:: test2 (int periodDay)
 	double t = 0.0;
 	int n = 0;
 	
+	const double Frequency = 437.325e6f;
+    
 	cout << "hour, elevation, azimuth, doppler, latitude, longitude, altitude" << endl;
 	
 	do {
 		
 		getSpacecraftDirection (&ele, &azi);
-		getDopplerFrequency (&doppler);
+		getDopplerRatio (&doppler_down, &doppler_up);
 		getSpacecraftGeoCoord (&lat, &lon, &alt);
 		
 		if (n % NHour == 0) {
 			cout << n / NHour + 1 << ",";
 			cout << ele << "," << azi << ",";
-			cout << doppler << ",";
+			cout << (doppler_down - 1.0) * Frequency << ",";
 			cout << lat << "," << lon << "," << alt;
 			cout << endl;
 		}
@@ -318,12 +316,12 @@ void SpacecraftCalculator:: calcGeometry (double* lat, double* lon, Vector3d con
 	tf:: normalizeRadian (lon);
 }
 
-void SpacecraftCalculator:: calcDopplerFrequency (double* dopplerFrequency, Vector3d const& relativePos, Vector3d const& relativeVel, double error) const
+void SpacecraftCalculator:: calcDopplerRatio (double* downlink, double* uplink, Vector3d const& relativePos, Vector3d const& relativeVel) const
 {
 	const double LightSpeed = 299792458.0;
 	
 	double scRaySpeed = -1.0 * relativeVel.dot (relativePos / relativePos.norm ());
-	double dopplerRatio = scRaySpeed / LightSpeed;
-	
-	*dopplerFrequency = txFrequency_ * dopplerRatio + error;
+    double ratio = scRaySpeed / LightSpeed;
+	*downlink = 1.0 + ratio;
+    *uplink = 1.0 - ratio;
 }

@@ -250,24 +250,24 @@ static  char const* const                       g_shrink[] = {
         session = it->second;
     }
     daemon.getSession(session, &owner, NULL, NULL, NULL);
-    daemon.getSatellitePosition(&x, &y, &z);
+    daemon.getSpacecraftPosition(&x, &y, &z);
     boost::replace_first(response->content, "<!LT />", stringizeLatitude(x));
     boost::replace_first(response->content, "<!LN />", stringizeLongitude(y));
     boost::replace_first(response->content, "<!AT />", stringizeAltitude(z));
-    daemon.getSatelliteDirection(&x, &y);
+    daemon.getSpacecraftDirection(&x, &y);
     boost::replace_first(response->content, "<!AZ />", colorizeSpan("cyan", stringizeAzimuth(x)));
     boost::replace_first(response->content, "<!EL />", colorizeSpan("magenta", stringizeElevation(y)));
     string = daemon.getMode();
-    daemon.getSatelliteFrequency(&x, &y, &z);
+    daemon.getSpacecraftFrequency(&x, &y, &z);
     boost::replace_first(response->content, "<!BF />", colorizeSpan((string == "CW") ? ("green") : (""), stringizeFrequency(x, false)));
     boost::replace_first(response->content, "<!SF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(y, request.host != "127.0.0.1" && owner <= 0)));
     boost::replace_first(response->content, "<!RF />", colorizeSpan((string == "FM") ? ("green") : (""), stringizeFrequency(z, false)));
-    daemon.getSatelliteDopplerShift(&x, &y);
+    daemon.getSpacecraftDopplerShift(&x, &y);
     boost::replace_first(response->content, "<!SD />", stringizeDopplerShift(x));
     boost::replace_first(response->content, "<!RD />", stringizeDopplerShift(y));
     time = daemon.getTime();
     boost::replace_first(response->content, "<!TM />", stringizeTime(time));
-    daemon.getSatelliteAOSLOS(&aos, &los);
+    daemon.getSpacecraftAOSLOS(&aos, &los);
     if (aos.asTime_t() > 0 && los.asTime_t() > 0) {
         if (aos <= time && time <= los) {
             boost::replace_first(response->content, "<!DA />", colorizeSpan("red", "<!DA />"));
@@ -290,7 +290,7 @@ static  char const* const                       g_shrink[] = {
         boost::replace_first(response->content, "<!LS />", DEFAULT_TIME);
         boost::replace_first(response->content, "<!DL />", DEFAULT_TIMEDIFF);
     }
-    daemon.getSatelliteMEL(&y);
+    daemon.getSpacecraftMEL(&y);
     boost::replace_first(response->content, "<!ML />", colorizeSpan("magenta", stringizeElevation(y)));
     daemon.getRotatorStart(&aos);
     if (aos.asTime_t() > 0) {
@@ -543,7 +543,6 @@ static  char const* const                       g_shrink[] = {
         field.sender.drift = INT_MIN;
         field.receiver.frequency = -1;
         field.receiver.drift = INT_MIN;
-        memset(&field.tle, 0, sizeof(field.tle));
         if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
             if (database.getField(norad, &field) == tgs::TGSERROR_OK) {
                 boost::replace_first(*response, "<!NM />", colorizeSpan("green", field.name));
@@ -566,8 +565,9 @@ static  char const* const                       g_shrink[] = {
         boost::replace_first(*response, "<!RM />", stringizeMode(field.receiver.mode));
         boost::replace_first(*response, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency, false)));
         boost::replace_first(*response, "<!RD />", stringizeDrift(field.receiver.drift));
-        boost::replace_first(*response, "<!TU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
-        boost::replace_first(*response, "<!TL />", stringizeTLE(field.tle));
+        boost::replace_first(*response, "<!OT />", stringizeOrbitType(field.orbit));
+        boost::replace_first(*response, "<!OU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
+        boost::replace_first(*response, "<!OD />", stringizeOrbitData(field.orbit));
     }
     else {
         boost::replace_first(*response, "<!DB />", SHRINK_SHOW);
@@ -698,7 +698,7 @@ static  char const* const                       g_shrink[] = {
         try {
             *result = static_cast<int>(boost::lexical_cast<double>(param) * 1000000.0);
         }
-        catch (std::exception& e) {
+        catch (...) {
             error = tgs::TGSERROR_INVALID_PARAM;
         }
     }
@@ -863,13 +863,45 @@ static  char const* const                       g_shrink[] = {
     return result + " %";
 }
 
-/*private static */std::string ASDServerOperation::stringizeTLE(tgs::TLERec const& param)
+/*private static */std::string ASDServerOperation::stringizeOrbitType(tgs::OrbitData const& param)
 {
     std::string result;
     
-    result  = (strlen(param.one) > 0) ? (param.one) : ("1                                                                    ");
-    result += "<br />";
-    result += (strlen(param.two) > 0) ? (param.two) : ("2                                                                    ");
+    switch (param.getType()) {
+        case tgs::OrbitData::TYPE_TLE:
+            result = "TLE";
+            break;
+        case tgs::OrbitData::TYPE_SCD:
+            result = "SCD";
+            break;
+        default:
+            result = "Unknown";
+            break;
+    }
+    return result;
+}
+
+/*private static */std::string ASDServerOperation::stringizeOrbitData(tgs::OrbitData const& param)
+{
+    std::string result;
+    
+    switch (param.getType()) {
+        case tgs::OrbitData::TYPE_TLE:
+            result  = (strlen(static_cast<tgs::TLERec const&>(param).one) > 0) ? (static_cast<tgs::TLERec const&>(param).one) : ("1                                                                    ");
+            result += "<br />";
+            result += (strlen(static_cast<tgs::TLERec const&>(param).two) > 0) ? (static_cast<tgs::TLERec const&>(param).two) : ("2                                                                    ");
+            break;
+        case tgs::OrbitData::TYPE_SCD:
+            result  = (!static_cast<tgs::SCDRec const&>(param).info.empty()) ? (static_cast<tgs::SCDRec const&>(param).info) : ("-");
+            result += "<br />";
+            result += (!static_cast<tgs::SCDRec const&>(param).param.empty()) ? (static_cast<tgs::SCDRec const&>(param).param) : ("-");
+            break;
+        default:
+            result  = "-";
+            result += "<br />";
+            result += "-";
+            break;
+    }
     return result;
 }
 

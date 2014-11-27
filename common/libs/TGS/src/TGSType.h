@@ -47,11 +47,15 @@
 #ifndef __TGS_TYPE_H
 #define __TGS_TYPE_H
 
+#include <string>
+
 namespace tgs {
 
-#define TGS_VERSION_MAJOR       (4)
+#define TGS_VERSION_MAJOR       (5)
 #define TGS_VERSION_MINOR       (0)
 #define TGS_VERSION_REVISION    (0)
+#define ID_BASE_TLE             (0)
+#define ID_BASE_SCD             (100000)
 
 #define lengthof(param)         (sizeof(param) / sizeof(param[0]))
 #define asciiesof(param)        (lengthof(param) - 1)
@@ -62,9 +66,176 @@ struct TLERec {
     char                        two[70];
 };
 struct SCDRec {
-    std::string                 description;
-    std::string                 information;
+    char                        name[65];
+    std::string                 info;
+    std::string                 param;
 };
+class OrbitData {
+    public:
+        enum TypeEnum {
+            TYPE_NONE,
+            TYPE_TLE,
+            TYPE_SCD
+        };
+    
+    private:
+                TypeEnum        _type;
+                union {
+                    TLERec      _tle;
+                    SCDRec      _scd;
+                };
+    
+    public:
+        explicit                OrbitData               (void);
+                                OrbitData               (OrbitData const& param);
+                                OrbitData               (TLERec const& param);
+                                OrbitData               (SCDRec const& param);
+                                ~OrbitData              (void);
+                OrbitData&      operator=               (OrbitData const& param);
+                OrbitData&      operator=               (TLERec const& param);
+                OrbitData&      operator=               (SCDRec const& param);
+                                operator TLERec&        (void);
+                                operator TLERec const&  (void) const;
+                                operator SCDRec&        (void);
+                                operator SCDRec const&  (void) const;
+                TypeEnum        getType                 (void) const;
+};
+
+/*public */inline OrbitData::OrbitData(void) : _type(TYPE_NONE)
+{
+}
+
+/*public */inline OrbitData::OrbitData(OrbitData const& param) : _type(param._type)
+{
+    switch (_type) {
+        case TYPE_TLE:
+            new(&_tle) TLERec(param._tle);
+            break;
+        case TYPE_SCD:
+            new(&_scd) SCDRec(param._scd);
+            break;
+        default:
+            // nop
+            break;
+    }
+}
+
+/*public */inline OrbitData::OrbitData(TLERec const& param) : _type(TYPE_TLE)
+{
+    new(&_tle) TLERec(param);
+}
+
+/*public */inline OrbitData::OrbitData(SCDRec const& param) : _type(TYPE_SCD)
+{
+    new(&_scd) SCDRec(param);
+}
+
+/*public */inline OrbitData::~OrbitData(void)
+{
+    switch (_type) {
+        case TYPE_TLE:
+            _tle.~TLERec();
+            break;
+        case TYPE_SCD:
+            _scd.~SCDRec();
+            break;
+        default:
+            // nop
+            break;
+    }
+    _type = TYPE_NONE;
+}
+
+/*public */inline OrbitData& OrbitData::operator=(OrbitData const& param)
+{
+    if (_type == param._type) {
+        switch (_type) {
+            case TYPE_TLE:
+                _tle = param._tle;
+                break;
+            case TYPE_SCD:
+                _scd = param._scd;
+                break;
+            default:
+                // nop
+                break;
+        }
+    }
+    else {
+        this->~OrbitData();
+        new(this) OrbitData(param);
+    }
+    return *this;
+}
+
+/*public */inline OrbitData& OrbitData::operator=(TLERec const& param)
+{
+    if (_type == TYPE_TLE) {
+        _tle = param;
+    }
+    else {
+        this->~OrbitData();
+        new(this) OrbitData(param);
+    }
+    return *this;
+}
+
+/*public */inline OrbitData& OrbitData::operator=(SCDRec const& param)
+{
+    if (_type == TYPE_SCD) {
+        _scd = param;
+    }
+    else {
+        this->~OrbitData();
+        new(this) OrbitData(param);
+    }
+    return *this;
+}
+
+/*public */inline OrbitData::operator TLERec&(void)
+{
+    if (_type == TYPE_TLE) {
+        return _tle;
+    }
+    else {
+        throw std::bad_cast();
+    }
+}
+
+/*public */inline OrbitData::operator TLERec const&(void) const
+{
+    if (_type == TYPE_TLE) {
+        return _tle;
+    }
+    else {
+        throw std::bad_cast();
+    }
+}
+
+/*public */inline OrbitData::operator SCDRec&(void)
+{
+    if (_type == TYPE_SCD) {
+        return _scd;
+    }
+    else {
+        throw std::bad_cast();
+    }
+}
+
+/*public */inline OrbitData::operator SCDRec const&(void) const
+{
+    if (_type == TYPE_SCD) {
+        return _scd;
+    }
+    else {
+        throw std::bad_cast();
+    }
+}
+
+/*public */inline OrbitData::TypeEnum OrbitData::getType(void) const
+{
+    return _type;
+}
 
 template <typename T>
 class va_ref {
@@ -72,11 +243,12 @@ class va_ref {
                 T&              _ref;
     
     public:
-                                va_ref              (T& param);
-                                ~va_ref             (void);
-                                operator T&         (void) const;
+                                va_ref                  (T& param);
+                                ~va_ref                 (void);
+                                operator T&             (void);
+                                operator T const&       (void) const;
     private:
-                va_ref&         operator=           (va_ref const&);
+                va_ref&         operator=               (va_ref const&);
 };
 
 template <typename T>
@@ -90,7 +262,13 @@ template <typename T>
 }
 
 template <typename T>
-/*public */inline va_ref<T>::operator T&(void) const
+/*public */inline va_ref<T>::operator T&(void)
+{
+    return _ref;
+}
+
+template <typename T>
+/*public */inline va_ref<T>::operator T const&(void) const
 {
     return _ref;
 }
@@ -101,7 +279,10 @@ template <typename T>
 
 namespace tgs {
 
-extern  TGSError                convert             (std::string const& name, std::string const& one, std::string const& two, TLERec* result);
+extern  TGSError                convertTLE              (std::string const& name, std::string const& one, std::string const& two, OrbitData* orbit);
+extern  TGSError                convertTLE              (OrbitData const& orbit, std::string* name, std::string* one, std::string* two);
+extern  TGSError                convertSCD              (std::string const& name, std::string const& info, std::string const& param, OrbitData* orbit);
+extern  TGSError                convertSCD              (OrbitData const& orbit, std::string* name, std::string* info, std::string* param);
 
 }// end of namespace
 

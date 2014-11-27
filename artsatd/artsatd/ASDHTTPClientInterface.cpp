@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDDeviceInterface.cpp
+**      ASDHTTPClientInterface.cpp
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,58 +44,43 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#include "ASDDeviceInterface.h"
+#include "ASDHTTPClientInterface.h"
 #include "artsatd.h"
 
-#define UPDATE_INTERVAL                         (33)
-#define SYNCHRONIZE_DIVISION                    (6)
-
-template <class T>
-/*protected */ASDDeviceInterface<T>::ASDDeviceInterface(void)
+/*protected */ASDHTTPClientInterface::ASDHTTPClientInterface(void)
 {
 }
 
-template <class T>
-/*public virtual */ASDDeviceInterface<T>::~ASDDeviceInterface(void)
+/*public virtual */ASDHTTPClientInterface::~ASDHTTPClientInterface(void)
 {
     close();
 }
 
-template <class T>
-/*public */bool ASDDeviceInterface<T>::isValid(void) const
-{
-    bool result(false);
-    
-    if (_device != NULL) {
-        result = _device->isValid();
-    }
-    return result;
-}
-
-template <class T>
-/*public */tgs::TGSError ASDDeviceInterface<T>::open(boost::shared_ptr<tgs::TGSDeviceInterface> const& device)
+/*public */tgs::TGSError ASDHTTPClientInterface::open(std::string const& file, std::vector<std::string> const& url, int interval)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     close();
-    if (device != NULL) {
-        _device = device;
-        update();
-        synchronize();
-        try {
-            _thread = boost::thread(boost::bind(&ASDDeviceInterface::thread, this));
-        }
-        catch (boost::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", boost::diagnostic_information(e).c_str());
-            error = tgs::TGSERROR_FAILED;
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
-            error = tgs::TGSERROR_FAILED;
-        }
-        catch (...) {
-            artsatd::getInstance().log(LOG_EMERG, "thread start error [...]");
-            error = tgs::TGSERROR_FAILED;
+    if (interval > 0) {
+        if ((error = _database.open(file)) == tgs::TGSERROR_OK) {
+            _url = url;
+            _interval = interval;
+            update();
+            try {
+                _thread = boost::thread(boost::bind(&ASDHTTPClientInterface::thread, this));
+            }
+            catch (boost::exception& e) {
+                artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", boost::diagnostic_information(e).c_str());
+                error = tgs::TGSERROR_FAILED;
+            }
+            catch (std::exception& e) {
+                artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
+                error = tgs::TGSERROR_FAILED;
+            }
+            catch (...) {
+                artsatd::getInstance().log(LOG_EMERG, "thread start error [...]");
+                error = tgs::TGSERROR_FAILED;
+            }
         }
         if (error != tgs::TGSERROR_OK) {
             close();
@@ -107,8 +92,7 @@ template <class T>
     return error;
 }
 
-template <class T>
-/*public */void ASDDeviceInterface<T>::close(void)
+/*public */void ASDHTTPClientInterface::close(void)
 {
     _thread.interrupt();
     try {
@@ -116,25 +100,20 @@ template <class T>
     }
     catch (...) {
     }
-    _device.reset();
+    _database.close();
     return;
 }
 
-template <class T>
-/*protected virtual */void ASDDeviceInterface<T>::update(ptr_type device)
+/*protected virtual */tgs::TGSError ASDHTTPClientInterface::parse(std::string const& content, tgs::TGSPhysicsDatabase* database)
 {
-    return;
+    return tgs::TGSERROR_NO_SUPPORT;
 }
 
-template <class T>
-/*private */void ASDDeviceInterface<T>::thread(void)
+/*private */void ASDHTTPClientInterface::thread(void)
 {
-    int count;
-    
-    count = 0;
     while (!boost::this_thread::interruption_requested()) {
         try {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(UPDATE_INTERVAL));
+            boost::this_thread::sleep(boost::posix_time::milliseconds(_interval));
         }
         catch (boost::thread_interrupted& e) {
             break;
@@ -152,34 +131,55 @@ template <class T>
             break;
         }
         update();
-        if (++count >= SYNCHRONIZE_DIVISION) {
-            synchronize();
-            count = 0;
+    }
+    return;
+}
+
+/*private */void ASDHTTPClientInterface::update(void)
+{
+    std::vector<std::string>::const_iterator it;
+    boost::network::http::client client(boost::network::http::client::options().follow_redirects(true).cache_resolved(true));
+    boost::network::http::client::request request;
+    boost::network::http::client::response response;
+    int code;
+    tgs::TGSError error;
+    
+    for (it = _url.begin(); it != _url.end(); ++it) {
+        if (!it->empty()) {
+            try {
+                request.uri(*it);
+                response = client.get(request);
+                code = status(response);
+                switch (code) {
+                    case 200:
+                        if ((error = _database.begin()) == tgs::TGSERROR_OK) {
+                            try {
+                                error = parse(body(response), &_database);
+                            }
+                            catch (...) {
+                                error = tgs::TGSERROR_FAILED;
+                            }
+                            _database.end(error == tgs::TGSERROR_OK);
+                        }
+                        if (error != tgs::TGSERROR_OK) {
+                            artsatd::getInstance().log(LOG_ERR, "http client parse error [%s] %s", error.print().c_str(), it->c_str());
+                        }
+                        break;
+                    default:
+                        artsatd::getInstance().log(LOG_ERR, "http client status error [%d] %s", code, it->c_str());
+                        break;
+                }
+            }
+            catch (boost::exception& e) {
+                artsatd::getInstance().log(LOG_ERR, "http client connection error [%s] %s", boost::diagnostic_information(e).c_str(), it->c_str());
+            }
+            catch (std::exception& e) {
+                artsatd::getInstance().log(LOG_ERR, "http client connection error [%s] %s", e.what(), it->c_str());
+            }
+            catch (...) {
+                artsatd::getInstance().log(LOG_ERR, "http client connection error [...] %s", it->c_str());
+            }
         }
     }
     return;
 }
-
-template <class T>
-/*private */void ASDDeviceInterface<T>::update(void)
-{
-    if (_device->isValid()) {
-        boost::unique_lock<boost::mutex> lock(_mutex);
-        _device->update();
-    }
-    return;
-}
-
-template <class T>
-/*private */void ASDDeviceInterface<T>::synchronize(void)
-{
-    if (_device->isValid()) {
-        boost::unique_lock<boost::mutex> lock(_mutex);
-        update(boost::static_pointer_cast<T>(_device).get());
-    }
-    return;
-}
-
-template class ASDDeviceInterface<tgs::TGSRotatorInterface>;
-template class ASDDeviceInterface<tgs::TGSTransceiverInterface>;
-template class ASDDeviceInterface<tgs::TGSTNCInterface>;

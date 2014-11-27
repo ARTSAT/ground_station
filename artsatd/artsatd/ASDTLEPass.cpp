@@ -126,7 +126,7 @@ tgs::TGSError ASDTLEPass::getMEL(double* result) const
     }
 }
 
-tgs::TGSError ASDTLEPass::getSatellitePosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const
+tgs::TGSError ASDTLEPass::getSpacecraftPosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const
 {
     ir::IRXTime aos, los;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && getLOSTime(&los) == tgs::TGSERROR_OK) {
@@ -148,7 +148,7 @@ tgs::TGSError ASDTLEPass::getSatellitePosition(const ir::IRXTime& time, double* 
     }
 }
 
-tgs::TGSError ASDTLEPass::getSatelliteDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const
+tgs::TGSError ASDTLEPass::getSpacecraftDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const
 {
     ir::IRXTime aos, los;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && getLOSTime(&los) == tgs::TGSERROR_OK) {

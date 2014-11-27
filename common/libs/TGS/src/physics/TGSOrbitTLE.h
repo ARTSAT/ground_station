@@ -68,7 +68,7 @@ class TGSOrbitTLE : public TGSOrbitInterface {
     private:
                 Zeptomoby::OrbitTools::cOrbit*
                                             _orbit;
-                TLERec                      _tle;
+                OrbitData                   _data;
                 Zeptomoby::OrbitTools::cJulian*
                                             _julian;
                 Zeptomoby::OrbitTools::cSite*
@@ -83,20 +83,22 @@ class TGSOrbitTLE : public TGSOrbitInterface {
     public:
         explicit                            TGSOrbitTLE                     (void);
         virtual                             ~TGSOrbitTLE                    (void);
-        virtual TGSError                    setOrbitData                    (TLERec const& param);
-        virtual TGSError                    getOrbitData                    (TLERec* result) const;
+        virtual TGSError                    setOrbitData                    (OrbitData const& param);
+        virtual TGSError                    getOrbitData                    (OrbitData* result) const;
+        virtual TGSError                    getID                           (int* result) const;
+        virtual TGSError                    getEpochTime                    (double* result) const;
         virtual TGSError                    getEpochTime                    (ir::IRXTime* result) const;
         virtual TGSError                    setTargetTime                   (ir::IRXTime const& param);
         virtual TGSError                    getTargetTime                   (ir::IRXTime* result) const;
         virtual TGSError                    setObserverPosition             (double latitude, double longitude, double altitude);
         virtual TGSError                    getObserverPosition             (double* latitude, double* longitude, double* altitude) const;
-        virtual TGSError                    getSatellitePosition            (double* latitude, double* longitude, double* altitude) const;
-        virtual TGSError                    getSatelliteDirection           (double* azimuth, double* elevation) const;
-        virtual TGSError                    getSatelliteDistance            (double* distance) const;
-        virtual TGSError                    getSatelliteSpeed               (double* speed) const;
+        virtual TGSError                    getSpacecraftPosition           (double* latitude, double* longitude, double* altitude) const;
+        virtual TGSError                    getSpacecraftDirection          (double* azimuth, double* elevation) const;
+        virtual TGSError                    getSpacecraftDistance           (double* distance) const;
+        virtual TGSError                    getSpacecraftSpeed              (double* speed) const;
         virtual TGSError                    getDopplerRatio                 (double* sender, double* receiver) const;
     private:
-                TGSError                    cacheSatellite                  (void) const;
+                TGSError                    cacheSpacecraft                 (void) const;
                 TGSError                    cacheObserver                   (void) const;
     private:
                                             TGSOrbitTLE                     (TGSOrbitTLE const&);

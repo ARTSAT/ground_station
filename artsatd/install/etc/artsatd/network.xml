@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <network>
-    <ASDTLEClientCelestrak>
+    <ASDHTTPClientCelestrak>
         <url>http://www.celestrak.com/NORAD/elements/tle-new.txt</url>
         <url>http://www.celestrak.com/NORAD/elements/cubesat.txt</url>
         <url>http://www.celestrak.com/NORAD/elements/amateur.txt</url>
-        <interval>180000</interval>
-    </ASDTLEClientCelestrak>
+        <url>http://www.celestrak.com/NORAD/elements/stations.txt</url>
+        <interval>300000</interval>
+    </ASDHTTPClientCelestrak>
+    <ASDHTTPClientGithub>
+        <url>https://raw.githubusercontent.com/ARTSAT/SCD/master/normal.scd</url>
+        <interval>300000</interval>
+    </ASDHTTPClientGithub>
 </network>

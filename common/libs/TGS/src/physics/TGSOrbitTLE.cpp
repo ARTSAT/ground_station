@@ -85,31 +85,42 @@ namespace tgs {
     _orbit = NULL;
 }
 
-/*public virtual */TGSError TGSOrbitTLE::setOrbitData(TLERec const& param)
+/*public virtual */TGSError TGSOrbitTLE::setOrbitData(OrbitData const& param)
 {
     std::string name;
     std::string one;
     std::string two;
     TGSError error(TGSERROR_OK);
     
-    name = param.name;
-    if (Zeptomoby::OrbitTools::cTle::IsValidLine(name, Zeptomoby::OrbitTools::cTle::LINE_ZERO)) {
-        one = param.one;
-        if (Zeptomoby::OrbitTools::cTle::IsValidLine(one, Zeptomoby::OrbitTools::cTle::LINE_ONE)) {
-            two = param.two;
-            if (Zeptomoby::OrbitTools::cTle::IsValidLine(two, Zeptomoby::OrbitTools::cTle::LINE_TWO)) {
-                Zeptomoby::OrbitTools::cTle tle(name, one, two);
-                Zeptomoby::OrbitTools::cOrbit orbit(tle);
-                if (_orbit != NULL) {
-                    *_orbit = orbit;
+    if ((error = super::setOrbitData(param)) == TGSERROR_NO_SUPPORT) {
+        error = TGSERROR_OK;
+        if (param.getType() == OrbitData::TYPE_TLE) {
+            name = static_cast<TLERec const&>(param).name;
+            if (Zeptomoby::OrbitTools::cTle::IsValidLine(name, Zeptomoby::OrbitTools::cTle::LINE_ZERO)) {
+                one = static_cast<TLERec const&>(param).one;
+                if (Zeptomoby::OrbitTools::cTle::IsValidLine(one, Zeptomoby::OrbitTools::cTle::LINE_ONE)) {
+                    two = static_cast<TLERec const&>(param).two;
+                    if (Zeptomoby::OrbitTools::cTle::IsValidLine(two, Zeptomoby::OrbitTools::cTle::LINE_TWO)) {
+                        Zeptomoby::OrbitTools::cTle tle(name, one, two);
+                        Zeptomoby::OrbitTools::cOrbit orbit(tle);
+                        if (_orbit != NULL) {
+                            *_orbit = orbit;
+                        }
+                        else if ((_orbit = new(std::nothrow) Zeptomoby::OrbitTools::cOrbit(orbit)) == NULL) {
+                            error = TGSERROR_NO_MEMORY;
+                        }
+                        if (error == TGSERROR_OK) {
+                            _data = param;
+                            _sflag = false;
+                            _oflag = false;
+                        }
+                    }
+                    else {
+                        error = TGSERROR_INVALID_FORMAT;
+                    }
                 }
-                else if ((_orbit = new(std::nothrow) Zeptomoby::OrbitTools::cOrbit(orbit)) == NULL) {
-                    error = TGSERROR_NO_MEMORY;
-                }
-                if (error == TGSERROR_OK) {
-                    _tle = param;
-                    _sflag = false;
-                    _oflag = false;
+                else {
+                    error = TGSERROR_INVALID_FORMAT;
                 }
             }
             else {
@@ -120,23 +131,65 @@ namespace tgs {
             error = TGSERROR_INVALID_FORMAT;
         }
     }
-    else {
-        error = TGSERROR_INVALID_FORMAT;
+    return error;
+}
+
+/*public virtual */TGSError TGSOrbitTLE::getOrbitData(OrbitData* result) const
+{
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::getOrbitData(result)) == TGSERROR_NO_SUPPORT) {
+        error = TGSERROR_OK;
+        if (_orbit != NULL) {
+            if (result != NULL) {
+                *result = _data;
+            }
+        }
+        else {
+            error = TGSERROR_INVALID_STATE;
+        }
     }
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitTLE::getOrbitData(TLERec* result) const
+/*public virtual */TGSError TGSOrbitTLE::getID(int* result) const
+{
+    int id;
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::getID(result)) == TGSERROR_NO_SUPPORT) {
+        error = TGSERROR_OK;
+        if (_orbit != NULL) {
+            if (sscanf(_orbit->SatId().c_str(), "%5d", &id) == 1) {
+                if (result != NULL) {
+                    *result = id + ID_BASE_TLE;
+                }
+            }
+            else {
+                error = TGSERROR_INVALID_FORMAT;
+            }
+        }
+        else {
+            error = TGSERROR_INVALID_STATE;
+        }
+    }
+    return error;
+}
+
+/*public virtual */TGSError TGSOrbitTLE::getEpochTime(double* result) const
 {
     TGSError error(TGSERROR_OK);
     
-    if (_orbit != NULL) {
-        if (result != NULL) {
-            *result = _tle;
+    if ((error = super::getEpochTime(result)) == TGSERROR_NO_SUPPORT) {
+        error = TGSERROR_OK;
+        if (_orbit != NULL) {
+            if (result != NULL) {
+                *result = _orbit->Epoch().Date();
+            }
         }
-    }
-    else {
-        error = TGSERROR_INVALID_STATE;
+        else {
+            error = TGSERROR_INVALID_STATE;
+        }
     }
     return error;
 }
@@ -145,13 +198,16 @@ namespace tgs {
 {
     TGSError error(TGSERROR_OK);
     
-    if (_orbit != NULL) {
-        if (result != NULL) {
-            result->set(_orbit->Epoch().ToTime());
+    if ((error = super::getEpochTime(result)) == TGSERROR_NO_SUPPORT) {
+        error = TGSERROR_OK;
+        if (_orbit != NULL) {
+            if (result != NULL) {
+                result->set(_orbit->Epoch().ToTime());
+            }
         }
-    }
-    else {
-        error = TGSERROR_INVALID_STATE;
+        else {
+            error = TGSERROR_INVALID_STATE;
+        }
     }
     return error;
 }
@@ -246,13 +302,13 @@ namespace tgs {
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitTLE::getSatellitePosition(double* latitude, double* longitude, double* altitude) const
+/*public virtual */TGSError TGSOrbitTLE::getSpacecraftPosition(double* latitude, double* longitude, double* altitude) const
 {
     double value;
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatellitePosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
-        if ((error = cacheSatellite()) == TGSERROR_OK) {
+    if ((error = super::getSpacecraftPosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheSpacecraft()) == TGSERROR_OK) {
             Zeptomoby::OrbitTools::cGeoTime geo(*_seci);
             if (latitude != NULL) {
                 *latitude = fmod(geo.LatitudeDeg(), 360.0);
@@ -274,12 +330,12 @@ namespace tgs {
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitTLE::getSatelliteDirection(double* azimuth, double* elevation) const
+/*public virtual */TGSError TGSOrbitTLE::getSpacecraftDirection(double* azimuth, double* elevation) const
 {
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatelliteDirection(azimuth, elevation)) == TGSERROR_NO_SUPPORT) {
-        if ((error = cacheSatellite()) == TGSERROR_OK) {
+    if ((error = super::getSpacecraftDirection(azimuth, elevation)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheSpacecraft()) == TGSERROR_OK) {
             if (_site != NULL) {
                 Zeptomoby::OrbitTools::cTopo topo(_site->GetLookAngle(*_seci));
                 if (azimuth != NULL) {
@@ -297,12 +353,12 @@ namespace tgs {
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitTLE::getSatelliteDistance(double* distance) const
+/*public virtual */TGSError TGSOrbitTLE::getSpacecraftDistance(double* distance) const
 {
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatelliteDistance(distance)) == TGSERROR_NO_SUPPORT) {
-        if ((error = cacheSatellite()) == TGSERROR_OK) {
+    if ((error = super::getSpacecraftDistance(distance)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheSpacecraft()) == TGSERROR_OK) {
             if ((error = cacheObserver()) == TGSERROR_OK) {
                 Zeptomoby::OrbitTools::cVector position(_oeci->Position());
                 position.Sub(_seci->Position());
@@ -315,12 +371,12 @@ namespace tgs {
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitTLE::getSatelliteSpeed(double* speed) const
+/*public virtual */TGSError TGSOrbitTLE::getSpacecraftSpeed(double* speed) const
 {
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatelliteSpeed(speed)) == TGSERROR_NO_SUPPORT) {
-        if ((error = cacheSatellite()) == TGSERROR_OK) {
+    if ((error = super::getSpacecraftSpeed(speed)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheSpacecraft()) == TGSERROR_OK) {
             Zeptomoby::OrbitTools::cVector velocity(_seci->Velocity());
             if (speed != NULL) {
                 *speed = velocity.Magnitude();
@@ -336,7 +392,7 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getDopplerRatio(sender, receiver)) == TGSERROR_NO_SUPPORT) {
-        if ((error = cacheSatellite()) == TGSERROR_OK) {
+        if ((error = cacheSpacecraft()) == TGSERROR_OK) {
             if ((error = cacheObserver()) == TGSERROR_OK) {
                 Zeptomoby::OrbitTools::cVector position(_oeci->Position());
                 position.Sub(_seci->Position());
@@ -355,7 +411,7 @@ namespace tgs {
     return error;
 }
 
-/*private */TGSError TGSOrbitTLE::cacheSatellite(void) const
+/*private */TGSError TGSOrbitTLE::cacheSpacecraft(void) const
 {
     TGSError error(TGSERROR_OK);
     
@@ -372,6 +428,9 @@ namespace tgs {
             }
             catch (Zeptomoby::OrbitTools::cDecayException& e) {
                 error = TGSERROR_NO_RESULT;
+            }
+            catch (...) {
+                error = TGSERROR_FAILED;
             }
             if (error == TGSERROR_OK) {
                 _sflag = true;

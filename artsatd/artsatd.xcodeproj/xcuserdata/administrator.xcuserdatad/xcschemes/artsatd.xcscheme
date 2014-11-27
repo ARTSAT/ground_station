@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0510"
+   LastUpgradeVersion = "0610"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C325847B175645E3000EDE42"
+               BlueprintIdentifier = "C306EB181A126F2D00D9A10F"
                BuildableName = "artsatd"
                BlueprintName = "artsatd"
                ReferencedContainer = "container:artsatd.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C325847B175645E3000EDE42"
+            BlueprintIdentifier = "C306EB181A126F2D00D9A10F"
             BuildableName = "artsatd"
             BlueprintName = "artsatd"
             ReferencedContainer = "container:artsatd.xcodeproj">
@@ -52,7 +52,7 @@
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C325847B175645E3000EDE42"
+            BlueprintIdentifier = "C306EB181A126F2D00D9A10F"
             BuildableName = "artsatd"
             BlueprintName = "artsatd"
             ReferencedContainer = "container:artsatd.xcodeproj">
@@ -80,7 +80,7 @@
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C325847B175645E3000EDE42"
+            BlueprintIdentifier = "C306EB181A126F2D00D9A10F"
             BuildableName = "artsatd"
             BlueprintName = "artsatd"
             ReferencedContainer = "container:artsatd.xcodeproj">

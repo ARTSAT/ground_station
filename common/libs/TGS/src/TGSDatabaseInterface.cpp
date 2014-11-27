@@ -111,12 +111,12 @@ namespace tgs {
 
 /*public */TGSError TGSDatabaseInterface::begin(void)
 {
-    return execute("BEGIN EXCLUSIVE;");
+    return execute("BEGIN IMMEDIATE;");
 }
 
-/*public */void TGSDatabaseInterface::end(void)
+/*public */void TGSDatabaseInterface::end(bool commit)
 {
-    execute("END;");
+    execute((commit) ? ("COMMIT;") : ("ROLLBACK;"));
     return;
 }
 

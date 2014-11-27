@@ -56,6 +56,31 @@ namespace tgs {
 {
 }
 
+/*public virtual */TGSError TGSOrbitInterface::setOrbitData(OrbitData const& param)
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
+/*public virtual */TGSError TGSOrbitInterface::getOrbitData(OrbitData* result) const
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
+/*public virtual */TGSError TGSOrbitInterface::getID(int* result) const
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
+/*public virtual */TGSError TGSOrbitInterface::getEpochTime(double* result) const
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
+/*public virtual */TGSError TGSOrbitInterface::getEpochTime(ir::IRXTime* result) const
+{
+    return TGSERROR_NO_SUPPORT;
+}
+
 /*public virtual */TGSError TGSOrbitInterface::setTargetTime(ir::IRXTime const& param)
 {
     return TGSERROR_NO_SUPPORT;
@@ -76,22 +101,22 @@ namespace tgs {
     return TGSERROR_NO_SUPPORT;
 }
 
-/*public virtual */TGSError TGSOrbitInterface::getSatellitePosition(double* latitude, double* longitude, double* altitude) const
+/*public virtual */TGSError TGSOrbitInterface::getSpacecraftPosition(double* latitude, double* longitude, double* altitude) const
 {
     return TGSERROR_NO_SUPPORT;
 }
 
-/*public virtual */TGSError TGSOrbitInterface::getSatelliteDirection(double* azimuth, double* elevation) const
+/*public virtual */TGSError TGSOrbitInterface::getSpacecraftDirection(double* azimuth, double* elevation) const
 {
     return TGSERROR_NO_SUPPORT;
 }
 
-/*public virtual */TGSError TGSOrbitInterface::getSatelliteDistance(double* distance) const
+/*public virtual */TGSError TGSOrbitInterface::getSpacecraftDistance(double* distance) const
 {
     return TGSERROR_NO_SUPPORT;
 }
 
-/*public virtual */TGSError TGSOrbitInterface::getSatelliteSpeed(double* speed) const
+/*public virtual */TGSError TGSOrbitInterface::getSpacecraftSpeed(double* speed) const
 {
     return TGSERROR_NO_SUPPORT;
 }

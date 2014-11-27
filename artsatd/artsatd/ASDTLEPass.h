@@ -79,8 +79,8 @@ public:
     tgs::TGSError getLOSTime(ir::IRXTime* result) const;
     tgs::TGSError getRotationStartTime(ir::IRXTime* result) const;
     tgs::TGSError getMEL(double* result) const;
-    tgs::TGSError getSatellitePosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const;
-    tgs::TGSError getSatelliteDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const;
+    tgs::TGSError getSpacecraftPosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const;
+    tgs::TGSError getSpacecraftDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const;
     tgs::TGSError getRotatorDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const;
     tgs::TGSError getDopplerRatio(const ir::IRXTime& time, double* sender, double* receiver) const;
     

@@ -77,7 +77,7 @@ namespace tgs {
     return error;
 }
 
-/*public */TGSError TGSPhysicsProcessor::registerSatellite(int norad)
+/*public */TGSError TGSPhysicsProcessor::registerSpacecraft(int norad)
 {
     TGSError error(TGSERROR_OK);
     
@@ -89,14 +89,14 @@ namespace tgs {
     return error;
 }
 
-/*public */void TGSPhysicsProcessor::unregisterSatellite(int norad)
+/*public */void TGSPhysicsProcessor::unregisterSpacecraft(int norad)
 {
     if (_database != NULL) {
     }
     return;
 }
 
-/*public */void TGSPhysicsProcessor::clearSatellite(void)
+/*public */void TGSPhysicsProcessor::clearSpacecraft(void)
 {
     if (_database != NULL) {
         _item.clear();
@@ -113,7 +113,7 @@ namespace tgs {
 
 /*public */void TGSPhysicsProcessor::close(void)
 {
-    clearSatellite();
+    clearSpacecraft();
     _database = NULL;
     return;
 }

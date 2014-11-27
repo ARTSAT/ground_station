@@ -66,7 +66,7 @@ class TGSDatabaseInterface {
         virtual TGSError                    open                            (std::string const& file, int timeout = 0);
         virtual void                        close                           (void);
                 TGSError                    begin                           (void);
-                void                        end                             (void);
+                void                        end                             (bool commit);
                 TGSError                    vacuum                          (void);
     protected:
         explicit                            TGSDatabaseInterface            (void);

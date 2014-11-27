@@ -45,13 +45,14 @@
 */
 
 #include "TGSPhysicsDatabase.h"
-#include <map>
-using namespace std;
-#include "cTLE.h"
+#include "TGSOrbitTLE.h"
+#include "TGSOrbitSCD.h"
 
 namespace tgs {
 
-#define TABLE_PHYSICS       ("_physics_")
+#define TABLE_PHYSICS       ("_physics5_")
+#define ORBIT_TLE           ("TLE")
+#define ORBIT_SCD           ("SCD")
 #define TIME_FORMAT         ("%YYYY-%MM-%DD %hh:%mm:%ss")
 
 static  char const*         g_table[][2] = {
@@ -68,9 +69,10 @@ static  char const*         g_table[][2] = {
     {"receiver_frequency",  "INTEGER"},
     {"receiver_drift",      "INTEGER"},
     {"time",                "TEXT NOT NULL CHECK(time like '____-__-__ __:__:__') DEFAULT '0000-00-00 00:00:00'"},
-    {"epoch",               "TEXT NOT NULL CHECK(epoch like '_______.________') DEFAULT '0000000.00000000'"},
-    {"tle_one",             "TEXT"},
-    {"tle_two",             "TEXT"},
+    {"epoch",               "REAL NOT NULL DEFAULT '0.0'"},
+    {"orbit_type",          "TEXT NOT NULL DEFAULT 'NONE'"},
+    {"orbit_data1",         "TEXT"},
+    {"orbit_data2",         "TEXT"},
     {"\"update\"",          "INTEGER NOT NULL DEFAULT 0"}
 };
 static  char const*         g_name[][2] = {
@@ -105,23 +107,25 @@ static  char const*         g_radioReceiver[][2] = {
     {"\"update\"",          "%d"}
 };
 static  char const*         g_setOrbitData[][2] = {
-    {"norad",               "%s"},
+    {"norad",               "%d"},
     {"name",                "%Q"},
-    {"epoch",               "%s"},
-    {"tle_one",             "%Q"},
-    {"tle_two",             "%Q"},
+    {"epoch",               "%lf"},
+    {"orbit_type",          "%Q"},
+    {"orbit_data1",         "%Q"},
+    {"orbit_data2",         "%Q"},
     {"\"update\"",          "%d"}
 };
 static  char const*         g_setOrbitTime[][2] = {
-    {"norad",               "%s"},
+    {"norad",               "%d"},
     {"time",                "%Q"}
 };
 static  char const*         g_getOrbitData[][2] = {
     {"norad",               "%d"},
     {"name",                "%Q"},
-    {"tle_one",             "%Q"},
-    {"tle_two",             "%Q"},
-    {"time",                "%Q"}
+    {"time",                "%Q"},
+    {"orbit_type",          "%Q"},
+    {"orbit_data1",         "%Q"},
+    {"orbit_data2",         "%Q"}
 };
 static  char const*         g_field[][2] = {
     {"norad",               "%d"},
@@ -137,8 +141,9 @@ static  char const*         g_field[][2] = {
     {"receiver_frequency",  "%d"},
     {"receiver_drift",      "%d"},
     {"time",                "%Q"},
-    {"tle_one",             "%Q"},
-    {"tle_two",             "%Q"}
+    {"orbit_type",          "%Q"},
+    {"orbit_data1",         "%Q"},
+    {"orbit_data2",         "%Q"}
 };
 static  char const*         g_hasUpdate[][2] = {
     {"norad",               "%d"},
@@ -204,117 +209,108 @@ static  char const*         g_hasUpdate[][2] = {
     return getRadio(norad, g_radioReceiver, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::setOrbitData(TLERec const& param, ir::IRXTime const& time)
+/*public */TGSError TGSPhysicsDatabase::setOrbitData(OrbitData const& param, ir::IRXTime const& time)
 {
+    TGSOrbitInterface* orbit;
     std::string name;
-    std::string one;
-    std::string two;
-    std::string epoch;
-    std::string norad;
-    ir::IRXTime date;
-    int i;
+    std::string data1;
+    std::string data2;
+    std::string type;
+    int norad;
+    double epoch;
+    std::string condition;
     TGSError error(TGSERROR_OK);
     
     if ((error = checkFlow()) == TGSERROR_OK) {
-        name = param.name;
-        if (Zeptomoby::OrbitTools::cTle::IsValidLine(name, Zeptomoby::OrbitTools::cTle::LINE_ZERO)) {
-            one = param.one;
-            if (Zeptomoby::OrbitTools::cTle::IsValidLine(one, Zeptomoby::OrbitTools::cTle::LINE_ONE)) {
-                two = param.two;
-                if (Zeptomoby::OrbitTools::cTle::IsValidLine(two, Zeptomoby::OrbitTools::cTle::LINE_TWO)) {
-                    Zeptomoby::OrbitTools::cTle tle(name, one, two);
-                    tle.GetField(Zeptomoby::OrbitTools::cTle::FLD_EPOCHYEAR, Zeptomoby::OrbitTools::cTle::U_NATIVE, &epoch);
-                    for (i = 0; i < epoch.size(); ++i) {
-                        if (epoch[i] == ' ') {
-                            epoch[i] = '0';
-                        }
-                    }
-                    if ((error = date.parse("%YY", epoch)) == TGSERROR_OK) {
-                        tle.GetField(Zeptomoby::OrbitTools::cTle::FLD_EPOCHDAY, Zeptomoby::OrbitTools::cTle::U_NATIVE, &epoch);
-                        for (i = 0; i < epoch.size(); ++i) {
-                            if (epoch[i] == ' ') {
-                                epoch[i] = '0';
-                            }
-                        }
-                        epoch = date.format("%YYYY") + epoch;
-                        if ((error = print("%Q", &epoch, epoch.c_str())) == TGSERROR_OK) {
-                            tle.GetField(Zeptomoby::OrbitTools::cTle::FLD_NORADNUM, Zeptomoby::OrbitTools::cTle::U_NATIVE, &norad);
-                            if ((error = update(TABLE_PHYSICS, g_setOrbitData, lengthof(g_setOrbitData), 0, "AND epoch<" + epoch, norad.c_str(), name.c_str(), epoch.c_str(), one.c_str(), two.c_str(), 1)) == TGSERROR_OK) {
-                                error = update(TABLE_PHYSICS, g_setOrbitTime, lengthof(g_setOrbitTime), 0, std::string(""), norad.c_str(), time.format(TIME_FORMAT).c_str());
-                            }
-                        }
+        orbit = NULL;
+        switch (param.getType()) {
+            case OrbitData::TYPE_TLE:
+                if ((orbit = new(std::nothrow) TGSOrbitTLE) != NULL) {
+                    if ((error = convertTLE(param, &name, &data1, &data2)) == TGSERROR_OK) {
+                        type = ORBIT_TLE;
                     }
                 }
                 else {
-                    error = TGSERROR_INVALID_FORMAT;
+                    error = TGSERROR_NO_MEMORY;
+                }
+                break;
+            case OrbitData::TYPE_SCD:
+                if ((orbit = new(std::nothrow) TGSOrbitSCD) != NULL) {
+                    if ((error = convertSCD(param, &name, &data1, &data2)) == TGSERROR_OK) {
+                        type = ORBIT_SCD;
+                    }
+                }
+                else {
+                    error = TGSERROR_NO_MEMORY;
+                }
+                break;
+            default:
+                error = TGSERROR_INVALID_FORMAT;
+                break;
+        }
+        if (error == TGSERROR_OK) {
+            if ((error = orbit->setOrbitData(param)) == TGSERROR_OK) {
+                if ((error = orbit->getID(&norad)) == TGSERROR_OK) {
+                    if ((error = orbit->getEpochTime(&epoch)) == TGSERROR_OK) {
+                        if ((error = print("AND epoch<%lf", &condition, epoch)) == TGSERROR_OK) {
+                            if ((error = update(TABLE_PHYSICS, g_setOrbitData, lengthof(g_setOrbitData), 0, condition, norad, name.c_str(), epoch, type.c_str(), data1.c_str(), data2.c_str(), 1)) == TGSERROR_OK) {
+                                error = update(TABLE_PHYSICS, g_setOrbitTime, lengthof(g_setOrbitTime), 0, std::string(""), norad, time.format(TIME_FORMAT).c_str());
+                            }
+                        }
+                    }
                 }
             }
-            else {
-                error = TGSERROR_INVALID_FORMAT;
-            }
         }
-        else {
-            error = TGSERROR_INVALID_FORMAT;
+        if (orbit != NULL) {
+            delete orbit;
         }
     }
     return error;
 }
 
-/*public */TGSError TGSPhysicsDatabase::getOrbitData(int norad, TLERec* result, ir::IRXTime* time)
+/*public */TGSError TGSPhysicsDatabase::getOrbitData(int norad, OrbitData* result, ir::IRXTime* time)
 {
     std::string string;
     std::string name;
-    std::string one;
-    std::string two;
+    std::string data1;
+    std::string data2;
+    OrbitData orbit;
     ir::IRXTime date;
     TGSError error(TGSERROR_OK);
     
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
-            if ((error = buildQuery("", &g_getOrbitData[1], 3, &string)) == TGSERROR_OK) {
-                if (time != NULL) {
-                    error = buildQuery(string, &g_getOrbitData[4], 1, &string);
-                }
-                if (error == TGSERROR_OK) {
-                    if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], std::string(""), norad)) == TGSERROR_OK) {
-                        if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                            if ((error = readText(0, &name)) == TGSERROR_NO_RESULT) {
-                                error = TGSERROR_OK;
-                                name.clear();
-                            }
-                            if (error == TGSERROR_OK) {
-                                if ((error = readText(1, &one)) == TGSERROR_NO_RESULT) {
-                                    error = TGSERROR_OK;
-                                    one.clear();
-                                }
-                                if (error == TGSERROR_OK) {
-                                    if ((error = readText(2, &two)) == TGSERROR_NO_RESULT) {
-                                        error = TGSERROR_OK;
-                                        two.clear();
-                                    }
-                                    if (error == TGSERROR_OK) {
-                                        if (time != NULL) {
-                                            if ((error = readText(3, &string)) == TGSERROR_NO_RESULT) {
-                                                error = TGSERROR_OK;
-                                                string.clear();
-                                            }
-                                            if (error == TGSERROR_OK) {
-                                                if ((error = date.parse(TIME_FORMAT, string)) == TGSERROR_OK) {
-                                                    *time = date;
+            if ((error = buildQuery("", &g_getOrbitData[1], lengthof(g_getOrbitData) - 1, &string)) == TGSERROR_OK) {
+                if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], std::string(""), norad)) == TGSERROR_OK) {
+                    if ((error = step()) == TGSERROR_WAIT_RESULT) {
+                        if ((error = readText(0, true, &name)) == TGSERROR_OK) {
+                            if ((error = readText(1, false, &string)) == TGSERROR_OK) {
+                                if ((error = date.parse(TIME_FORMAT, string)) == TGSERROR_OK) {
+                                    if ((error = readText(2, false, &string)) == TGSERROR_OK) {
+                                        if ((error = readText(3, true, &data1)) == TGSERROR_OK) {
+                                            if ((error = readText(4, true, &data2)) == TGSERROR_OK) {
+                                                if (string == ORBIT_TLE) {
+                                                    error = convertTLE(name, data1, data2, &orbit);
+                                                }
+                                                else if (string == ORBIT_SCD) {
+                                                    error = convertSCD(name, data1, data2, &orbit);
+                                                }
+                                                if (error == TGSERROR_OK) {
+                                                    *result = orbit;
+                                                    if (time != NULL) {
+                                                        *time = date;
+                                                    }
                                                 }
                                             }
                                         }
-                                        if (error == TGSERROR_OK) {
-                                            error = convert(name, one, two, result);
-                                        }
                                     }
                                 }
                             }
-                            while (step() == TGSERROR_WAIT_RESULT);
                         }
-                        else if (error == TGSERROR_OK) {
-                            error = TGSERROR_NO_RESULT;
-                        }
+                        while (step() == TGSERROR_WAIT_RESULT);
+                    }
+                    else if (error == TGSERROR_OK) {
+                        error = TGSERROR_NO_RESULT;
                     }
                 }
             }
@@ -339,7 +335,7 @@ static  char const*         g_hasUpdate[][2] = {
     
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
-            if ((error = buildQuery("", &g_field[0], 15, &string)) == TGSERROR_OK) {
+            if ((error = buildQuery("", &g_field[0], lengthof(g_field), &string)) == TGSERROR_OK) {
                 if ((error = select(TABLE_PHYSICS, string, &g_field[0], std::string(""), norad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
                         if ((error = readField(0, &field)) == TGSERROR_OK) {
@@ -370,7 +366,7 @@ static  char const*         g_hasUpdate[][2] = {
     
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
-            if ((error = buildQuery("", &g_field[0], 15, &string)) == TGSERROR_OK) {
+            if ((error = buildQuery("", &g_field[0], lengthof(g_field), &string)) == TGSERROR_OK) {
                 if ((error = buildOrder("", &g_field[0], true, limit, offset, &condition)) == TGSERROR_OK) {
                     if ((error = select(TABLE_PHYSICS, string, NULL, condition)) == TGSERROR_OK) {
                         while ((error = step()) == TGSERROR_WAIT_RESULT) {
@@ -419,22 +415,16 @@ static  char const*         g_hasUpdate[][2] = {
 /*public */bool TGSPhysicsDatabase::hasUpdate(int norad)
 {
     int value;
-    TGSError error;
     bool result(false);
     
     if (select(TABLE_PHYSICS, g_hasUpdate[1][0], &g_hasUpdate[0], std::string(""), norad) == TGSERROR_OK) {
         if (step() == TGSERROR_WAIT_RESULT) {
-            if ((error = readInteger(0, &value)) == TGSERROR_OK) {
+            if (readInteger(0, false, &value) == TGSERROR_OK) {
                 result = !!value;
             }
-            else if (error == TGSERROR_NO_RESULT) {
-                error = TGSERROR_OK;
-            }
             while (step() == TGSERROR_WAIT_RESULT);
-            if (error == TGSERROR_OK) {
-                if (result) {
-                    update(TABLE_PHYSICS, g_hasUpdate, lengthof(g_hasUpdate), 0, std::string(""), norad, 0);
-                }
+            if (result) {
+                update(TABLE_PHYSICS, g_hasUpdate, lengthof(g_hasUpdate), 0, std::string(""), norad, 0);
             }
         }
     }
@@ -467,14 +457,14 @@ static  char const*         g_hasUpdate[][2] = {
 
 /*private */TGSError TGSPhysicsDatabase::getText(int norad, char const* format[2][2], std::string* result)
 {
+    std::string text;
     TGSError error(TGSERROR_OK);
     
     if (result != NULL) {
         if ((error = select(TABLE_PHYSICS, format[1][0], &format[0], std::string(""), norad)) == TGSERROR_OK) {
             if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                if ((error = readText(0, result)) == TGSERROR_NO_RESULT) {
-                    error = TGSERROR_OK;
-                    result->clear();
+                if ((error = readText(0, true, &text)) == TGSERROR_OK) {
+                    *result = text;
                 }
                 while (step() == TGSERROR_WAIT_RESULT);
             }
@@ -505,21 +495,11 @@ static  char const*         g_hasUpdate[][2] = {
             if ((error = buildQuery("", &format[1], 3, &string)) == TGSERROR_OK) {
                 if ((error = select(TABLE_PHYSICS, string, &format[0], std::string(""), norad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
-                        if ((error = readText(0, &radio.mode)) == TGSERROR_NO_RESULT) {
-                            error = TGSERROR_OK;
-                            radio.mode.clear();
-                        }
-                        if (error == TGSERROR_OK) {
-                            if ((error = readInteger(1, &radio.frequency)) == TGSERROR_NO_RESULT) {
-                                error = TGSERROR_OK;
-                                radio.frequency = -1;
-                            }
-                            if (error == TGSERROR_OK) {
-                                if ((error = readInteger(2, &radio.drift)) == TGSERROR_NO_RESULT) {
-                                    error = TGSERROR_OK;
-                                    radio.drift = INT_MIN;
-                                }
-                                if (error == TGSERROR_OK) {
+                        if ((error = readText(0, true, &radio.mode)) == TGSERROR_OK) {
+                            radio.frequency = -1;
+                            if ((error = readInteger(1, true, &radio.frequency)) == TGSERROR_OK) {
+                                radio.drift = INT_MIN;
+                                if ((error = readInteger(2, true, &radio.drift)) == TGSERROR_OK) {
                                     *result = radio;
                                 }
                             }
@@ -549,7 +529,7 @@ static  char const*         g_hasUpdate[][2] = {
     
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
-            if ((error = buildQuery("", &g_field[0], 15, &string)) == TGSERROR_OK) {
+            if ((error = buildQuery("", &g_field[0], lengthof(g_field), &string)) == TGSERROR_OK) {
                 if ((error = buildOrder("", &g_field[0], true, -1, -1, &condition)) == TGSERROR_OK) {
                     if ((error = select(TABLE_PHYSICS, string, &g_field[index], condition, key.c_str())) == TGSERROR_OK) {
                         while ((error = step()) == TGSERROR_WAIT_RESULT) {
@@ -587,11 +567,7 @@ static  char const*         g_hasUpdate[][2] = {
             if ((error = buildOrder("", &g_field[0], true, -1, -1, &condition)) == TGSERROR_OK) {
                 if ((error = select(TABLE_PHYSICS, g_field[0][0], &g_field[index], condition, key.c_str())) == TGSERROR_OK) {
                     while ((error = step()) == TGSERROR_WAIT_RESULT) {
-                        if ((error = readInteger(0, &norad)) == TGSERROR_NO_RESULT) {
-                            error = TGSERROR_OK;
-                            norad = -1;
-                        }
-                        if (error == TGSERROR_OK) {
+                        if ((error = readInteger(0, false, &norad)) == TGSERROR_OK) {
                             vector.push_back(norad);
                         }
                         else {
@@ -612,90 +588,47 @@ static  char const*         g_hasUpdate[][2] = {
     return error;
 }
 
-/*private */TGSError TGSPhysicsDatabase::readField(int column, FieldRec* result)
+/*private */TGSError TGSPhysicsDatabase::readField(int column, FieldRec* result) const
 {
+    FieldRec field;
     std::string string;
-    std::string one;
-    std::string two;
+    std::string data1;
+    std::string data2;
     TGSError error(TGSERROR_OK);
     
-    if ((error = readInteger(column, &result->norad)) == TGSERROR_NO_RESULT) {
-        error = TGSERROR_OK;
-        result->norad = -1;
-    }
-    if (error == TGSERROR_OK) {
-        if ((error = readText(++column, &result->name)) == TGSERROR_NO_RESULT) {
-            error = TGSERROR_OK;
-            result->name.clear();
-        }
-        if (error == TGSERROR_OK) {
-            if ((error = readText(++column, &result->callsign)) == TGSERROR_NO_RESULT) {
-                error = TGSERROR_OK;
-                result->callsign.clear();
-            }
-            if (error == TGSERROR_OK) {
-                if ((error = readText(++column, &result->beacon.mode)) == TGSERROR_NO_RESULT) {
-                    error = TGSERROR_OK;
-                    result->beacon.mode.clear();
-                }
-                if (error == TGSERROR_OK) {
-                    if ((error = readInteger(++column, &result->beacon.frequency)) == TGSERROR_NO_RESULT) {
-                        error = TGSERROR_OK;
-                        result->beacon.frequency = -1;
-                    }
-                    if (error == TGSERROR_OK) {
-                        if ((error = readInteger(++column, &result->beacon.drift)) == TGSERROR_NO_RESULT) {
-                            error = TGSERROR_OK;
-                            result->beacon.drift = INT_MIN;
-                        }
-                        if (error == TGSERROR_OK) {
-                            if ((error = readText(++column, &result->sender.mode)) == TGSERROR_NO_RESULT) {
-                                error = TGSERROR_OK;
-                                result->sender.mode.clear();
-                            }
-                            if (error == TGSERROR_OK) {
-                                if ((error = readInteger(++column, &result->sender.frequency)) == TGSERROR_NO_RESULT) {
-                                    error = TGSERROR_OK;
-                                    result->sender.frequency = -1;
-                                }
-                                if (error == TGSERROR_OK) {
-                                    if ((error = readInteger(++column, &result->sender.drift)) == TGSERROR_NO_RESULT) {
-                                        error = TGSERROR_OK;
-                                        result->sender.drift = INT_MIN;
-                                    }
-                                    if (error == TGSERROR_OK) {
-                                        if ((error = readText(++column, &result->receiver.mode)) == TGSERROR_NO_RESULT) {
-                                            error = TGSERROR_OK;
-                                            result->receiver.mode.clear();
-                                        }
-                                        if (error == TGSERROR_OK) {
-                                            if ((error = readInteger(++column, &result->receiver.frequency)) == TGSERROR_NO_RESULT) {
-                                                error = TGSERROR_OK;
-                                                result->receiver.frequency = -1;
-                                            }
-                                            if (error == TGSERROR_OK) {
-                                                if ((error = readInteger(++column, &result->receiver.drift)) == TGSERROR_NO_RESULT) {
-                                                    error = TGSERROR_OK;
-                                                    result->receiver.drift = INT_MIN;
-                                                }
-                                                if (error == TGSERROR_OK) {
-                                                    if ((error = readText(++column, &string)) == TGSERROR_NO_RESULT) {
-                                                        error = TGSERROR_OK;
-                                                        string.clear();
-                                                    }
-                                                    if (error == TGSERROR_OK) {
-                                                        if ((error = result->time.parse(TIME_FORMAT, string)) == TGSERROR_OK) {
-                                                            if ((error = readText(++column, &one)) == TGSERROR_NO_RESULT) {
-                                                                error = TGSERROR_OK;
-                                                                one.clear();
-                                                            }
-                                                            if (error == TGSERROR_OK) {
-                                                                if ((error = readText(++column, &two)) == TGSERROR_NO_RESULT) {
-                                                                    error = TGSERROR_OK;
-                                                                    two.clear();
-                                                                }
-                                                                if (error == TGSERROR_OK) {
-                                                                    error = convert(result->name, one, two, &result->tle);
+    if ((error = readInteger(column, false, &field.norad)) == TGSERROR_OK) {
+        if ((error = readText(++column, true, &field.name)) == TGSERROR_OK) {
+            if ((error = readText(++column, true, &field.callsign)) == TGSERROR_OK) {
+                if ((error = readText(++column, true, &field.beacon.mode)) == TGSERROR_OK) {
+                    field.beacon.frequency = -1;
+                    if ((error = readInteger(++column, true, &field.beacon.frequency)) == TGSERROR_OK) {
+                        field.beacon.drift = INT_MIN;
+                        if ((error = readInteger(++column, true, &field.beacon.drift)) == TGSERROR_OK) {
+                            if ((error = readText(++column, true, &field.sender.mode)) == TGSERROR_OK) {
+                                field.sender.frequency = -1;
+                                if ((error = readInteger(++column, true, &field.sender.frequency)) == TGSERROR_OK) {
+                                    field.sender.drift = INT_MIN;
+                                    if ((error = readInteger(++column, true, &field.sender.drift)) == TGSERROR_OK) {
+                                        if ((error = readText(++column, true, &field.receiver.mode)) == TGSERROR_OK) {
+                                            field.receiver.frequency = -1;
+                                            if ((error = readInteger(++column, true, &field.receiver.frequency)) == TGSERROR_OK) {
+                                                field.receiver.drift = INT_MIN;
+                                                if ((error = readInteger(++column, true, &field.receiver.drift)) == TGSERROR_OK) {
+                                                    if ((error = readText(++column, false, &string)) == TGSERROR_OK) {
+                                                        if ((error = field.time.parse(TIME_FORMAT, string)) == TGSERROR_OK) {
+                                                            if ((error = readText(++column, false, &string)) == TGSERROR_OK) {
+                                                                if ((error = readText(++column, true, &data1)) == TGSERROR_OK) {
+                                                                    if ((error = readText(++column, true, &data2)) == TGSERROR_OK) {
+                                                                        if (string == ORBIT_TLE) {
+                                                                            error = convertTLE(field.name, data1, data2, &field.orbit);
+                                                                        }
+                                                                        else if (string == ORBIT_SCD) {
+                                                                            error = convertSCD(field.name, data1, data2, &field.orbit);
+                                                                        }
+                                                                        if (error == TGSERROR_OK) {
+                                                                            *result = field;
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -711,6 +644,26 @@ static  char const*         g_hasUpdate[][2] = {
                 }
             }
         }
+    }
+    return error;
+}
+
+/*private */TGSError TGSPhysicsDatabase::readInteger(int column, bool implicit, int* result) const
+{
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::readInteger(column, result)) == TGSERROR_NO_RESULT) {
+        error = (implicit) ? (TGSERROR_OK) : (TGSERROR_INVALID_FORMAT);
+    }
+    return error;
+}
+
+/*private */TGSError TGSPhysicsDatabase::readText(int column, bool implicit, std::string* result) const
+{
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::readText(column, result)) == TGSERROR_NO_RESULT) {
+        error = (implicit) ? (TGSERROR_OK) : (TGSERROR_INVALID_FORMAT);
     }
     return error;
 }

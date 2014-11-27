@@ -48,7 +48,6 @@
 #define __TGS_PHYSICSPROCESSOR_H
 
 #include "TGSType.h"
-#include <vector>
 #include <map>
 #include "TGSPhysicsDatabase.h"
 #include "TGSOrbitInterface.h"
@@ -80,9 +79,9 @@ class TGSPhysicsProcessor {
                                             ~TGSPhysicsProcessor            (void);
                 TGSError                    setObserverPosition             (double latitude, double longitude, double altitude);
                 TGSError                    getObserverPosition             (double* latitude, double* longitude, double* altitude) const;
-                TGSError                    registerSatellite               (int norad);
-                void                        unregisterSatellite             (int norad);
-                void                        clearSatellite                  (void);
+                TGSError                    registerSpacecraft              (int norad);
+                void                        unregisterSpacecraft            (int norad);
+                void                        clearSpacecraft                 (void);
                 TGSError                    open                            (TGSPhysicsDatabase const& database);
                 void                        close                           (void);
     private:

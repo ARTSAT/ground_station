@@ -54,7 +54,7 @@
 #include "TGSTransceiverCIV.h"
 #include "ASDDeviceTransceiver.h"
 #include "ASDDeviceTNC.h"
-#include "ASDTLEClientInterface.h"
+#include "ASDHTTPClientInterface.h"
 #include "ASDServerDatabase.h"
 #include "ASDServerOperation.h"
 #include "ASDServerRPC.h"
@@ -112,6 +112,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
             int                                 intervalTransceiver;
             int                                 intervalTNC;
             int                                 intervalLog;
+            int                                 waitBoot;
+            int                                 waitLoop;
         };
         struct SessionRec {
             std::map<std::string, ir::IRXTime>  id;
@@ -184,8 +186,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 tgs::TGSTransceiverCIV          _civ;
                 ASDDeviceTransceiver            _transceiver;
                 ASDDeviceTNC                    _tnc;
-                std::vector<boost::shared_ptr<ASDTLEClientInterface> >
-                                                _clientTle;
+                std::vector<boost::shared_ptr<ASDHTTPClientInterface> >
+                                                _clientHTTP;
                 ASDNetworkServer                _serverDatabase;
                 ASDNetworkServer                _serverOperation;
                 ASDNetworkServer                _serverRPC;
@@ -232,13 +234,13 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                                                 getPlugin                   (int norad) const;
                 void                            getObserverCallsign         (std::string* callsign) const;
                 void                            getObserverPosition         (double* latitude, double* longitude, double* altitude) const;
-                void                            getSatellitePosition        (double* latitude, double* longitude, double* altitude) const;
-                void                            getSatelliteDirection       (double* azimuth, double* elevation) const;
-                void                            getSatelliteFrequency       (double* beacon, double* sender, double* receiver) const;
-                void                            getSatelliteDopplerShift    (double* sender, double* receiver) const;
+                void                            getSpacecraftPosition       (double* latitude, double* longitude, double* altitude) const;
+                void                            getSpacecraftDirection      (double* azimuth, double* elevation) const;
+                void                            getSpacecraftFrequency      (double* beacon, double* sender, double* receiver) const;
+                void                            getSpacecraftDopplerShift   (double* sender, double* receiver) const;
                 //<<<
-                void                            getSatelliteAOSLOS          (ir::IRXTime* aos, ir::IRXTime* los) const;
-                void                            getSatelliteMEL             (double* mel) const;
+                void                            getSpacecraftAOSLOS         (ir::IRXTime* aos, ir::IRXTime* los) const;
+                void                            getSpacecraftMEL            (double* mel) const;
                 void                            getRotatorStart             (ir::IRXTime* start) const;
                 //>>>
                 tgs::TGSError                   getError                    (void) const;

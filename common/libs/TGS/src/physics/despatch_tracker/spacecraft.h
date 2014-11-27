@@ -34,8 +34,8 @@ class SpacecraftCalculator {
 		
 		void setSpacecraftOrbitInfo (double epochMjd, const double (&posEci)[3], const double (&velEci)[3]);
 		void getSpacecraftOrbitInfo (double* epochMjd, double* posEci, double* velEci) const;
-		void setSpacecraftParams (double ballisticCoeff, double txFrequency);
-		void getSpacecraftParams (double* ballisticCoeff, double* txFrequency) const;
+		void setSpacecraftParams (double ballisticCoeff);
+		void getSpacecraftParams (double* ballisticCoeff) const;
 		
 		void setObserverGeoCoord (double latitude, double longitude, double altitude);
 		void getObserverGeoCoord (double* latitude, double* longitude, double* altitude) const;
@@ -48,13 +48,19 @@ class SpacecraftCalculator {
 		void getEpochTime (double* epochMjd) const;
 		void getSecondsFromEpoch (double* secondsFromEpoch) const;
 		
-		void getGeometryEarthCentered (double *declination, double* rightAscension, double decError = 0.0, double raError = 0.0) const;
-		void getDopplerFreqEarthCentered (double *dopplerFrequency, double error = 0.0) const;
+		void getGeometryEarthCentered (double* declination, double* rightAscension, double decError = 0.0, double raError = 0.0) const;
+		void getDopplerRatioEarthCentered (double* downlink, double* uplink) const;
 		void getDistanceEarthCentered (double* distance, double error = 0.0) const;
 		void getSpacecraftRelativeSpeed (double* speed) const;
 		void getSpacecraftGeoCoord (double* latitude, double* longitude, double* altitude) const;
 		void getSpacecraftDirection (double* elevation, double* azimuth, double eleError = 0.0, double aziError = 0.0) const;
-		void getDopplerFrequency (double* dopplerFrequency, double error = 0.0) const;
+		void getDopplerRatio (double* downlink, double* uplink) const;
+        
+        void getSpacecraftPosEci (double* scPosEci) const;
+		void getSpacecraftVelEci (double* scVelEci) const;
+        
+        void getEarthPosSci (double* earthPosSci) const;
+        void getEarthVelSci (double* earthVelSci) const;
 		
 		void resetSpacecraftState (void);
 		double integrateSpacecraftState (double dt, double srpErrorRatio = 0.0);
@@ -66,7 +72,7 @@ class SpacecraftCalculator {
 		double epochMjd_;
 		double secondsFromEpoch_;
 		double initialPosEci_[3], initialVelEci_[3];
-		double ballisticCoeff_, txFrequency_;
+		double ballisticCoeff_;
 		double observerGeoCoord_[3];
 		Planet earth_;
 		VectorXd spacecraftState_;
@@ -84,7 +90,7 @@ class SpacecraftCalculator {
 		void calcSpacecraftPosEcef (Vector3d* scPosEcef) const;
 		void calcSpacecraftRelativePosEnu (Vector3d* scPosEnu) const;
 		void calcGeometry (double* lat, double* lon, Vector3d const& relativePos, double latError, double lonError) const;
-		void calcDopplerFrequency (double* dopplerFrequency, Vector3d const& relativePos, Vector3d const& relativeVel, double error) const;
+		void calcDopplerRatio (double* downlink, double* uplink,  Vector3d const& relativePos, Vector3d const& relativeVel) const;
 };
 
 

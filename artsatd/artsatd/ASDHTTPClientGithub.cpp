@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDTLEClientInterface.cpp
+**      ASDHTTPClientGithub.cpp
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,112 +44,47 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#include "ASDTLEClientInterface.h"
-#include "artsatd.h"
+#include "ASDHTTPClientGithub.h"
 
-/*protected */ASDTLEClientInterface::ASDTLEClientInterface(void)
+/*public */ASDHTTPClientGithub::ASDHTTPClientGithub(void)
 {
 }
 
-/*public virtual */ASDTLEClientInterface::~ASDTLEClientInterface(void)
+/*public virtual */ASDHTTPClientGithub::~ASDHTTPClientGithub(void)
 {
     close();
 }
 
-/*public */tgs::TGSError ASDTLEClientInterface::open(std::string const& file, std::vector<std::string> const& url, int interval)
+/*protected virtual */tgs::TGSError ASDHTTPClientGithub::parse(std::string const& content, tgs::TGSPhysicsDatabase* database)
 {
+    ir::IRXTime time;
+    std::string trim;
+    std::vector<std::string> line;
+    tgs::OrbitData orbit;
+    int i;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
-    close();
-    if (interval > 0) {
-        if ((error = _database.open(file)) == tgs::TGSERROR_OK) {
-            _url = url;
-            _interval = interval;
-            update();
-            try {
-                _thread = boost::thread(boost::bind(&ASDTLEClientInterface::thread, this));
+    if ((error = super::parse(content, database)) == tgs::TGSERROR_NO_SUPPORT) {
+        error = tgs::TGSERROR_OK;
+        time = ir::IRXTime::currentUTCTime();
+        trim = boost::trim_copy(content);
+        boost::split(line, trim, boost::is_any_of("\n"));
+        if (line.size() % 3 == 0) {
+            for (i = 0; i < line.size(); ++i) {
+                boost::trim(line[i]);
             }
-            catch (std::exception& e) {
-                artsatd::getInstance().log(LOG_EMERG, "thread start error [%s]", e.what());
-                error = tgs::TGSERROR_FAILED;
-            }
-        }
-        if (error != tgs::TGSERROR_OK) {
-            close();
-        }
-    }
-    else {
-        error = tgs::TGSERROR_INVALID_PARAM;
-    }
-    return error;
-}
-
-/*public */void ASDTLEClientInterface::close(void)
-{
-    _thread.interrupt();
-    try {
-        _thread.join();
-    }
-    catch (...) {
-    }
-    _database.close();
-    return;
-}
-
-/*protected virtual */tgs::TGSError ASDTLEClientInterface::parse(std::string const& content, tgs::TGSPhysicsDatabase* database)
-{
-    return tgs::TGSERROR_NO_SUPPORT;
-}
-
-/*private */void ASDTLEClientInterface::thread(void)
-{
-    while (!boost::this_thread::interruption_requested()) {
-        try {
-            boost::this_thread::sleep(boost::posix_time::milliseconds(_interval));
-        }
-        catch (std::exception& e) {
-            artsatd::getInstance().log(LOG_EMERG, "thread sleep error [%s]", e.what());
-            break;
-        }
-        update();
-    }
-    return;
-}
-
-/*private */void ASDTLEClientInterface::update(void)
-{
-    std::vector<std::string>::const_iterator it;
-    boost::network::http::client client(boost::network::http::client::options().follow_redirects(true).cache_resolved(true));
-    boost::network::http::client::request request;
-    boost::network::http::client::response response;
-    int code;
-    tgs::TGSError error;
-    
-    for (it = _url.begin(); it != _url.end(); ++it) {
-        if (!it->empty()) {
-            try {
-                request.uri(*it);
-                response = client.get(request);
-                code = status(response);
-                switch (code) {
-                    case 200:
-                        if ((error = _database.begin()) == tgs::TGSERROR_OK) {
-                            error = parse(body(response), &_database);
-                            _database.end();
-                        }
-                        if (error != tgs::TGSERROR_OK) {
-                            artsatd::getInstance().log(LOG_ERR, "tle client parse error [%s] %s", error.print().c_str(), it->c_str());
-                        }
-                        break;
-                    default:
-                        artsatd::getInstance().log(LOG_ERR, "tle client status error [%d] %s", code, it->c_str());
-                        break;
+            for (i = 0; i < line.size(); i += 3) {
+                if ((error = tgs::convertSCD(line[i + 0], line[i + 1], line[i + 2], &orbit)) == tgs::TGSERROR_OK) {
+                    error = database->setOrbitData(orbit, time);
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    break;
                 }
             }
-            catch (std::exception& e) {
-                artsatd::getInstance().log(LOG_ERR, "tle client connection error [%s] %s", e.what(), it->c_str());
-            }
+        }
+        else {
+            error = tgs::TGSERROR_INVALID_FORMAT;
         }
     }
-    return;
+    return error;
 }

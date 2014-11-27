@@ -200,7 +200,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   [norad <int>: NORAD number] *1
-                 *   [query <std::string>: NORAD number or satellite's name] *1
+                 *   [query <std::string>: NORAD number or spacecraft's name] *1
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -298,71 +298,71 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                 tgs::TGSError                   getObserverFrequency        (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getSatellitePosition
+                 *   observer.getSpacecraftPosition
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   latitude <double>: satellite's latitude
-                 *   longitude <double>: satellite's longitude
-                 *   altitude <double>: satellite's altitude
+                 *   latitude <double>: spacecraft's latitude
+                 *   longitude <double>: spacecraft's longitude
+                 *   altitude <double>: spacecraft's altitude
                  */
-                tgs::TGSError                   getSatellitePosition        (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getSpacecraftPosition       (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getSatelliteDirection
+                 *   observer.getSpacecraftDirection
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   azimuth <double>: satellite's azimuth
-                 *   elevation <double>: satellite's elevation
+                 *   azimuth <double>: spacecraft's azimuth
+                 *   elevation <double>: spacecraft's elevation
                  */
-                tgs::TGSError                   getSatelliteDirection       (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getSpacecraftDirection      (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getSatelliteFrequency
+                 *   observer.getSpacecraftFrequency
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   beacon <double>: satellite's beacon frequency
-                 *   sender <double>: satellite's sender frequency
-                 *   receiver <double>: satellite's receiver frequency
+                 *   beacon <double>: spacecraft's beacon frequency
+                 *   sender <double>: spacecraft's sender frequency
+                 *   receiver <double>: spacecraft's receiver frequency
                  */
-                tgs::TGSError                   getSatelliteFrequency       (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getSpacecraftFrequency      (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getSatelliteDopplerShift
+                 *   observer.getSpacecraftDopplerShift
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   sender <double>: satellite's sender doppler shift ratio
-                 *   receiver <double>: satellite's receiver doppler shift ratio
+                 *   sender <double>: spacecraft's sender doppler shift ratio
+                 *   receiver <double>: spacecraft's receiver doppler shift ratio
                  */
-                tgs::TGSError                   getSatelliteDopplerShift    (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getSpacecraftDopplerShift   (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getSatelliteAOSLOS
+                 *   observer.getSpacecraftAOSLOS
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   aos <std::string "YYYY/MM/DD hh:mm:ss UTC">: satellite's next AOS time
-                 *   los <std::string "YYYY/MM/DD hh:mm:ss UTC">: satellite's next LOS time
+                 *   aos <std::string "YYYY/MM/DD hh:mm:ss UTC">: spacecraft's next AOS time
+                 *   los <std::string "YYYY/MM/DD hh:mm:ss UTC">: spacecraft's next LOS time
                  */
-                tgs::TGSError                   getSatelliteAOSLOS          (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getSpacecraftAOSLOS         (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getSatelliteMEL
+                 *   observer.getSpacecraftMEL
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   mel <double>: satellite's next MEL
+                 *   mel <double>: spacecraft's next MEL
                  */
-                tgs::TGSError                   getSatelliteMEL             (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getSpacecraftMEL            (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
                  *   observer.getRotatorStart
@@ -524,7 +524,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   norad <int>: NORAD number
-                 *   name <std::string>: satellite's name
+                 *   name <std::string>: spacecraft's name
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -537,7 +537,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
-                 *   name <std::string>: satellite's name
+                 *   name <std::string>: spacecraft's name
                  */
                 tgs::TGSError                   getName                     (std::string const& host, Param const& param, Param* result) const;
                 /*
@@ -546,7 +546,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   norad <int>: NORAD number
-                 *   callsign <std::string>: satellite's callsign
+                 *   callsign <std::string>: spacecraft's callsign
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -559,7 +559,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
-                 *   callsign <std::string>: satellite's callsign
+                 *   callsign <std::string>: spacecraft's callsign
                  */
                 tgs::TGSError                   getCallsign                 (std::string const& host, Param const& param, Param* result) const;
                 /*

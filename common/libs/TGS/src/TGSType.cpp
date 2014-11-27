@@ -48,16 +48,18 @@
 
 namespace tgs {
 
-TGSError convert(std::string const& name, std::string const& one, std::string const& two, TLERec* result)
+TGSError convertTLE(std::string const& name, std::string const& one, std::string const& two, OrbitData* orbit)
 {
+    TLERec tle;
     TGSError error(TGSERROR_OK);
     
-    if (result != NULL) {
-        if (name.size() <= asciiesof(result->name) && one.size() <= asciiesof(result->one) && two.size() <= asciiesof(result->two)) {
-            memset(result, 0, sizeof(*result));
-            name.copy(result->name, asciiesof(result->name));
-            one.copy(result->one, asciiesof(result->one));
-            two.copy(result->two, asciiesof(result->two));
+    if (orbit != NULL) {
+        if (name.size() <= asciiesof(tle.name) && one.size() <= asciiesof(tle.one) && two.size() <= asciiesof(tle.two)) {
+            memset(&tle, 0, sizeof(tle));
+            name.copy(tle.name, asciiesof(tle.name));
+            one.copy(tle.one, asciiesof(tle.one));
+            two.copy(tle.two, asciiesof(tle.two));
+            *orbit = tle;
         }
         else {
             error = TGSERROR_INVALID_FORMAT;
@@ -65,6 +67,71 @@ TGSError convert(std::string const& name, std::string const& one, std::string co
     }
     else {
         error = TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+TGSError convertTLE(OrbitData const& orbit, std::string* name, std::string* one, std::string* two)
+{
+    TGSError error(TGSERROR_OK);
+    
+    if (orbit.getType() == OrbitData::TYPE_TLE) {
+        if (name != NULL) {
+            *name = static_cast<TLERec const&>(orbit).name;
+        }
+        if (one != NULL) {
+            *one = static_cast<TLERec const&>(orbit).one;
+        }
+        if (two != NULL) {
+            *two = static_cast<TLERec const&>(orbit).two;
+        }
+    }
+    else {
+        error = TGSERROR_INVALID_FORMAT;
+    }
+    return error;
+}
+
+TGSError convertSCD(std::string const& name, std::string const& info, std::string const& param, OrbitData* orbit)
+{
+    SCDRec scd;
+    TGSError error(TGSERROR_OK);
+    
+    if (orbit != NULL) {
+        if (name.size() <= asciiesof(scd.name)) {
+            memset(scd.name, 0, sizeof(scd.name));
+            name.copy(scd.name, asciiesof(scd.name));
+            scd.info = info;
+            scd.param = param;
+            *orbit = scd;
+        }
+        else {
+            error = TGSERROR_INVALID_FORMAT;
+        }
+    }
+    else {
+        error = TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+TGSError convertSCD(OrbitData const& orbit, std::string* name, std::string* info, std::string* param)
+{
+    TGSError error(TGSERROR_OK);
+    
+    if (orbit.getType() == OrbitData::TYPE_SCD) {
+        if (name != NULL) {
+            *name = static_cast<SCDRec const&>(orbit).name;
+        }
+        if (info != NULL) {
+            *info = static_cast<SCDRec const&>(orbit).info;
+        }
+        if (param != NULL) {
+            *param = static_cast<SCDRec const&>(orbit).param;
+        }
+    }
+    else {
+        error = TGSERROR_INVALID_FORMAT;
     }
     return error;
 }

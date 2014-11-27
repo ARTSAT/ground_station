@@ -11,5 +11,9 @@
 	</array>
 	<key>KeepAlive</key>
 	<true/>
+	<key>StandardOutPath</key>
+	<string>/var/log/artsatd/stdout.log</string>
+	<key>StandardErrorPath</key>
+	<string>/var/log/artsatd/stderr.log</string>
 </dict>
 </plist>

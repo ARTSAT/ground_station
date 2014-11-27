@@ -95,7 +95,8 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
         static  std::string                     stringizeFrequency          (double param, bool secret);
         static  std::string                     stringizeDrift              (int param);
         static  std::string                     stringizeDopplerShift       (double param);
-        static  std::string                     stringizeTLE                (tgs::TLERec const& param);
+        static  std::string                     stringizeOrbitType          (tgs::OrbitData const& param);
+        static  std::string                     stringizeOrbitData          (tgs::OrbitData const& param);
         static  std::string                     stringizeTime               (ir::IRXTime const& param);
         static  std::string                     stringizeTimeDiff           (ir::IRXTimeDiff const& param);
         static  std::string                     stringizeSession            (std::string const& param);

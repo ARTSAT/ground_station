@@ -22,17 +22,39 @@ SpacecraftTracker:: SpacecraftTracker (SCDRec const& scd) : SpacecraftCalculator
 	setSpacecraftInfo (scd);
 }
 
+SpacecraftTracker:: SpacecraftTracker (SerializedSCDRec const& scd) : SpacecraftCalculator (), unixtime_ (0.0)
+{
+    setSpacecraftInfo (scd);
+}
+
 SpacecraftTracker:: ~SpacecraftTracker (void)
 {
 	
 }
 
-void SpacecraftTracker:: setSpacecraftInfo (SCDRec const& scd)
+int SpacecraftTracker:: setSpacecraftInfo (SCDRec const& scd)
 {
 	scd_ = scd;
 	
 	setSpacecraftOrbitInfo (scd_.orbitInfo.epochMjd, scd_.orbitInfo.positionEci, scd_.orbitInfo.velocityEci);
-	setSpacecraftParams (scd_.param.ballisticCoeff, scd_.param.transmitterFrequency);
+	setSpacecraftParams (scd_.param.ballisticCoeff);
+    
+    return 0;
+}
+
+int SpacecraftTracker:: setSpacecraftInfo (SerializedSCDRec const& scd)
+{
+    SCDRec temp;
+    if (!convert (scd, &temp)) {
+        cout << "[ERROR] Specified SCD is invalid." << endl;
+        return 1;
+    }
+    
+    scd_ = temp;
+    setSpacecraftOrbitInfo (scd_.orbitInfo.epochMjd, scd_.orbitInfo.positionEci, scd_.orbitInfo.velocityEci);
+	setSpacecraftParams (scd_.param.ballisticCoeff);
+    
+    return 0;
 }
 
 void SpacecraftTracker:: getSpacecraftInfo (SCDRec *scd) const
@@ -76,27 +98,28 @@ void SpacecraftTracker:: test (double unixtime_s, double unixtime_e, double outp
 	scd.orbitInfo.velocityEci[1] =  6764.471;
 	scd.orbitInfo.velocityEci[2] = -4193.746;
 	scd.param.ballisticCoeff = 150.0;
-	scd.param.transmitterFrequency = 437.325e6f;
 	setSpacecraftInfo (scd);
 	
 	// variables
-	double declination, ra, doppler, distance, speed;
+	double declination, ra, doppler_down, doppler_up, distance, speed;
 	
 	double utime = unixtime_s;
 	
+    const double Frequency = 437.325e6f;
+    
 	cout << "unixtime, x, y, z, u, v, w, declination, RA, doppler, distance, speed" << endl;
 	do {
 		setTargetTime (utime);
 		
 		getGeometryEarthCentered (&declination, &ra);
-		getDopplerFreqEarthCentered (&doppler);
+		getDopplerRatioEarthCentered (&doppler_down, &doppler_up);
 		getDistanceEarthCentered (&distance);
 		getSpacecraftRelativeSpeed (&speed);
 		
 		cout << setprecision (10);
 		cout << utime << ",";
 		cout << declination << "," << ra << ",";
-		cout << doppler << ",";
+		cout << (doppler_down - 1.0) * Frequency << ",";
 		cout << distance << ",";
 		cout << speed;
 		cout << endl;
@@ -110,19 +133,35 @@ void SpacecraftTracker:: updateSpacecraftState (void)
 {
 	double period;
 	calcIntegrationPeriod (&period);
-	
-	const double Dt = 60.0;
-	
-	double dt;
-	if (period > 0) {dt = Dt;}	// integrate forward
-	else {dt = -Dt;}			// integrate backward
+    
+    double sgn = 1.0;
+    if (period < 0.0) {
+        sgn = -1.0;
+    }
+    
+    double distance;
+    const double RangeNearEarth = 100000000.0;
+    
+    double dt;
+    const double DtNearEarth = 1.0;
+    const double DtFarFromEarth = 60.0;
 	
 	double t = 0.0;
-	while (1) {
+	
+    while (1) {
+        
+		getDistanceEarthCentered (&distance);
+        if (distance < RangeNearEarth) {
+            dt = sgn * DtNearEarth;   // dt should be small enough when the spacecraft is near Earth for the accuracy
+        }
+        else {
+            dt  = sgn * DtFarFromEarth;
+        }
+    
 		if (abs (t + dt) > abs (period)) {
 			break;
 		}
-		
+        
 		integrateSpacecraftState (dt);
 		t += dt;
 	};
@@ -146,4 +185,112 @@ void SpacecraftTracker:: calcIntegrationPeriod (double* period) const
 	}
 	
 	*period = tFinal - secondsFromEpoch;	// period of the numerical integration
+}
+
+bool SpacecraftTracker:: convert(SerializedSCDRec const& in, SCDRec* out)
+{
+    SpacecraftTracker::SCDRec temp;
+    std::string parse;
+    size_t index;
+    int i;
+    bool result(false);
+    
+    if (out != NULL) {
+        strncpy(temp.scId, in.name, sizeof(temp.scId));
+        parse = in.info;
+        if ((index = parse.find(' ')) > 0) {
+            parse.copy(temp.orbitInfo.id, (index < sizeof(temp.orbitInfo.id)) ? (index) : (sizeof(temp.orbitInfo.id)));
+            parse.erase(0, index + 1);
+            if ((index = parse.find(' ')) > 0) {
+                if (toDouble(parse.c_str(), ' ', &temp.orbitInfo.epochMjd)) {
+                    parse.erase(0, index + 1);
+                    for (i = 0; i < 3; ++i) {
+                        if ((index = parse.find(' ')) > 0) {
+                            if (toDouble(parse.c_str(), ' ', &temp.orbitInfo.positionEci[i])) {
+                                parse.erase(0, index + 1);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    if (i >= 3) {
+                        for (i = 0; i < 2; ++i) {
+                            if ((index = parse.find(' ')) > 0) {
+                                if (toDouble(parse.c_str(), ' ', &temp.orbitInfo.velocityEci[i])) {
+                                    parse.erase(0, index + 1);
+                                }
+                                else {
+                                    break;
+                                }
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                        if (i >= 2) {
+                            if (parse.find(' ') == std::string::npos) {
+                                if (toDouble(parse.c_str(), '\0', &temp.orbitInfo.velocityEci[i])) {
+                                    parse = in.param;
+                                    if (parse.find(' ') == std::string::npos) {
+                                        if (toDouble(parse.c_str(), '\0', &temp.param.ballisticCoeff)) {
+                                            *out = temp;
+                                            result = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
+bool SpacecraftTracker:: convert(SCDRec const& in, SerializedSCDRec* out)
+{
+    SerializedSCDRec temp;
+    char buffer[256];
+    int size;
+    bool result(false);
+    
+    if (out != NULL) {
+        strncpy(temp.name, in.scId, sizeof(temp.name));
+        size = snprintf(buffer, sizeof(buffer), "%.64s %.8f %.8f %.8f %.8f %.8f %.8f %.8f",
+                        in.orbitInfo.id,
+                        in.orbitInfo.epochMjd,
+                        in.orbitInfo.positionEci[0], in.orbitInfo.positionEci[1], in.orbitInfo.positionEci[2],
+                        in.orbitInfo.velocityEci[0], in.orbitInfo.velocityEci[1], in.orbitInfo.velocityEci[2]);
+        if (0 < size && size < sizeof(buffer)) {
+            temp.info = buffer;
+            size = snprintf(buffer, sizeof(buffer), "%.8f", in.param.ballisticCoeff);
+            if (0 < size && size < sizeof(buffer)) {
+                temp.param = buffer;
+                *out = temp;
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+bool SpacecraftTracker:: toDouble(char const* start, char end, double* value)
+{
+    double temp;
+    char* error;
+    bool result(false);
+    
+    temp = strtod(start, &error);
+    if (*error == end) {
+        if (!(temp == HUGE_VAL || (temp == 0 && errno == ERANGE))) {
+            *value = temp;
+            result = true;
+        }
+    }
+    return result;
 }

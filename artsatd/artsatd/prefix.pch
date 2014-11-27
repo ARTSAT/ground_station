@@ -50,14 +50,15 @@
 #ifdef __cplusplus
 #include <boost/random.hpp>
 #include <boost/thread.hpp>
+#include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/xpressive/xpressive_dynamic.hpp>
+#include "rapidjson.h"
+#define BOOST_NETWORK_ENABLE_HTTPS
 #include <boost/network/protocol/http/client.hpp>
 #include <boost/network/protocol/http/server.hpp>
-#include <boost/variant.hpp>
-#include "rapidjson.h"
 #endif
 
 #endif

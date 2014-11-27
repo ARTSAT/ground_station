@@ -49,9 +49,10 @@
 #include "TGSRotatorGS232B.h"
 #include "TGSTransceiverIC9100.h"
 #include "TGSTNCTNC555.h"
-#include "ASDTLEClientCelestrak.h"
+#include "ASDHTTPClientCelestrak.h"
+#include "ASDHTTPClientGithub.h"
 
-#define VERSION_STRING                          ("4.4.6")
+#define VERSION_STRING                          ("5.0.0 beta1")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -83,8 +84,9 @@
 #define DEFAULT_INTERVAL_TRANSCEIVER            (1)
 #define DEFAULT_INTERVAL_TNC                    (1)
 #define DEFAULT_INTERVAL_LOG                    (10)
+#define DEFAULT_WAIT_BOOT                       (10000)
+#define DEFAULT_WAIT_LOOP                       (250)
 #define LOG_SEPARATOR                           ("================================================================")
-#define LOOP_INTERVAL                           (250000)
 //<<<
 #define ROTATOR_MIN_AZIMUTH                     (0.0)
 #define ROTATOR_MAX_AZIMUTH                     (450.0)
@@ -232,7 +234,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if (query.empty()) {
         error = setNORAD(session, -1);
     }
-    else if (query.size() <= 5 && boost::all(query, boost::is_digit())) {
+    else if (boost::all(query, boost::is_digit())) {
         error = setNORAD(session, boost::lexical_cast<int>(query));
     }
     else if ((error = database.open(DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
@@ -379,7 +381,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*public */void artsatd::getSatellitePosition(double* latitude, double* longitude, double* altitude) const
+/*public */void artsatd::getSpacecraftPosition(double* latitude, double* longitude, double* altitude) const
 {
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (latitude != NULL) {
@@ -394,7 +396,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*public */void artsatd::getSatelliteDirection(double* azimuth, double* elevation) const
+/*public */void artsatd::getSpacecraftDirection(double* azimuth, double* elevation) const
 {
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (azimuth != NULL) {
@@ -406,7 +408,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*public */void artsatd::getSatelliteFrequency(double* beacon, double* sender, double* receiver) const
+/*public */void artsatd::getSpacecraftFrequency(double* beacon, double* sender, double* receiver) const
 {
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (beacon != NULL) {
@@ -421,7 +423,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*public */void artsatd::getSatelliteDopplerShift(double* sender, double* receiver) const
+/*public */void artsatd::getSpacecraftDopplerShift(double* sender, double* receiver) const
 {
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (sender != NULL) {
@@ -433,7 +435,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*public */void artsatd::getSatelliteAOSLOS(ir::IRXTime* aos, ir::IRXTime* los) const
+/*public */void artsatd::getSpacecraftAOSLOS(ir::IRXTime* aos, ir::IRXTime* los) const
 {
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
     if (aos != NULL) {
@@ -445,7 +447,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return;
 }
 
-/*public */void artsatd::getSatelliteMEL(double* mel) const
+/*public */void artsatd::getSpacecraftMEL(double* mel) const
 {
     if (mel != NULL) {
         boost::shared_lock<boost::shared_mutex> rlock(_mutex_monitor);
@@ -755,6 +757,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 log(LOG_NOTICE, LOG_SEPARATOR);
                 if ((error = openPlugin()) == tgs::TGSERROR_OK) {
                     log(LOG_NOTICE, LOG_SEPARATOR);
+                    usleep(_config.waitBoot * 1000);
                     if ((error = openDevice()) == tgs::TGSERROR_OK) {
                         log(LOG_NOTICE, LOG_SEPARATOR);
                         //<<<
@@ -877,8 +880,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 if (_state.field.receiver.drift == INT_MIN) {
                     _state.field.receiver.drift = 0;
                 }
-                if ((monitor.error = _state.orbit.setOrbitData(_state.field.tle)) == tgs::TGSERROR_OK) {
-                    if ((monitor.error = _passFactory.setOrbitData(_state.field.tle)) == tgs::TGSERROR_OK) {
+                if ((monitor.error = _state.orbit.setOrbitData(_state.field.orbit)) == tgs::TGSERROR_OK) {
+                    if ((monitor.error = _passFactory.setOrbitData(_state.field.orbit)) == tgs::TGSERROR_OK) {
                         resetRotator();
                         resetTransceiver();
                         resetTNC();
@@ -933,8 +936,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         sender = NAN;
         receiver = NAN;
         if ((monitor.error = _state.orbit.setTargetTime(current.time + ir::IRXTimeDiff(_config.algorithmLookahead))) == tgs::TGSERROR_OK) {
-            if ((monitor.error = _state.orbit.getSatellitePosition(&monitor.latitude, &monitor.longitude, &monitor.altitude)) == tgs::TGSERROR_OK) {
-                if ((monitor.error = _state.orbit.getSatelliteDirection(&monitor.azimuth, &monitor.elevation)) == tgs::TGSERROR_OK) {
+            if ((monitor.error = _state.orbit.getSpacecraftPosition(&monitor.latitude, &monitor.longitude, &monitor.altitude)) == tgs::TGSERROR_OK) {
+                if ((monitor.error = _state.orbit.getSpacecraftDirection(&monitor.azimuth, &monitor.elevation)) == tgs::TGSERROR_OK) {
                     if ((monitor.error = _state.orbit.getDopplerRatio(&monitor.dopplerSender, &monitor.dopplerReceiver)) == tgs::TGSERROR_OK) {
                         if (_state.field.beacon.frequency >= 0) {
                             monitor.beacon = (_state.field.beacon.frequency + _state.field.beacon.drift) * monitor.dopplerReceiver;
@@ -1030,7 +1033,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     }
     setCurrent(current);
     setMonitor(monitor);
-    usleep(LOOP_INTERVAL);
+    usleep(_config.waitLoop * 1000);
     return;
 }
 
@@ -1137,6 +1140,8 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     _config.intervalTransceiver = DEFAULT_INTERVAL_TRANSCEIVER;
     _config.intervalTNC = DEFAULT_INTERVAL_TNC;
     _config.intervalLog = DEFAULT_INTERVAL_LOG;
+    _config.waitBoot = DEFAULT_WAIT_BOOT;
+    _config.waitLoop = DEFAULT_WAIT_LOOP;
     switch (xml.LoadFile(XML_CONFIG)) {
         case tinyxml2::XML_NO_ERROR:
             if ((root = xml.FirstChildElement("config")) != NULL) {
@@ -1187,6 +1192,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     xmlReadInteger(type, "tnc", &_config.intervalTNC);
                     xmlReadInteger(type, "log", &_config.intervalLog);
                 }
+                if ((type = root->FirstChildElement("wait")) != NULL) {
+                    xmlReadInteger(type, "boot", &_config.waitBoot);
+                    xmlReadInteger(type, "loop", &_config.waitLoop);
+                }
             }
             break;
         case tinyxml2::XML_ERROR_FILE_NOT_FOUND:
@@ -1203,22 +1212,24 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     log(LOG_NOTICE, " CONFIG: Server RPC Port         [%s]", _config.serverRPCPort.c_str());
     log(LOG_NOTICE, " CONFIG: Server RPC Listen       [%d]", _config.serverRPCListen);
     log(LOG_NOTICE, " CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
-    log(LOG_NOTICE, " CONFIG: Session Timeout         [%d]", _config.sessionTimeout);
+    log(LOG_NOTICE, " CONFIG: Session Timeout         [%d sec]", _config.sessionTimeout);
     log(LOG_NOTICE, " CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
     log(LOG_NOTICE, " CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
-    log(LOG_NOTICE, " CONFIG: Observer Latitude       [%lf]", _config.observerLatitude);
-    log(LOG_NOTICE, " CONFIG: Observer Longitude      [%lf]", _config.observerLongitude);
-    log(LOG_NOTICE, " CONFIG: Observer Altitude       [%lf]", _config.observerAltitude);
-    log(LOG_NOTICE, " CONFIG: CW Test Azimuth         [%d]", _config.cwTestAzimuth);
-    log(LOG_NOTICE, " CONFIG: CW Test Elevation       [%d]", _config.cwTestElevation);
-    log(LOG_NOTICE, " CONFIG: FM Test Azimuth         [%d]", _config.fmTestAzimuth);
-    log(LOG_NOTICE, " CONFIG: FM Test Elevation       [%d]", _config.fmTestElevation);
-    log(LOG_NOTICE, " CONFIG: Algorithm Lookahead     [%d]", _config.algorithmLookahead);
-    log(LOG_NOTICE, " CONFIG: Interval Session        [%d]", _config.intervalSession);
-    log(LOG_NOTICE, " CONFIG: Interval Rotator        [%d]", _config.intervalRotator);
-    log(LOG_NOTICE, " CONFIG: Interval Transceiver    [%d]", _config.intervalTransceiver);
-    log(LOG_NOTICE, " CONFIG: Interval TNC            [%d]", _config.intervalTNC);
-    log(LOG_NOTICE, " CONFIG: Interval Log            [%d]", _config.intervalLog);
+    log(LOG_NOTICE, " CONFIG: Observer Latitude       [%lf deg]", _config.observerLatitude);
+    log(LOG_NOTICE, " CONFIG: Observer Longitude      [%lf deg]", _config.observerLongitude);
+    log(LOG_NOTICE, " CONFIG: Observer Altitude       [%lf km]", _config.observerAltitude);
+    log(LOG_NOTICE, " CONFIG: CW Test Azimuth         [%d deg]", _config.cwTestAzimuth);
+    log(LOG_NOTICE, " CONFIG: CW Test Elevation       [%d deg]", _config.cwTestElevation);
+    log(LOG_NOTICE, " CONFIG: FM Test Azimuth         [%d deg]", _config.fmTestAzimuth);
+    log(LOG_NOTICE, " CONFIG: FM Test Elevation       [%d deg]", _config.fmTestElevation);
+    log(LOG_NOTICE, " CONFIG: Algorithm Lookahead     [%d sec]", _config.algorithmLookahead);
+    log(LOG_NOTICE, " CONFIG: Interval Session        [%d sec]", _config.intervalSession);
+    log(LOG_NOTICE, " CONFIG: Interval Rotator        [%d sec]", _config.intervalRotator);
+    log(LOG_NOTICE, " CONFIG: Interval Transceiver    [%d sec]", _config.intervalTransceiver);
+    log(LOG_NOTICE, " CONFIG: Interval TNC            [%d sec]", _config.intervalTNC);
+    log(LOG_NOTICE, " CONFIG: Interval Log            [%d sec]", _config.intervalLog);
+    log(LOG_NOTICE, " CONFIG: Wait Boot               [%d msec]", _config.waitBoot);
+    log(LOG_NOTICE, " CONFIG: Wait Loop               [%d msec]", _config.waitLoop);
     if (error != tgs::TGSERROR_OK) {
         closeConfig();
     }
@@ -1356,7 +1367,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     tinyxml2::XMLElement const* type;
     tinyxml2::XMLElement const* element;
     std::string name;
-    boost::shared_ptr<ASDTLEClientInterface> client;
+    boost::shared_ptr<ASDHTTPClientInterface> client;
     std::vector<std::string> url;
     int interval;
     tgs::TGSError error(tgs::TGSERROR_OK);
@@ -1367,8 +1378,11 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             if ((root = xml.FirstChildElement("network")) != NULL) {
                 for (type = root->FirstChildElement(); type != NULL; type = type->NextSiblingElement()) {
                     name = type->Name();
-                    if (name == "ASDTLEClientCelestrak") {
-                        client.reset(new(std::nothrow) ASDTLEClientCelestrak);
+                    if (name == "ASDHTTPClientCelestrak") {
+                        client.reset(new(std::nothrow) ASDHTTPClientCelestrak);
+                    }
+                    else if (name == "ASDHTTPClientGithub") {
+                        client.reset(new(std::nothrow) ASDHTTPClientGithub);
                     }
                     else {
                         name.clear();
@@ -1384,9 +1398,9 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                                         log(LOG_NOTICE, "NETWORK: URL                     [%s]", url.back().c_str());
                                     }
                                 }
-                                log(LOG_NOTICE, "NETWORK: Interval                [%d]", interval);
+                                log(LOG_NOTICE, "NETWORK: Interval                [%d msec]", interval);
                                 if ((error = client->open(DATABASE_PHYSICS, url, interval)) == tgs::TGSERROR_OK) {
-                                    _clientTle.push_back(client);
+                                    _clientHTTP.push_back(client);
                                 }
                             }
                         }
@@ -1458,7 +1472,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     _serverDatabase.close();
     _replierRPC.close();
     _replierOperation.close();
-    _clientTle.clear();
+    _clientHTTP.clear();
     return;
 }
 

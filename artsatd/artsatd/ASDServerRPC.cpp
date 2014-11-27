@@ -110,12 +110,12 @@ static  MethodTableRec const                    g_method[] = {
     {"observer.getObserverPosition",        &ASDServerRPC::getObserverPosition},
     {"observer.getObserverDirection",       &ASDServerRPC::getObserverDirection},
     {"observer.getObserverFrequency",       &ASDServerRPC::getObserverFrequency},
-    {"observer.getSatellitePosition",       &ASDServerRPC::getSatellitePosition},
-    {"observer.getSatelliteDirection",      &ASDServerRPC::getSatelliteDirection},
-    {"observer.getSatelliteFrequency",      &ASDServerRPC::getSatelliteFrequency},
-    {"observer.getSatelliteDopplerShift",   &ASDServerRPC::getSatelliteDopplerShift},
-    {"observer.getSatelliteAOSLOS",         &ASDServerRPC::getSatelliteAOSLOS},
-    {"observer.getSatelliteMEL",            &ASDServerRPC::getSatelliteMEL},
+    {"observer.getSpacecraftPosition",      &ASDServerRPC::getSpacecraftPosition},
+    {"observer.getSpacecraftDirection",     &ASDServerRPC::getSpacecraftDirection},
+    {"observer.getSpacecraftFrequency",     &ASDServerRPC::getSpacecraftFrequency},
+    {"observer.getSpacecraftDopplerShift",  &ASDServerRPC::getSpacecraftDopplerShift},
+    {"observer.getSpacecraftAOSLOS",        &ASDServerRPC::getSpacecraftAOSLOS},
+    {"observer.getSpacecraftMEL",           &ASDServerRPC::getSpacecraftMEL},
     {"observer.getRotatorStart",            &ASDServerRPC::getRotatorStart},
     {"observer.getError",                   &ASDServerRPC::getError},
     {"observer.isValidRotator",             &ASDServerRPC::isValidRotator},
@@ -724,7 +724,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatellitePosition(std::string const& host, Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftPosition(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double latitude;
@@ -733,7 +733,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSatellitePosition(&latitude, &longitude, &altitude);
+        artsatd::getInstance().getSpacecraftPosition(&latitude, &longitude, &altitude);
         setResult(latitude, "latitude", result);
         setResult(longitude, "longitude", result);
         setResult(altitude, "altitude", result);
@@ -741,7 +741,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteDirection(std::string const& host, Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftDirection(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double azimuth;
@@ -749,14 +749,14 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSatelliteDirection(&azimuth, &elevation);
+        artsatd::getInstance().getSpacecraftDirection(&azimuth, &elevation);
         setResult(azimuth, "azimuth", result);
         setResult(elevation, "elevation", result);
     }
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteFrequency(std::string const& host, Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftFrequency(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double beacon;
@@ -765,7 +765,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSatelliteFrequency(&beacon, &sender, &receiver);
+        artsatd::getInstance().getSpacecraftFrequency(&beacon, &sender, &receiver);
         setResult(beacon, "beacon", result);
         setResult(sender, "sender", result);
         setResult(receiver, "receiver", result);
@@ -773,7 +773,7 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteDopplerShift(std::string const& host, Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftDopplerShift(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double sender;
@@ -781,14 +781,14 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSatelliteDopplerShift(&sender, &receiver);
+        artsatd::getInstance().getSpacecraftDopplerShift(&sender, &receiver);
         setResult(sender, "sender", result);
         setResult(receiver, "receiver", result);
     }
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteAOSLOS(std::string const& host, Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftAOSLOS(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     ir::IRXTime aos;
@@ -796,21 +796,21 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSatelliteAOSLOS(&aos, &los);
+        artsatd::getInstance().getSpacecraftAOSLOS(&aos, &los);
         setResult((aos - ir::IRXTimeDiff::localTimeOffset()).format("%YYYY/%MM/%DD %hh:%mm:%ss UTC"), "aos", result);
         setResult((los - ir::IRXTimeDiff::localTimeOffset()).format("%YYYY/%MM/%DD %hh:%mm:%ss UTC"), "los", result);
     }
     return error;
 }
 
-/*public */tgs::TGSError ASDServerRPC::getSatelliteMEL(std::string const& host, Param const& param, Param* result) const
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftMEL(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
     double mel;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        artsatd::getInstance().getSatelliteMEL(&mel);
+        artsatd::getInstance().getSpacecraftMEL(&mel);
         setResult(mel, "mel", result);
     }
     return error;

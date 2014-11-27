@@ -51,6 +51,7 @@ namespace tgs {
 
 /*public */TGSOrbitSCD::TGSOrbitSCD(void) : _tracker(NULL)
 {
+    _valid = false;
 }
 
 /*public virtual */TGSOrbitSCD::~TGSOrbitSCD(void)
@@ -61,24 +62,105 @@ namespace tgs {
     _tracker = NULL;
 }
 
-/*public virtual */TGSError TGSOrbitSCD::setOrbitData(SCDRec const& param)
+/*public virtual */TGSError TGSOrbitSCD::setOrbitData(OrbitData const& param)
 {
+    SpacecraftTracker::SerializedSCDRec scd;
     TGSError error(TGSERROR_OK);
     
+    if ((error = super::setOrbitData(param)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (param.getType() == OrbitData::TYPE_SCD) {
+                strncpy(scd.name, static_cast<SCDRec const&>(param).name, sizeof(scd.name));
+                scd.info = static_cast<SCDRec const&>(param).info;
+                scd.param = static_cast<SCDRec const&>(param).param;
+                if (_tracker->setSpacecraftInfo(scd) == 0) {
+                    _data = param;
+                    _valid = true;
+                }
+                else {
+                    error = TGSERROR_FAILED;
+                }
+            }
+            else {
+                error = TGSERROR_INVALID_FORMAT;
+            }
+        }
+    }
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitSCD::getOrbitData(SCDRec* result) const
+/*public virtual */TGSError TGSOrbitSCD::getOrbitData(OrbitData* result) const
 {
     TGSError error(TGSERROR_OK);
     
+    if ((error = super::getOrbitData(result)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (_valid) {
+                if (result != NULL) {
+                    *result = _data;
+                }
+            }
+            else {
+                error = TGSERROR_INVALID_STATE;
+            }
+        }
+    }
+    return error;
+}
+
+/*public virtual */TGSError TGSOrbitSCD::getID(int* result) const
+{
+    SpacecraftTracker::SCDRec scd;
+    int id;
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::getID(result)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            _tracker->getSpacecraftInfo(&scd);
+            if (sscanf(scd.orbitInfo.id, "SCD%5d", &id) == 1) {
+                if (result != NULL) {
+                    *result = id + ID_BASE_SCD;
+                }
+            }
+            else {
+                error = TGSERROR_INVALID_FORMAT;
+            }
+        }
+    }
+    return error;
+}
+
+/*public virtual */TGSError TGSOrbitSCD::getEpochTime(double* result) const
+{
+    double value;
+    TGSError error(TGSERROR_OK);
+    
+    if ((error = super::getEpochTime(result)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (result != NULL) {
+                _tracker->getEpochTime(&value);
+                tf::convertMjdToJd(&value, value);
+                *result = value;
+            }
+        }
+    }
     return error;
 }
 
 /*public virtual */TGSError TGSOrbitSCD::getEpochTime(ir::IRXTime* result) const
 {
+    double value;
     TGSError error(TGSERROR_OK);
     
+    if ((error = super::getEpochTime(result)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (result != NULL) {
+                _tracker->getEpochTime(&value);
+                tf::convertMjdToUnixtime(&value, value);
+                result->set(value);
+            }
+        }
+    }
     return error;
 }
 
@@ -87,17 +169,27 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = super::setTargetTime(param)) == TGSERROR_NO_SUPPORT) {
-        error = TGSERROR_OK;
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (_tracker->setTargetTime(param.asTime_t()) != 0) {
+                error = TGSERROR_FAILED;
+            }
+        }
     }
     return error;
 }
 
 /*public virtual */TGSError TGSOrbitSCD::getTargetTime(ir::IRXTime* result) const
 {
+    double value;
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getTargetTime(result)) == TGSERROR_NO_SUPPORT) {
-        error = TGSERROR_OK;
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (result != NULL) {
+                _tracker->getTargetTime(&value);
+                result->set(value);
+            }
+        }
     }
     return error;
 }
@@ -107,62 +199,148 @@ namespace tgs {
     TGSError error(TGSERROR_OK);
     
     if ((error = super::setObserverPosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
-        error = TGSERROR_OK;
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            _tracker->setObserverGeoCoord(degToRad(fmod(latitude, 360.0)), degToRad(fmod(longitude, 360.0)), altitude * 1000.0);
+        }
     }
     return error;
 }
 
 /*public virtual */TGSError TGSOrbitSCD::getObserverPosition(double* latitude, double* longitude, double* altitude) const
 {
+    double value[3];
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getObserverPosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
-        error = TGSERROR_OK;
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            _tracker->getObserverGeoCoord(&value[0], &value[1], &value[2]);
+            if (latitude != NULL) {
+                *latitude = fmod(radToDeg(value[0]), 360.0);
+            }
+            if (longitude != NULL) {
+                if ((value[1] = fmod(radToDeg(value[1]), 360.0)) < -180.0) {
+                    value[1] += 360.0;
+                }
+                else if (value[1] >= 180.0) {
+                    value[1] -= 360.0;
+                }
+                *longitude = value[1];
+            }
+            if (altitude != NULL) {
+                *altitude = value[2] / 1000.0;
+            }
+        }
     }
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitSCD::getSatellitePosition(double* latitude, double* longitude, double* altitude) const
+/*public virtual */TGSError TGSOrbitSCD::getSpacecraftPosition(double* latitude, double* longitude, double* altitude) const
 {
+    double value[3];
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatellitePosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
+    if ((error = super::getSpacecraftPosition(latitude, longitude, altitude)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            _tracker->getSpacecraftGeoCoord(&value[0], &value[1], &value[2]);
+            if (latitude != NULL) {
+                *latitude = fmod(radToDeg(value[0]), 360.0);
+            }
+            if (longitude != NULL) {
+                if ((value[1] = fmod(radToDeg(value[1]), 360.0)) < -180.0) {
+                    value[1] += 360.0;
+                }
+                else if (value[1] >= 180.0) {
+                    value[1] -= 360.0;
+                }
+                *longitude = value[1];
+            }
+            if (altitude != NULL) {
+                *altitude = value[2] / 1000.0;
+            }
+        }
     }
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitSCD::getSatelliteDirection(double* azimuth, double* elevation) const
+/*public virtual */TGSError TGSOrbitSCD::getSpacecraftDirection(double* azimuth, double* elevation) const
 {
+    double value[2];
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatelliteDirection(azimuth, elevation)) == TGSERROR_NO_SUPPORT) {
+    if ((error = super::getSpacecraftDirection(azimuth, elevation)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            _tracker->getSpacecraftDirection(&value[0], &value[1]);
+            if (azimuth != NULL) {
+                *azimuth = radToDeg(value[1]);
+            }
+            if (elevation != NULL) {
+                *elevation = radToDeg(value[0]);
+            }
+        }
     }
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitSCD::getSatelliteDistance(double* distance) const
+/*public virtual */TGSError TGSOrbitSCD::getSpacecraftDistance(double* distance) const
 {
+    double value;
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatelliteDistance(distance)) == TGSERROR_NO_SUPPORT) {
+    if ((error = super::getSpacecraftDistance(distance)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (distance != NULL) {
+                // TODO: need to change to observer centered value
+                _tracker->getDistanceEarthCentered(&value);
+                *distance = value / 1000.0;
+            }
+        }
     }
     return error;
 }
 
-/*public virtual */TGSError TGSOrbitSCD::getSatelliteSpeed(double* speed) const
+/*public virtual */TGSError TGSOrbitSCD::getSpacecraftSpeed(double* speed) const
 {
+    Vector3d value[2];
     TGSError error(TGSERROR_OK);
     
-    if ((error = super::getSatelliteSpeed(speed)) == TGSERROR_NO_SUPPORT) {
+    if ((error = super::getSpacecraftSpeed(speed)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            if (speed != NULL) {
+                _tracker->getSpacecraftState(&value[0], &value[1]);
+                *speed = value[1].norm() / 1000.0;
+            }
+        }
     }
     return error;
 }
 
 /*public virtual */TGSError TGSOrbitSCD::getDopplerRatio(double* sender, double* receiver) const
 {
+    double value[2];
     TGSError error(TGSERROR_OK);
     
     if ((error = super::getDopplerRatio(sender, receiver)) == TGSERROR_NO_SUPPORT) {
+        if ((error = cacheTracker()) == TGSERROR_OK) {
+            _tracker->getDopplerRatio(&value[0], &value[1]);
+            if (sender != NULL) {
+                *sender = value[1];
+            }
+            if (receiver != NULL) {
+                *receiver = value[0];
+            }
+        }
+    }
+    return error;
+}
+
+/*private */TGSError TGSOrbitSCD::cacheTracker(void) const
+{
+    TGSError error(TGSERROR_OK);
+    
+    if (_tracker == NULL) {
+        if ((_tracker = new(std::nothrow) SpacecraftTracker) == NULL) {
+            error = TGSERROR_NO_MEMORY;
+        }
     }
     return error;
 }

@@ -49,6 +49,7 @@
 
 #include "TGSType.h"
 #include "TGSOrbitInterface.h"
+#include <math.h>
 
 class SpacecraftTracker;
 
@@ -60,27 +61,45 @@ class TGSOrbitSCD : public TGSOrbitInterface {
         typedef TGSOrbitInterface           super;
     
     private:
-                SpacecraftTracker*          _tracker;
+        mutable SpacecraftTracker*          _tracker;
+                OrbitData                   _data;
+                bool                        _valid;
     
     public:
         explicit                            TGSOrbitSCD                     (void);
         virtual                             ~TGSOrbitSCD                    (void);
-        virtual TGSError                    setOrbitData                    (SCDRec const& param);
-        virtual TGSError                    getOrbitData                    (SCDRec* result) const;
+        virtual TGSError                    setOrbitData                    (OrbitData const& param);
+        virtual TGSError                    getOrbitData                    (OrbitData* result) const;
+        virtual TGSError                    getID                           (int* result) const;
+        virtual TGSError                    getEpochTime                    (double* result) const;
         virtual TGSError                    getEpochTime                    (ir::IRXTime* result) const;
         virtual TGSError                    setTargetTime                   (ir::IRXTime const& param);
         virtual TGSError                    getTargetTime                   (ir::IRXTime* result) const;
         virtual TGSError                    setObserverPosition             (double latitude, double longitude, double altitude);
         virtual TGSError                    getObserverPosition             (double* latitude, double* longitude, double* altitude) const;
-        virtual TGSError                    getSatellitePosition            (double* latitude, double* longitude, double* altitude) const;
-        virtual TGSError                    getSatelliteDirection           (double* azimuth, double* elevation) const;
-        virtual TGSError                    getSatelliteDistance            (double* distance) const;
-        virtual TGSError                    getSatelliteSpeed               (double* speed) const;
+        virtual TGSError                    getSpacecraftPosition           (double* latitude, double* longitude, double* altitude) const;
+        virtual TGSError                    getSpacecraftDirection          (double* azimuth, double* elevation) const;
+        virtual TGSError                    getSpacecraftDistance           (double* distance) const;
+        virtual TGSError                    getSpacecraftSpeed              (double* speed) const;
         virtual TGSError                    getDopplerRatio                 (double* sender, double* receiver) const;
+    private:
+                TGSError                    cacheTracker                    (void) const;
+        static  double                      degToRad                        (double param);
+        static  double                      radToDeg                        (double param);
     private:
                                             TGSOrbitSCD                     (TGSOrbitSCD const&);
                 TGSOrbitSCD&                operator=                       (TGSOrbitSCD const&);
 };
+
+/*private static */inline double TGSOrbitSCD::degToRad(double param)
+{
+    return param * M_PI / 180.0;
+}
+
+/*private static */inline double TGSOrbitSCD::radToDeg(double param)
+{
+    return param * 180.0 / M_PI;
+}
 
 }// end of namespace
 

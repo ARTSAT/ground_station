@@ -96,4 +96,3 @@ void tf:: convertMjdToUnixtime (double* unixtime, double modifiedJd)
 	
 	*unixtime = (modifiedJd - mjdAtUnixtimeOrigin) * secondsDay;
 }
-

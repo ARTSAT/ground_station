@@ -47,4 +47,8 @@
         <tnc>5</tnc>
         <log>5</log>
     </interval>
+    <wait>
+        <boot>10000</boot>
+        <loop>250</loop>
+    </wait>
 </config>
