@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDTLEPass.cpp
+**      ASDOrbitPass.cpp
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,16 +44,16 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#include "ASDTLEPass.h"
+#include "ASDOrbitPass.h"
 #include "ASDRotationSolver.h"
 
-ASDTLEPass::ASDTLEPass() :
+ASDOrbitPass::ASDOrbitPass() :
     _mel(0.0)
 {
     
 }
 
-ASDTLEPass::ASDTLEPass(const std::vector<State>& sequence, const ASDRotationSolver& solver) :
+ASDOrbitPass::ASDOrbitPass(const std::vector<State>& sequence, const ASDRotationSolver& solver) :
     _state_sequence(sequence),
     _mel(0.0)
 {
@@ -81,7 +81,7 @@ ASDTLEPass::ASDTLEPass(const std::vector<State>& sequence, const ASDRotationSolv
     }
 }
 
-tgs::TGSError ASDTLEPass::getAOSTime(ir::IRXTime* result) const
+tgs::TGSError ASDOrbitPass::getAOSTime(ir::IRXTime* result) const
 {
     if (_state_sequence.empty()) {
         return tgs::TGSERROR_INVALID_STATE;
@@ -92,7 +92,7 @@ tgs::TGSError ASDTLEPass::getAOSTime(ir::IRXTime* result) const
     }
 }
 
-tgs::TGSError ASDTLEPass::getLOSTime(ir::IRXTime* result) const
+tgs::TGSError ASDOrbitPass::getLOSTime(ir::IRXTime* result) const
 {
     if (_state_sequence.empty()) {
         return tgs::TGSERROR_INVALID_STATE;
@@ -103,7 +103,7 @@ tgs::TGSError ASDTLEPass::getLOSTime(ir::IRXTime* result) const
     }
 }
 
-tgs::TGSError ASDTLEPass::getRotationStartTime(ir::IRXTime* result) const
+tgs::TGSError ASDOrbitPass::getRotationStartTime(ir::IRXTime* result) const
 {
     ir::IRXTime aos;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && _rotation_start >= aos) {
@@ -115,7 +115,7 @@ tgs::TGSError ASDTLEPass::getRotationStartTime(ir::IRXTime* result) const
     }
 }
 
-tgs::TGSError ASDTLEPass::getMEL(double* result) const
+tgs::TGSError ASDOrbitPass::getMEL(double* result) const
 {
     if (_mel > 0.0) {
         *result = _mel;
@@ -126,7 +126,7 @@ tgs::TGSError ASDTLEPass::getMEL(double* result) const
     }
 }
 
-tgs::TGSError ASDTLEPass::getSpacecraftPosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const
+tgs::TGSError ASDOrbitPass::getSpacecraftPosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const
 {
     ir::IRXTime aos, los;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && getLOSTime(&los) == tgs::TGSERROR_OK) {
@@ -148,7 +148,7 @@ tgs::TGSError ASDTLEPass::getSpacecraftPosition(const ir::IRXTime& time, double*
     }
 }
 
-tgs::TGSError ASDTLEPass::getSpacecraftDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const
+tgs::TGSError ASDOrbitPass::getSpacecraftDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const
 {
     ir::IRXTime aos, los;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && getLOSTime(&los) == tgs::TGSERROR_OK) {
@@ -169,7 +169,7 @@ tgs::TGSError ASDTLEPass::getSpacecraftDirection(const ir::IRXTime& time, double
     }
 }
 
-tgs::TGSError ASDTLEPass::getRotatorDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const
+tgs::TGSError ASDOrbitPass::getRotatorDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const
 {
     ir::IRXTime aos, los;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && getLOSTime(&los) == tgs::TGSERROR_OK) {
@@ -190,7 +190,7 @@ tgs::TGSError ASDTLEPass::getRotatorDirection(const ir::IRXTime& time, double* a
     }
 }
 
-tgs::TGSError ASDTLEPass::getDopplerRatio(const ir::IRXTime& time, double* sender, double* receiver) const
+tgs::TGSError ASDOrbitPass::getDopplerRatio(const ir::IRXTime& time, double* sender, double* receiver) const
 {
     ir::IRXTime aos, los;
     if (getAOSTime(&aos) == tgs::TGSERROR_OK && getLOSTime(&los) == tgs::TGSERROR_OK) {

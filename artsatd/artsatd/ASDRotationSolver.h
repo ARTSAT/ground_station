@@ -47,7 +47,7 @@
 #ifndef __ASD_ROTATIONSOLVER_H
 #define __ASD_ROTATIONSOLVER_H
 
-#include "ASDTLEPass.h"
+#include "ASDOrbitPass.h"
 
 class ASDRotationSolver {
 public:
@@ -62,17 +62,16 @@ public:
     tgs::TGSError setRotaterSpec(const RotatorSpec& spec);
     tgs::TGSError getRotaterSpec(RotatorSpec* spec) const;
     
-    double process(const std::vector<ASDTLEPass::RotatorState>& input, std::vector<ASDTLEPass::RotatorState> *bestseq) const;
+    double process(const std::vector<ASDOrbitPass::RotatorState>& input, std::vector<ASDOrbitPass::RotatorState> *bestseq) const;
     
 private:
-    double processWithOffset(const std::vector<ASDTLEPass::RotatorState>& input, std::vector<ASDTLEPass::RotatorState> *bestseq, int offset) const;
+    double processWithOffset(const std::vector<ASDOrbitPass::RotatorState>& input, std::vector<ASDOrbitPass::RotatorState> *bestseq, int offset) const;
     
 private:
     RotatorSpec _spec;
     mutable double _current_azimuth;
     mutable double _target_azimuth;
     mutable double _max_elevation;
-    
 };
 
 #endif

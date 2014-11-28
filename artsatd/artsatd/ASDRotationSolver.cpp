@@ -65,7 +65,7 @@ tgs::TGSError ASDRotationSolver::getRotaterSpec(RotatorSpec* spec) const
     return tgs::TGSERROR_OK;
 }
 
-double ASDRotationSolver::process(const std::vector<ASDTLEPass::RotatorState>& input, std::vector<ASDTLEPass::RotatorState> *bestseq) const
+double ASDRotationSolver::process(const std::vector<ASDOrbitPass::RotatorState>& input, std::vector<ASDOrbitPass::RotatorState> *bestseq) const
 {
     bestseq->clear();
     if (input.empty()) return 0;
@@ -82,7 +82,7 @@ double ASDRotationSolver::process(const std::vector<ASDTLEPass::RotatorState>& i
     }
     
     int max_elevation_intg = -1;
-    std::vector<ASDTLEPass::RotatorState> result;
+    std::vector<ASDOrbitPass::RotatorState> result;
     for (std::vector<int>::const_iterator it = flip_points.begin(); it != flip_points.end(); ++it) {
         int active_time = processWithOffset(input, &result, *it);
         if (active_time > max_elevation_intg) {
@@ -95,7 +95,7 @@ double ASDRotationSolver::process(const std::vector<ASDTLEPass::RotatorState>& i
     return max_elevation_intg;
 }
 
-double ASDRotationSolver::processWithOffset(const std::vector<ASDTLEPass::RotatorState>& input, std::vector<ASDTLEPass::RotatorState> *bestseq, int offset) const
+double ASDRotationSolver::processWithOffset(const std::vector<ASDOrbitPass::RotatorState>& input, std::vector<ASDOrbitPass::RotatorState> *bestseq, int offset) const
 {
     bestseq->clear();
     if (input.empty()) return 0;
@@ -105,7 +105,7 @@ double ASDRotationSolver::processWithOffset(const std::vector<ASDTLEPass::Rotato
     _current_azimuth = 0.0;
     _target_azimuth = 0.0;
     
-    std::vector<ASDTLEPass::RotatorState>::const_iterator it = input.begin();
+    std::vector<ASDOrbitPass::RotatorState>::const_iterator it = input.begin();
     
     if (offset > 0) {
         it += offset;
@@ -115,7 +115,7 @@ double ASDRotationSolver::processWithOffset(const std::vector<ASDTLEPass::Rotato
             _target_azimuth = 360.0;
         }
         for (int i = 0; i < offset; ++i) {
-            ASDTLEPass::RotatorState d = {input[i].time, input[i].elevation, _target_azimuth};
+            ASDOrbitPass::RotatorState d = {input[i].time, input[i].elevation, _target_azimuth};
             bestseq->push_back(d);
         }
     }
@@ -156,7 +156,7 @@ double ASDRotationSolver::processWithOffset(const std::vector<ASDTLEPass::Rotato
             _target_azimuth = it->azimuth;
         }
         
-        ASDTLEPass::RotatorState d = {it->time, it->elevation, _target_azimuth};
+        ASDOrbitPass::RotatorState d = {it->time, it->elevation, _target_azimuth};
         bestseq->push_back(d);
     }
     

@@ -14,7 +14,7 @@
 **      This source code is for Xcode.
 **      Xcode 6.1 (Apple LLVM 6.0)
 **
-**      ASDTLEPassFactory.h
+**      ASDOrbitPass.h
 **
 **      ------------------------------------------------------------------------
 **
@@ -44,30 +44,51 @@
 **      あるいはソフトウェアの使用またはその他の扱いによって生じる一切の請求、損害、その他の義務について何らの責任も負わないものとします。
 */
 
-#ifndef __ASD_TLEPASSFACTORY_H
-#define __ASD_TLEPASSFACTORY_H
+#ifndef __ASD_ORBITPASS_H
+#define __ASD_ORBITPASS_H
 
 #include "TGSType.h"
-#include "TGSOrbitTLE.h"
+#include "TGSOrbitInterface.h"
 
-class ASDTLEPass;
 class ASDRotationSolver;
 
-class ASDTLEPassFactory {
+class ASDOrbitPass {
 public:
-    ASDTLEPassFactory();
+    struct State {
+        ir::IRXTime time;
+        double latitude;
+        double longitude;
+        double altitude;
+        double elevation;
+        double azimuth;
+        double sender;
+        double receiver;
+    };
     
-    tgs::TGSError getNearestPass(ASDTLEPass* pass, ir::IRXTime const& param, const ASDRotationSolver& solver);
-    tgs::TGSError setOrbitData(tgs::OrbitData const& param);
-    tgs::TGSError getOrbitData(tgs::OrbitData* result) const;
-    tgs::TGSError setObserverPosition(double latitude, double longitude, double altitude);
-    tgs::TGSError getObserverPosition(double* latitude, double* longitude, double* altitude) const;
+    struct RotatorState {
+        ir::IRXTime time;
+        double elevation;
+        double azimuth;
+    };
+    
+public:
+    ASDOrbitPass();
+    ASDOrbitPass(const std::vector<State>& sequence, const ASDRotationSolver& solver);
+    
+    tgs::TGSError getAOSTime(ir::IRXTime* result) const;
+    tgs::TGSError getLOSTime(ir::IRXTime* result) const;
+    tgs::TGSError getRotationStartTime(ir::IRXTime* result) const;
+    tgs::TGSError getMEL(double* result) const;
+    tgs::TGSError getSpacecraftPosition(const ir::IRXTime& time, double* latitude, double* longitude, double* altitude) const;
+    tgs::TGSError getSpacecraftDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const;
+    tgs::TGSError getRotatorDirection(const ir::IRXTime& time, double* azimuth, double* elevation) const;
+    tgs::TGSError getDopplerRatio(const ir::IRXTime& time, double* sender, double* receiver) const;
     
 private:
-    tgs::TGSOrbitTLE _orbit;
-    boost::shared_ptr<ASDTLEPass> _cached_pass;
-    ir::IRXTime _last_searched_time;
-    
+    std::vector<State> _state_sequence;
+    std::vector<RotatorState> _rotator_state_sequence;
+    double _mel;
+    ir::IRXTime _rotation_start;
 };
 
 #endif

@@ -21,8 +21,8 @@
 		C306EB4F1A126F7500D9A10F /* ASDServerRPC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB391A126F7500D9A10F /* ASDServerRPC.cpp */; };
 		C306EB501A126F7500D9A10F /* ASDHTTPClientCelestrak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB3B1A126F7500D9A10F /* ASDHTTPClientCelestrak.cpp */; };
 		C306EB511A126F7500D9A10F /* ASDHTTPClientInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB3D1A126F7500D9A10F /* ASDHTTPClientInterface.cpp */; };
-		C306EB521A126F7500D9A10F /* ASDTLEPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB3F1A126F7500D9A10F /* ASDTLEPass.cpp */; };
-		C306EB531A126F7500D9A10F /* ASDTLEPassFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB411A126F7500D9A10F /* ASDTLEPassFactory.cpp */; };
+		C306EB521A126F7500D9A10F /* ASDOrbitPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB3F1A126F7500D9A10F /* ASDOrbitPass.cpp */; };
+		C306EB531A126F7500D9A10F /* ASDOrbitPassFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C306EB411A126F7500D9A10F /* ASDOrbitPassFactory.cpp */; };
 		C306EB5D1A12702900D9A10F /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C306EB561A12702900D9A10F /* libcrypto.dylib */; };
 		C306EB5E1A12702900D9A10F /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C306EB571A12702900D9A10F /* libssl.dylib */; };
 		C306EB5F1A12702900D9A10F /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C306EB581A12702900D9A10F /* libboost_system.a */; };
@@ -129,10 +129,10 @@
 		C306EB3C1A126F7500D9A10F /* ASDHTTPClientCelestrak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDHTTPClientCelestrak.h; sourceTree = "<group>"; };
 		C306EB3D1A126F7500D9A10F /* ASDHTTPClientInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDHTTPClientInterface.cpp; sourceTree = "<group>"; };
 		C306EB3E1A126F7500D9A10F /* ASDHTTPClientInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDHTTPClientInterface.h; sourceTree = "<group>"; };
-		C306EB3F1A126F7500D9A10F /* ASDTLEPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDTLEPass.cpp; sourceTree = "<group>"; };
-		C306EB401A126F7500D9A10F /* ASDTLEPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDTLEPass.h; sourceTree = "<group>"; };
-		C306EB411A126F7500D9A10F /* ASDTLEPassFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDTLEPassFactory.cpp; sourceTree = "<group>"; };
-		C306EB421A126F7500D9A10F /* ASDTLEPassFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDTLEPassFactory.h; sourceTree = "<group>"; };
+		C306EB3F1A126F7500D9A10F /* ASDOrbitPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDOrbitPass.cpp; sourceTree = "<group>"; };
+		C306EB401A126F7500D9A10F /* ASDOrbitPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDOrbitPass.h; sourceTree = "<group>"; };
+		C306EB411A126F7500D9A10F /* ASDOrbitPassFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASDOrbitPassFactory.cpp; sourceTree = "<group>"; };
+		C306EB421A126F7500D9A10F /* ASDOrbitPassFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASDOrbitPassFactory.h; sourceTree = "<group>"; };
 		C306EB431A126F7500D9A10F /* prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefix.pch; sourceTree = "<group>"; };
 		C306EB561A12702900D9A10F /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = ../../../../../../usr/lib/libcrypto.dylib; sourceTree = "<group>"; };
 		C306EB571A12702900D9A10F /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = ../../../../../../usr/lib/libssl.dylib; sourceTree = "<group>"; };
@@ -666,10 +666,10 @@
 				C306EB2F1A126F7500D9A10F /* ASDPluginInterface.cpp */,
 				C306EB321A126F7500D9A10F /* ASDPluginINVADER.h */,
 				C306EB311A126F7500D9A10F /* ASDPluginINVADER.cpp */,
-				C306EB401A126F7500D9A10F /* ASDTLEPass.h */,
-				C306EB3F1A126F7500D9A10F /* ASDTLEPass.cpp */,
-				C306EB421A126F7500D9A10F /* ASDTLEPassFactory.h */,
-				C306EB411A126F7500D9A10F /* ASDTLEPassFactory.cpp */,
+				C306EB401A126F7500D9A10F /* ASDOrbitPass.h */,
+				C306EB3F1A126F7500D9A10F /* ASDOrbitPass.cpp */,
+				C306EB421A126F7500D9A10F /* ASDOrbitPassFactory.h */,
+				C306EB411A126F7500D9A10F /* ASDOrbitPassFactory.cpp */,
 				C306EB341A126F7500D9A10F /* ASDRotationSolver.h */,
 				C306EB331A126F7500D9A10F /* ASDRotationSolver.cpp */,
 			);
@@ -1765,7 +1765,7 @@
 				C306EB491A126F7500D9A10F /* ASDNetworkServer.cpp in Sources */,
 				C306EB4A1A126F7500D9A10F /* ASDPluginInterface.cpp in Sources */,
 				C306F4261A1270B900D9A10F /* globals.cpp in Sources */,
-				C306EB531A126F7500D9A10F /* ASDTLEPassFactory.cpp in Sources */,
+				C306EB531A126F7500D9A10F /* ASDOrbitPassFactory.cpp in Sources */,
 				C306F6D41A1270BA00D9A10F /* TGSDatabaseInterface.cpp in Sources */,
 				C306F41A1A1270B900D9A10F /* TGSTransceiverIC9100.cpp in Sources */,
 				C306F42C1A1270B900D9A10F /* stdafx.cpp in Sources */,
@@ -1814,7 +1814,7 @@
 				C306F4121A1270B900D9A10F /* TGSDeviceLoader.cpp in Sources */,
 				C306F4291A1270B900D9A10F /* cNoradSDP4.cpp in Sources */,
 				C306F4061A1270B900D9A10F /* ExtentManager.cpp in Sources */,
-				C306EB521A126F7500D9A10F /* ASDTLEPass.cpp in Sources */,
+				C306EB521A126F7500D9A10F /* ASDOrbitPass.cpp in Sources */,
 				C306F40C1A1270B900D9A10F /* trimdomain.c in Sources */,
 				C306F40A1A1270B900D9A10F /* realhostname.c in Sources */,
 				C306F4071A1270B900D9A10F /* getmntopts.c in Sources */,

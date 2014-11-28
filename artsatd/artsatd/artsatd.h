@@ -59,7 +59,7 @@
 #include "ASDServerOperation.h"
 #include "ASDServerRPC.h"
 //<<<
-#include "ASDTLEPassFactory.h"
+#include "ASDOrbitPassFactory.h"
 #include "ASDRotationSolver.h"
 //>>>
 
@@ -134,11 +134,12 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
             ir::IRXTime                         time;
         };
         struct StateRec {
-            tgs::TGSOrbitTLE                    orbit;
             bool                                manualRotator;
             bool                                manualTransceiver;
             bool                                manualTNC;
             tgs::TGSPhysicsDatabase::FieldRec   field;
+            boost::shared_ptr<tgs::TGSOrbitInterface>
+                                                orbit;
             ModeEnum                            mode;
             ModeTransceiverEnum                 modeTransceiver;
             ModeTNCEnum                         modeTNC;
@@ -179,6 +180,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
     private:
                 ConfigRec                       _config;
                 tgs::TGSPhysicsDatabase         _database;
+                std::map<tgs::OrbitData::TypeEnum, boost::shared_ptr<tgs::TGSOrbitInterface> >
+                                                _orbit;
                 std::map<int, boost::shared_ptr<ASDPluginInterface> >
                                                 _plugin;
                 tgs::TGSDeviceLoader            _loader;
@@ -195,8 +198,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 ASDServerOperation              _replierOperation;
                 ASDServerRPC                    _replierRPC;
                 //<<<
-                ASDTLEPassFactory               _passFactory;
-                ASDTLEPass                      _pass;
+                ASDOrbitPassFactory             _passFactory;
+                ASDOrbitPass                    _pass;
                 ASDRotationSolver               _rotationSolver;
                 //>>>
                 SessionRec                      _session;
@@ -275,11 +278,13 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 void                            cleanSession                (ir::IRXTime const& time);
                 tgs::TGSError                   openConfig                  (void);
                 tgs::TGSError                   openDatabase                (void);
+                tgs::TGSError                   openOrbit                   (void);
                 tgs::TGSError                   openPlugin                  (void);
                 tgs::TGSError                   openDevice                  (void);
                 tgs::TGSError                   openNetwork                 (void);
                 void                            closeConfig                 (void);
                 void                            closeDatabase               (void);
+                void                            closeOrbit                  (void);
                 void                            closePlugin                 (void);
                 void                            closeDevice                 (void);
                 void                            closeNetwork                (void);

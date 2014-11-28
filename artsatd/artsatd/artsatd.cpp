@@ -45,6 +45,8 @@
 */
 
 #include "artsatd.h"
+#include "TGSOrbitTLE.h"
+#include "TGSOrbitSCD.h"
 #include "ASDPluginINVADER.h"
 #include "TGSRotatorGS232B.h"
 #include "TGSTransceiverIC9100.h"
@@ -750,31 +752,31 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         log(LOG_NOTICE, "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,");
         log(LOG_NOTICE, "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,");
         log(LOG_NOTICE, "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.");
+        log(LOG_NOTICE, " ");
+        log(LOG_NOTICE, "Hello Hello Kikoemasuka? Kansokushi ni nokosareteta daijina message, soreha marude hoshi no hikari.");
         log(LOG_NOTICE, LOG_SEPARATOR);
         if ((error = openConfig()) == tgs::TGSERROR_OK) {
             log(LOG_NOTICE, LOG_SEPARATOR);
             if ((error = openDatabase()) == tgs::TGSERROR_OK) {
                 log(LOG_NOTICE, LOG_SEPARATOR);
-                if ((error = openPlugin()) == tgs::TGSERROR_OK) {
+                if ((error = openOrbit()) == tgs::TGSERROR_OK) {
                     log(LOG_NOTICE, LOG_SEPARATOR);
-                    usleep(_config.waitBoot * 1000);
-                    if ((error = openDevice()) == tgs::TGSERROR_OK) {
+                    if ((error = openPlugin()) == tgs::TGSERROR_OK) {
                         log(LOG_NOTICE, LOG_SEPARATOR);
-                        //<<<
-                        if ((error = _passFactory.setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
+                        usleep(_config.waitBoot * 1000);
+                        if ((error = openDevice()) == tgs::TGSERROR_OK) {
+                            log(LOG_NOTICE, LOG_SEPARATOR);
+                            //<<<
                             ASDRotationSolver::RotatorSpec rotator = {
                                 ROTATOR_MIN_AZIMUTH,
                                 ROTATOR_MAX_AZIMUTH,
                                 ROTATOR_DEG_PER_SEC
                             };
-                            error = _rotationSolver.setRotaterSpec(rotator);
-                        }
-                        if (error != tgs::TGSERROR_OK) {
-                            log(LOG_ERR, "can't initialize pass simulator [%s]", error.print().c_str());
-                            return EX_UNAVAILABLE;
-                        }
-                        //>>>
-                        if ((error = _state.orbit.setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
+                            if ((error = _rotationSolver.setRotaterSpec(rotator)) != tgs::TGSERROR_OK) {
+                                log(LOG_ERR, "can't initialize pass simulator [%s]", error.print().c_str());
+                                return EX_UNAVAILABLE;
+                            }
+                            //>>>
                             resetSession(&_session);
                             resetControl(&_control);
                             resetCurrent(_control, &_current);
@@ -790,17 +792,17 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                             }
                         }
                         else {
-                            log(LOG_ERR, "can't initialize orbit simulator [%s]", error.print().c_str());
+                            log(LOG_ERR, "can't initialize device [%s]", error.print().c_str());
                             result = EX_UNAVAILABLE;
                         }
                     }
                     else {
-                        log(LOG_ERR, "can't initialize device [%s]", error.print().c_str());
+                        log(LOG_ERR, "can't initialize plugin [%s]", error.print().c_str());
                         result = EX_UNAVAILABLE;
                     }
                 }
                 else {
-                    log(LOG_ERR, "can't initialize plugin [%s]", error.print().c_str());
+                    log(LOG_ERR, "can't initialize orbit [%s]", error.print().c_str());
                     result = EX_UNAVAILABLE;
                 }
             }
@@ -825,6 +827,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     closeNetwork();
     closeDevice();
     closePlugin();
+    closeOrbit();
     closeDatabase();
     closeConfig();
     return;
@@ -880,12 +883,21 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 if (_state.field.receiver.drift == INT_MIN) {
                     _state.field.receiver.drift = 0;
                 }
-                if ((monitor.error = _state.orbit.setOrbitData(_state.field.orbit)) == tgs::TGSERROR_OK) {
-                    if ((monitor.error = _passFactory.setOrbitData(_state.field.orbit)) == tgs::TGSERROR_OK) {
-                        resetRotator();
-                        resetTransceiver();
-                        resetTNC();
+                if ((_state.orbit = _orbit[_state.field.orbit.getType()]) != NULL) {
+                    if ((monitor.error = _state.orbit->setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
+                        if ((monitor.error = _state.orbit->setOrbitData(_state.field.orbit)) == tgs::TGSERROR_OK) {
+                            if ((monitor.error = _passFactory.setObserverPosition(_config.observerLatitude, _config.observerLongitude, _config.observerAltitude)) == tgs::TGSERROR_OK) {
+                                if ((monitor.error = _passFactory.setOrbitData(_state.field.orbit)) == tgs::TGSERROR_OK) {
+                                    resetRotator();
+                                    resetTransceiver();
+                                    resetTNC();
+                                }
+                            }
+                        }
                     }
+                }
+                else {
+                    monitor.error = tgs::TGSERROR_INVALID_FORMAT;
                 }
             }
             if (monitor.error != tgs::TGSERROR_OK) {
@@ -935,89 +947,91 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         beacon = NAN;
         sender = NAN;
         receiver = NAN;
-        if ((monitor.error = _state.orbit.setTargetTime(current.time + ir::IRXTimeDiff(_config.algorithmLookahead))) == tgs::TGSERROR_OK) {
-            if ((monitor.error = _state.orbit.getSpacecraftPosition(&monitor.latitude, &monitor.longitude, &monitor.altitude)) == tgs::TGSERROR_OK) {
-                if ((monitor.error = _state.orbit.getSpacecraftDirection(&monitor.azimuth, &monitor.elevation)) == tgs::TGSERROR_OK) {
-                    if ((monitor.error = _state.orbit.getDopplerRatio(&monitor.dopplerSender, &monitor.dopplerReceiver)) == tgs::TGSERROR_OK) {
-                        if (_state.field.beacon.frequency >= 0) {
-                            monitor.beacon = (_state.field.beacon.frequency + _state.field.beacon.drift) * monitor.dopplerReceiver;
-                        }
-                        if (_state.field.sender.frequency >= 0) {
-                            monitor.sender = (_state.field.sender.frequency + _state.field.sender.drift) * monitor.dopplerSender;
-                        }
-                        if (_state.field.receiver.frequency >= 0) {
-                            monitor.receiver = (_state.field.receiver.frequency + _state.field.receiver.drift) * monitor.dopplerReceiver;
-                        }
-                        switch (_state.mode) {
-                            case MODE_CW_TEST:
-                            case MODE_FM_TEST:
-                                if (_state.field.beacon.frequency >= 0) {
-                                    beacon = _state.field.beacon.frequency;
-                                }
-                                if (_state.field.sender.frequency >= 0) {
-                                    sender = _state.field.sender.frequency;
-                                }
-                                if (_state.field.receiver.frequency >= 0) {
-                                    receiver = _state.field.receiver.frequency;
-                                }
-                                break;
-                            default:
-                                beacon = monitor.beacon;
-                                sender = monitor.sender;
-                                receiver = monitor.receiver;
-                                break;
-                        }
-                        if ((monitor.error = _passFactory.getNearestPass(&_pass, current.time, _rotationSolver)) == tgs::TGSERROR_OK) {
-                            if ((monitor.error = _pass.getAOSTime(&monitor.aos)) == tgs::TGSERROR_OK) {
-                                if ((monitor.error = _pass.getLOSTime(&monitor.los)) == tgs::TGSERROR_OK) {
-                                    if ((monitor.error = _pass.getMEL(&monitor.mel)) == tgs::TGSERROR_OK) {
-                                        if ((monitor.error = _pass.getRotationStartTime(&monitor.start)) == tgs::TGSERROR_OK) {
-                                            switch (_state.mode) {
-                                                case MODE_CW_TEST:
-                                                    azimuth = _config.cwTestAzimuth;
-                                                    elevation = _config.cwTestElevation;
-                                                    break;
-                                                case MODE_FM_TEST:
-                                                    azimuth = _config.fmTestAzimuth;
-                                                    elevation = _config.fmTestElevation;
-                                                    break;
-                                                default:
-                                                    monitor.error = _pass.getRotatorDirection((monitor.aos <= current.time && current.time <= monitor.los - ir::IRXTimeDiff(_config.algorithmLookahead)) ? (current.time + ir::IRXTimeDiff(_config.algorithmLookahead)) : (monitor.aos), &azimuth, &elevation);
-                                                    break;
-                                            }
-                                            if (monitor.error == tgs::TGSERROR_OK) {
+        if (_state.orbit != NULL) {
+            if ((monitor.error = _state.orbit->setTargetTime(current.time + ir::IRXTimeDiff(_config.algorithmLookahead))) == tgs::TGSERROR_OK) {
+                if ((monitor.error = _state.orbit->getSpacecraftPosition(&monitor.latitude, &monitor.longitude, &monitor.altitude)) == tgs::TGSERROR_OK) {
+                    if ((monitor.error = _state.orbit->getSpacecraftDirection(&monitor.azimuth, &monitor.elevation)) == tgs::TGSERROR_OK) {
+                        if ((monitor.error = _state.orbit->getDopplerRatio(&monitor.dopplerSender, &monitor.dopplerReceiver)) == tgs::TGSERROR_OK) {
+                            if (_state.field.beacon.frequency >= 0) {
+                                monitor.beacon = (_state.field.beacon.frequency + _state.field.beacon.drift) * monitor.dopplerReceiver;
+                            }
+                            if (_state.field.sender.frequency >= 0) {
+                                monitor.sender = (_state.field.sender.frequency + _state.field.sender.drift) * monitor.dopplerSender;
+                            }
+                            if (_state.field.receiver.frequency >= 0) {
+                                monitor.receiver = (_state.field.receiver.frequency + _state.field.receiver.drift) * monitor.dopplerReceiver;
+                            }
+                            switch (_state.mode) {
+                                case MODE_CW_TEST:
+                                case MODE_FM_TEST:
+                                    if (_state.field.beacon.frequency >= 0) {
+                                        beacon = _state.field.beacon.frequency;
+                                    }
+                                    if (_state.field.sender.frequency >= 0) {
+                                        sender = _state.field.sender.frequency;
+                                    }
+                                    if (_state.field.receiver.frequency >= 0) {
+                                        receiver = _state.field.receiver.frequency;
+                                    }
+                                    break;
+                                default:
+                                    beacon = monitor.beacon;
+                                    sender = monitor.sender;
+                                    receiver = monitor.receiver;
+                                    break;
+                            }
+                            if ((monitor.error = _passFactory.getNearestPass(&_pass, current.time, _rotationSolver)) == tgs::TGSERROR_OK) {
+                                if ((monitor.error = _pass.getAOSTime(&monitor.aos)) == tgs::TGSERROR_OK) {
+                                    if ((monitor.error = _pass.getLOSTime(&monitor.los)) == tgs::TGSERROR_OK) {
+                                        if ((monitor.error = _pass.getMEL(&monitor.mel)) == tgs::TGSERROR_OK) {
+                                            if ((monitor.error = _pass.getRotationStartTime(&monitor.start)) == tgs::TGSERROR_OK) {
                                                 switch (_state.mode) {
-                                                    case MODE_CW:
                                                     case MODE_CW_TEST:
-                                                        if (!_state.manualRotator) {
-                                                            operateRotator(current.time, azimuth, elevation);
-                                                        }
-                                                        if (!_state.manualTransceiver) {
-                                                            operateTransceiver(current.time, NAN, beacon);
-                                                        }
+                                                        azimuth = _config.cwTestAzimuth;
+                                                        elevation = _config.cwTestElevation;
                                                         break;
-                                                    case MODE_FM:
                                                     case MODE_FM_TEST:
-                                                        if (!_state.manualRotator) {
-                                                            operateRotator(current.time, azimuth, elevation);
-                                                        }
-                                                        if (!_state.manualTransceiver) {
-                                                            operateTransceiver(current.time, sender, receiver);
-                                                        }
-                                                        if (!_state.manualTNC) {
-                                                            boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_command);
-                                                            if (_command.queue.size() > 0) {
-                                                                if (operateTNC(current.time, _command.queue.front()) == tgs::TGSERROR_OK) {
-                                                                    boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
-                                                                    _command.queue.pop_front();
-                                                                }
-                                                            }
-                                                        }
+                                                        azimuth = _config.fmTestAzimuth;
+                                                        elevation = _config.fmTestElevation;
                                                         break;
                                                     default:
-                                                        boost::unique_lock<boost::shared_mutex> wlock(_mutex_command);
-                                                        _command.queue.clear();
+                                                        monitor.error = _pass.getRotatorDirection((monitor.aos <= current.time && current.time <= monitor.los - ir::IRXTimeDiff(_config.algorithmLookahead)) ? (current.time + ir::IRXTimeDiff(_config.algorithmLookahead)) : (monitor.aos), &azimuth, &elevation);
                                                         break;
+                                                }
+                                                if (monitor.error == tgs::TGSERROR_OK) {
+                                                    switch (_state.mode) {
+                                                        case MODE_CW:
+                                                        case MODE_CW_TEST:
+                                                            if (!_state.manualRotator) {
+                                                                operateRotator(current.time, azimuth, elevation);
+                                                            }
+                                                            if (!_state.manualTransceiver) {
+                                                                operateTransceiver(current.time, NAN, beacon);
+                                                            }
+                                                            break;
+                                                        case MODE_FM:
+                                                        case MODE_FM_TEST:
+                                                            if (!_state.manualRotator) {
+                                                                operateRotator(current.time, azimuth, elevation);
+                                                            }
+                                                            if (!_state.manualTransceiver) {
+                                                                operateTransceiver(current.time, sender, receiver);
+                                                            }
+                                                            if (!_state.manualTNC) {
+                                                                boost::upgrade_lock<boost::shared_mutex> ulock(_mutex_command);
+                                                                if (_command.queue.size() > 0) {
+                                                                    if (operateTNC(current.time, _command.queue.front()) == tgs::TGSERROR_OK) {
+                                                                        boost::upgrade_to_unique_lock<boost::shared_mutex> wlock(ulock);
+                                                                        _command.queue.pop_front();
+                                                                    }
+                                                                }
+                                                            }
+                                                            break;
+                                                        default:
+                                                            boost::unique_lock<boost::shared_mutex> wlock(_mutex_command);
+                                                            _command.queue.clear();
+                                                            break;
+                                                    }
                                                 }
                                             }
                                         }
@@ -1028,6 +1042,9 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     }
                 }
             }
+        }
+        else {
+            monitor.error = tgs::TGSERROR_INVALID_STATE;
         }
         operateLog(current.time, _state.field.norad, _state.mode, azimuth, elevation, beacon, sender, receiver, monitor.error);
     }
@@ -1248,6 +1265,28 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return error;
 }
 
+/*private */tgs::TGSError artsatd::openOrbit(void)
+{
+    boost::shared_ptr<tgs::TGSOrbitInterface> orbit;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    closeOrbit();
+    orbit.reset(new(std::nothrow) tgs::TGSOrbitTLE);
+    if ((_orbit[tgs::OrbitData::TYPE_TLE] = orbit) != NULL) {
+        orbit.reset(new(std::nothrow) tgs::TGSOrbitSCD);
+        if ((_orbit[tgs::OrbitData::TYPE_SCD] = orbit) == NULL) {
+            error = tgs::TGSERROR_NO_MEMORY;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_NO_MEMORY;
+    }
+    if (error != tgs::TGSERROR_OK) {
+        closeOrbit();
+    }
+    return error;
+}
+
 /*private */tgs::TGSError artsatd::openPlugin(void)
 {
     tinyxml2::XMLDocument xml;
@@ -1446,6 +1485,12 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 /*private */void artsatd::closeDatabase(void)
 {
     _database.close();
+    return;
+}
+
+/*private */void artsatd::closeOrbit(void)
+{
+    _orbit.clear();
     return;
 }
 
