@@ -1222,32 +1222,35 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             error = tgs::TGSERROR_FAILED;
             break;
     }
-    log(LOG_NOTICE, " CONFIG: Server Database Port    [%s]", _config.serverDatabasePort.c_str());
-    log(LOG_NOTICE, " CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
-    log(LOG_NOTICE, " CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
-    log(LOG_NOTICE, " CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
-    log(LOG_NOTICE, " CONFIG: Server RPC Port         [%s]", _config.serverRPCPort.c_str());
-    log(LOG_NOTICE, " CONFIG: Server RPC Listen       [%d]", _config.serverRPCListen);
-    log(LOG_NOTICE, " CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
-    log(LOG_NOTICE, " CONFIG: Session Timeout         [%d sec]", _config.sessionTimeout);
-    log(LOG_NOTICE, " CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
-    log(LOG_NOTICE, " CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
-    log(LOG_NOTICE, " CONFIG: Observer Latitude       [%lf deg]", _config.observerLatitude);
-    log(LOG_NOTICE, " CONFIG: Observer Longitude      [%lf deg]", _config.observerLongitude);
-    log(LOG_NOTICE, " CONFIG: Observer Altitude       [%lf km]", _config.observerAltitude);
-    log(LOG_NOTICE, " CONFIG: CW Test Azimuth         [%d deg]", _config.cwTestAzimuth);
-    log(LOG_NOTICE, " CONFIG: CW Test Elevation       [%d deg]", _config.cwTestElevation);
-    log(LOG_NOTICE, " CONFIG: FM Test Azimuth         [%d deg]", _config.fmTestAzimuth);
-    log(LOG_NOTICE, " CONFIG: FM Test Elevation       [%d deg]", _config.fmTestElevation);
-    log(LOG_NOTICE, " CONFIG: Algorithm Lookahead     [%d sec]", _config.algorithmLookahead);
-    log(LOG_NOTICE, " CONFIG: Interval Session        [%d sec]", _config.intervalSession);
-    log(LOG_NOTICE, " CONFIG: Interval Rotator        [%d sec]", _config.intervalRotator);
-    log(LOG_NOTICE, " CONFIG: Interval Transceiver    [%d sec]", _config.intervalTransceiver);
-    log(LOG_NOTICE, " CONFIG: Interval TNC            [%d sec]", _config.intervalTNC);
-    log(LOG_NOTICE, " CONFIG: Interval Log            [%d sec]", _config.intervalLog);
-    log(LOG_NOTICE, " CONFIG: Wait Boot               [%d msec]", _config.waitBoot);
-    log(LOG_NOTICE, " CONFIG: Wait Loop               [%d msec]", _config.waitLoop);
-    if (error != tgs::TGSERROR_OK) {
+    log(LOG_NOTICE, "  CONFIG: Server Database Port    [%s]", _config.serverDatabasePort.c_str());
+    log(LOG_NOTICE, "  CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
+    log(LOG_NOTICE, "  CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
+    log(LOG_NOTICE, "  CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
+    log(LOG_NOTICE, "  CONFIG: Server RPC Port         [%s]", _config.serverRPCPort.c_str());
+    log(LOG_NOTICE, "  CONFIG: Server RPC Listen       [%d]", _config.serverRPCListen);
+    log(LOG_NOTICE, "  CONFIG: Session Maximum         [%d]", _config.sessionMaximum);
+    log(LOG_NOTICE, "  CONFIG: Session Timeout         [%d sec]", _config.sessionTimeout);
+    log(LOG_NOTICE, "  CONFIG: Session Localonly       [%s]", (_config.sessionLocalonly) ? ("true") : ("false"));
+    log(LOG_NOTICE, "  CONFIG: Observer Callsign       [%s]", _config.observerCallsign.c_str());
+    log(LOG_NOTICE, "  CONFIG: Observer Latitude       [%lf deg]", _config.observerLatitude);
+    log(LOG_NOTICE, "  CONFIG: Observer Longitude      [%lf deg]", _config.observerLongitude);
+    log(LOG_NOTICE, "  CONFIG: Observer Altitude       [%lf km]", _config.observerAltitude);
+    log(LOG_NOTICE, "  CONFIG: CW Test Azimuth         [%d deg]", _config.cwTestAzimuth);
+    log(LOG_NOTICE, "  CONFIG: CW Test Elevation       [%d deg]", _config.cwTestElevation);
+    log(LOG_NOTICE, "  CONFIG: FM Test Azimuth         [%d deg]", _config.fmTestAzimuth);
+    log(LOG_NOTICE, "  CONFIG: FM Test Elevation       [%d deg]", _config.fmTestElevation);
+    log(LOG_NOTICE, "  CONFIG: Algorithm Lookahead     [%d sec]", _config.algorithmLookahead);
+    log(LOG_NOTICE, "  CONFIG: Interval Session        [%d sec]", _config.intervalSession);
+    log(LOG_NOTICE, "  CONFIG: Interval Rotator        [%d sec]", _config.intervalRotator);
+    log(LOG_NOTICE, "  CONFIG: Interval Transceiver    [%d sec]", _config.intervalTransceiver);
+    log(LOG_NOTICE, "  CONFIG: Interval TNC            [%d sec]", _config.intervalTNC);
+    log(LOG_NOTICE, "  CONFIG: Interval Log            [%d sec]", _config.intervalLog);
+    log(LOG_NOTICE, "  CONFIG: Wait Boot               [%d msec]", _config.waitBoot);
+    log(LOG_NOTICE, "  CONFIG: Wait Loop               [%d msec]", _config.waitLoop);
+    if (error == tgs::TGSERROR_OK) {
+        log(LOG_NOTICE, "  CONFIG: OK");
+    }
+    else {
         closeConfig();
     }
     return error;
@@ -1259,7 +1262,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     
     closeDatabase();
     error = _database.open(DATABASE_PHYSICS);
-    if (error != tgs::TGSERROR_OK) {
+    if (error == tgs::TGSERROR_OK) {
+        log(LOG_NOTICE, "DATABASE: OK");
+    }
+    else {
         closeDatabase();
     }
     return error;
@@ -1281,7 +1287,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     else {
         error = tgs::TGSERROR_NO_MEMORY;
     }
-    if (error != tgs::TGSERROR_OK) {
+    if (error == tgs::TGSERROR_OK) {
+        log(LOG_NOTICE, "   ORBIT: OK");
+    }
+    else {
         closeOrbit();
     }
     return error;
@@ -1314,9 +1323,9 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                         if (plugin != NULL) {
                             if ((error = xmlReadInteger(type, "norad", &norad)) == tgs::TGSERROR_OK) {
                                 xmlReadText(type, "file", &file);
-                                log(LOG_NOTICE, " PLUGIN: Type                    [%s]", name.c_str());
-                                log(LOG_NOTICE, " PLUGIN: File                    [%s]", file.c_str());
-                                log(LOG_NOTICE, " PLUGIN: NORAD                   [%d]", norad);
+                                log(LOG_NOTICE, "  PLUGIN: Type                    [%s]", name.c_str());
+                                log(LOG_NOTICE, "  PLUGIN: File                    [%s]", file.c_str());
+                                log(LOG_NOTICE, "  PLUGIN: NORAD                   [%d]", norad);
                                 if (!file.empty()) {
                                     name  = PATH_SERVER;
                                     name += "/";
@@ -1343,7 +1352,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             error = tgs::TGSERROR_FAILED;
             break;
     }
-    if (error != tgs::TGSERROR_OK) {
+    if (error == tgs::TGSERROR_OK) {
+        log(LOG_NOTICE, "  PLUGIN: OK");
+    }
+    else {
         closePlugin();
     }
     return error;
@@ -1393,7 +1405,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     else {
         error = tgs::TGSERROR_NO_MEMORY;
     }
-    if (error != tgs::TGSERROR_OK) {
+    if (error == tgs::TGSERROR_OK) {
+        log(LOG_NOTICE, "  DEVICE: OK");
+    }
+    else {
         closeDevice();
     }
     return error;
@@ -1429,15 +1444,15 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     if (!name.empty()) {
                         if (client != NULL) {
                             if ((error = xmlReadInteger(type, "interval", &interval)) == tgs::TGSERROR_OK) {
-                                log(LOG_NOTICE, "NETWORK: Site                    [%s]", name.c_str());
+                                log(LOG_NOTICE, " NETWORK: Site                    [%s]", name.c_str());
                                 url.clear();
                                 for (element = type->FirstChildElement("url"); element != NULL; element = element->NextSiblingElement("url")) {
                                     if (!element->NoChildren()) {
                                         url.push_back(element->GetText());
-                                        log(LOG_NOTICE, "NETWORK: URL                     [%s]", url.back().c_str());
+                                        log(LOG_NOTICE, " NETWORK: URL                     [%s]", url.back().c_str());
                                     }
                                 }
-                                log(LOG_NOTICE, "NETWORK: Interval                [%d msec]", interval);
+                                log(LOG_NOTICE, " NETWORK: Interval                [%d msec]", interval);
                                 if ((error = client->open(DATABASE_PHYSICS, url, interval)) == tgs::TGSERROR_OK) {
                                     _clientHTTP.push_back(client);
                                 }
@@ -1471,7 +1486,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             }
         }
     }
-    if (error != tgs::TGSERROR_OK) {
+    if (error == tgs::TGSERROR_OK) {
+        log(LOG_NOTICE, " NETWORK: OK");
+    }
+    else {
         closeNetwork();
     }
     return error;
