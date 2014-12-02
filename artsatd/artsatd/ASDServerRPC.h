@@ -52,6 +52,7 @@
 
 #include "ASDNetworkServer.h"
 #include "document.h"
+#include "TGSPhysicsDatabase.h"
 
 class ASDServerRPC : public ASDNetworkServer::Notifier {
     private:
@@ -568,9 +569,9 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   norad <int>: NORAD number
-                 *   mode <std::string>: beacon mode
-                 *   frequency <int>: beacon frequency
-                 *   drift <int>: beacon frequency drift
+                 *   [mode <std::string>: beacon mode]
+                 *   [frequency <int>: beacon frequency]
+                 *   [drift <int>: beacon frequency drift]
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -594,9 +595,9 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   norad <int>: NORAD number
-                 *   mode <std::string>: sender mode
-                 *   frequency <int>: sender frequency
-                 *   drift <int>: sender frequency drift
+                 *   [mode <std::string>: sender mode]
+                 *   [frequency <int>: sender frequency]
+                 *   [drift <int>: sender frequency drift]
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -620,9 +621,9 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  * params:
                  *   [session <std::string>: session ID]
                  *   norad <int>: NORAD number
-                 *   mode <std::string>: receiver mode
-                 *   frequency <int>: receiver frequency
-                 *   drift <int>: receiver frequency drift
+                 *   [mode <std::string>: receiver mode]
+                 *   [frequency <int>: receiver frequency]
+                 *   [drift <int>: receiver frequency drift]
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -645,10 +646,17 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setOrbitData
                  * params:
                  *   [session <std::string>: session ID]
-                 *   name <std::string>: TLE name
-                 *   one <std::string>: TLE line 1
-                 *   two <std::string>: TLE line 2
-                 *   time <std::string "YYYY/MM/DD hh:mm:ss UTC">: update time
+                 *   [tle <object>:
+                 *       name <std::string>: TLE name
+                 *       one <std::string>: TLE line 1
+                 *       two <std::string>: TLE line 2
+                 *   ] *2
+                 *   [scd <object>:
+                 *       name <std::string>: SCD name
+                 *       info <std::string>: SCD info
+                 *       param <std::string>: SCD param
+                 *   ] *2
+                 *   [time <std::string "YYYY/MM/DD hh:mm:ss UTC">: update time]
                  * result:
                  *   session <std::string>: session ID
                  */
@@ -661,9 +669,18 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   norad <int>: NORAD number
                  * result:
                  *   session <std::string>: session ID
-                 *   name <std::string>: TLE name
-                 *   one <std::string>: TLE line 1
-                 *   two <std::string>: TLE line 2
+                 *   [none <object>:
+                 *   ] *3
+                 *   [tle <object>:
+                 *       name <std::string>: TLE name
+                 *       one <std::string>: TLE line 1
+                 *       two <std::string>: TLE line 2
+                 *   ] *3
+                 *   [scd <object>:
+                 *       name <std::string>: SCD name
+                 *       info <std::string>: SCD info
+                 *       param <std::string>: SCD param
+                 *   ] *3
                  *   time <std::string "YYYY/MM/DD hh:mm:ss UTC">: update time
                  */
                 tgs::TGSError                   getOrbitData                (std::string const& host, Param const& param, Param* result) const;
@@ -730,9 +747,13 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
         static  void                            toVariant                   (rapidjson::Value const& param, Variant* result);
         static  void                            toJSON                      (Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator);
         static  tgs::TGSError                   updateSession               (Param const& param, std::string* session, Param* result);
+        static  tgs::TGSError                   getParam                    (Param const& param, tgs::TGSPhysicsDatabase::RadioRec* result);
+        static  tgs::TGSError                   getParam                    (Param const& param, tgs::OrbitData* result);
         template <typename T>
         static  tgs::TGSError                   getParam                    (Param const& param, std::string const& key, T* result);
         static  tgs::TGSError                   getParam                    (Param const& param, std::string const& key, int* result);
+        static  void                            setResult                   (tgs::TGSPhysicsDatabase::RadioRec const& param, Param* result);
+        static  void                            setResult                   (tgs::OrbitData const& param, Param* result);
         template <typename T>
         static  void                            setResult                   (T const& param, std::string const& key, Param* result);
         static  tgs::TGSError                   setError                    (tgs::TGSError error, Param* result);

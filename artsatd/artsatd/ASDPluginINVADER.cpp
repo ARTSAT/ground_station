@@ -834,6 +834,7 @@ static DurationRec const g_duration[] = {
     TextEnum value;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
+    value = TEXT_LIMIT;
     if (text == "x") {
         value = TEXT_X;
     }
@@ -879,6 +880,7 @@ static DurationRec const g_duration[] = {
     TextEnum value;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
+    value = TEXT_LIMIT;
     if (text == "x") {
         value = TEXT_X;
     }
@@ -968,6 +970,7 @@ static DurationRec const g_duration[] = {
     if (pair.size() % 2 == 0) {
         string.clear();
         for (i = 0; i < pair.size(); i += 2) {
+            note = NOTE_END;
             for (j = 0; j < lengthof(g_note); ++j) {
                 if (pair[i + 0] == g_note[j].name) {
                     note = g_note[j].note;
@@ -975,6 +978,8 @@ static DurationRec const g_duration[] = {
                 }
             }
             if (j < lengthof(g_note)) {
+                duration = DURATION_01;
+                qualifier = QUALIFIER_NONE;
                 for (j = 0; j < lengthof(g_duration); ++j) {
                     if (pair[i + 1] == g_duration[j].name) {
                         duration = g_duration[j].duration;

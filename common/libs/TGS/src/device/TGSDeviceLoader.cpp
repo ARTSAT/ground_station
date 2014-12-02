@@ -93,7 +93,7 @@ namespace tgs {
 
 /*public */void TGSDeviceLoader::remove(TGSDeviceInterface* device)
 {
-    std::map<std::string, TGSDeviceInterface*>::const_iterator it;
+    std::map<std::string, TGSDeviceInterface*>::iterator it;
     
     if (device != NULL) {
         for (it = _record.begin(); it != _record.end(); ) {

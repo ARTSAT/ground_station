@@ -4,7 +4,7 @@
 // Author    : Antoine YESSAYAN, Paul RASCLE, EDF
 // Project   : SALOME
 // Copyright : EDF 2001
-// $Header$
+// $Header: /Users/Shared/CVSROOT/work/INVADER/software/ground_station/common/libs/TGS/src/physics/despatch_tracker/eigen-eigen-6b38706d90a9/bench/btl/generic_bench/utils/utilities.h,v 1.2 2014/11/28 19:39:39 administrator Exp $
 //=============================================================================
 
 /* ---  Definition macros file to print information if _DEBUG_ is defined --- */

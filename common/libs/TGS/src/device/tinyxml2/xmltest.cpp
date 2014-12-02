@@ -1,5 +1,7 @@
 #if defined( _MSC_VER )
-	#define _CRT_SECURE_NO_WARNINGS		// This test file is not intended to be secure.
+	#if !defined( _CRT_SECURE_NO_WARNINGS )
+		#define _CRT_SECURE_NO_WARNINGS		// This test file is not intended to be secure.
+	#endif
 #endif
 
 #include "tinyxml2.h"
@@ -21,11 +23,12 @@
 #endif
 
 using namespace tinyxml2;
+using namespace std;
 int gPass = 0;
 int gFail = 0;
 
 
-bool XMLTest (const char* testString, const char* expected, const char* found, bool echo=true )
+bool XMLTest (const char* testString, const char* expected, const char* found, bool echo=true, bool extraNL=false )
 {
 	bool pass = !strcmp( expected, found );
 	if ( pass )
@@ -33,10 +36,19 @@ bool XMLTest (const char* testString, const char* expected, const char* found, b
 	else
 		printf ("[fail]");
 
-	if ( !echo )
+	if ( !echo ) {
 		printf (" %s\n", testString);
-	else
-		printf (" %s [%s][%s]\n", testString, expected, found);
+	}
+	else {
+		if ( extraNL ) {
+			printf( " %s\n", testString );
+			printf( "%s\n", expected );
+			printf( "%s\n", found );
+		}
+		else {
+			printf (" %s [%s][%s]\n", testString, expected, found);
+		}
+	}
 
 	if ( pass )
 		++gPass;
@@ -268,10 +280,17 @@ int main( int argc, const char ** argv )
 {
 	#if defined( _MSC_VER ) && defined( DEBUG )
 		_CrtMemCheckpoint( &startMemState );
+		// Enable MS Visual C++ debug heap memory leaks dump on exit
+		_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
 	#if defined(_MSC_VER) || defined(MINGW32) || defined(__MINGW32__)
-		_mkdir( "resources/out/" );
+		#if defined __MINGW64_VERSION_MAJOR && defined __MINGW64_VERSION_MINOR
+			//MINGW64: both 32 and 64-bit
+			mkdir( "resources/out/" );
+                #else
+                	_mkdir( "resources/out/" );
+                #endif
 	#else
 		mkdir( "resources/out/", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	#endif
@@ -280,16 +299,16 @@ int main( int argc, const char ** argv )
 		XMLDocument* doc = new XMLDocument();
 		clock_t startTime = clock();
 		doc->LoadFile( argv[1] );
-		clock_t loadTime = clock();
+ 		clock_t loadTime = clock();
 		int errorID = doc->ErrorID();
 		delete doc; doc = 0;
-		clock_t deleteTime = clock();
+ 		clock_t deleteTime = clock();
 
 		printf( "Test file '%s' loaded. ErrorID=%d\n", argv[1], errorID );
 		if ( !errorID ) {
-			printf( "Load time=%d\n", loadTime - startTime );
-			printf( "Delete time=%d\n", deleteTime - loadTime );
-			printf( "Total time=%d\n", deleteTime - startTime );
+			printf( "Load time=%u\n",   (unsigned)(loadTime - startTime) );
+			printf( "Delete time=%u\n", (unsigned)(deleteTime - loadTime) );
+			printf( "Total time=%u\n",  (unsigned)(deleteTime - startTime) );
 		}
 		exit(0);
 	}
@@ -487,6 +506,7 @@ int main( int argc, const char ** argv )
 		XMLTest( "Query attribute: int as double", result, (int)XML_NO_ERROR );
 		XMLTest( "Query attribute: int as double", (int)dVal, 1 );
 		result = ele->QueryDoubleAttribute( "attr1", &dVal );
+		XMLTest( "Query attribute: double as double", result, (int)XML_NO_ERROR );
 		XMLTest( "Query attribute: double as double", (int)dVal, 2 );
 		result = ele->QueryIntAttribute( "attr1", &iVal );
 		XMLTest( "Query attribute: double as int", result, (int)XML_NO_ERROR );
@@ -599,6 +619,61 @@ int main( int argc, const char ** argv )
 		element = doc.RootElement();
 
 		XMLTest( "GetText() contained element.", element->GetText() == 0, true );
+	}
+
+
+	// --------SetText()-----------
+	{
+		const char* str = "<foo></foo>";
+		XMLDocument doc;
+		doc.Parse( str );
+		XMLElement* element = doc.RootElement();
+
+		element->SetText("darkness.");
+		XMLTest( "SetText() normal use (open/close).", "darkness.", element->GetText() );
+
+		element->SetText("blue flame.");
+		XMLTest( "SetText() replace.", "blue flame.", element->GetText() );
+
+		str = "<foo/>";
+		doc.Parse( str );
+		element = doc.RootElement();
+
+		element->SetText("The driver");
+		XMLTest( "SetText() normal use. (self-closing)", "The driver", element->GetText() );
+
+		element->SetText("<b>horses</b>");
+		XMLTest( "SetText() replace with tag-like text.", "<b>horses</b>", element->GetText() );
+		//doc.Print();
+
+		str = "<foo><bar>Text in nested element</bar></foo>";
+		doc.Parse( str );
+		element = doc.RootElement();
+		
+		element->SetText("wolves");
+		XMLTest( "SetText() prefix to nested non-text children.", "wolves", element->GetText() );
+
+		str = "<foo/>";
+		doc.Parse( str );
+		element = doc.RootElement();
+		
+		element->SetText( "str" );
+		XMLTest( "SetText types", "str", element->GetText() );
+
+		element->SetText( 1 );
+		XMLTest( "SetText types", "1", element->GetText() );
+
+		element->SetText( 1U );
+		XMLTest( "SetText types", "1", element->GetText() );
+
+		element->SetText( true );
+		XMLTest( "SetText types", "1", element->GetText() ); // TODO: should be 'true'?
+
+		element->SetText( 1.5f );
+		XMLTest( "SetText types", "1.5", element->GetText() );
+
+		element->SetText( 1.5 );
+		XMLTest( "SetText types", "1.5", element->GetText() );
 	}
 
 
@@ -1124,18 +1199,6 @@ int main( int argc, const char ** argv )
 		XMLTest( "Whitespace  all space", true, 0 == doc.FirstChildElement()->FirstChild() );
 	}
 
-#if 0		// the question being explored is what kind of print to use: 
-			// https://github.com/leethomason/tinyxml2/issues/63
-	{
-		const char* xml = "<element attrA='123456789.123456789' attrB='1.001e9'/>";
-		XMLDocument doc;
-		doc.Parse( xml );
-		doc.FirstChildElement()->SetAttribute( "attrA", 123456789.123456789 );
-		doc.FirstChildElement()->SetAttribute( "attrB", 1.001e9 );
-		doc.Print();
-	}
-#endif
-
 	{
 		// An assert should not fire.
 		const char* xml = "<element/>";
@@ -1156,6 +1219,177 @@ int main( int argc, const char ** argv )
 		ele->Accept( &printer );
 		XMLTest( "Printing of sub-element", "<child>abc</child>\n", printer.CStr(), false );
 	}
+
+
+	{
+		XMLDocument doc;
+		XMLError error = doc.LoadFile( "resources/empty.xml" );
+		XMLTest( "Loading an empty file", XML_ERROR_EMPTY_DOCUMENT, error );
+		XMLTest( "Loading an empty file and ErrorName as string", "XML_ERROR_EMPTY_DOCUMENT", doc.ErrorName() );
+		doc.PrintError();
+	}
+
+	{
+        // BOM preservation
+        static const char* xml_bom_preservation  = "\xef\xbb\xbf<element/>\n";
+        {
+			XMLDocument doc;
+			XMLTest( "BOM preservation (parse)", XML_NO_ERROR, doc.Parse( xml_bom_preservation ), false );
+            XMLPrinter printer;
+            doc.Print( &printer );
+
+            XMLTest( "BOM preservation (compare)", xml_bom_preservation, printer.CStr(), false, true );
+			doc.SaveFile( "resources/bomtest.xml" );
+        }
+		{
+			XMLDocument doc;
+			doc.LoadFile( "resources/bomtest.xml" );
+			XMLTest( "BOM preservation (load)", true, doc.HasBOM(), false );
+
+            XMLPrinter printer;
+            doc.Print( &printer );
+            XMLTest( "BOM preservation (compare)", xml_bom_preservation, printer.CStr(), false, true );
+		}
+	}
+
+	{
+		// Insertion with Removal
+		const char* xml = "<?xml version=\"1.0\" ?>"
+			"<root>"
+			"<one>"
+			"<subtree>"
+			"<elem>element 1</elem>text<!-- comment -->"
+			"</subtree>"
+			"</one>"
+			"<two/>"
+			"</root>";
+		const char* xmlInsideTwo = "<?xml version=\"1.0\" ?>"
+			"<root>"
+			"<one/>"
+			"<two>"
+			"<subtree>"
+			"<elem>element 1</elem>text<!-- comment -->"
+			"</subtree>"
+			"</two>"
+			"</root>";
+		const char* xmlAfterOne = "<?xml version=\"1.0\" ?>"
+			"<root>"
+			"<one/>"
+			"<subtree>"
+			"<elem>element 1</elem>text<!-- comment -->"
+			"</subtree>"
+			"<two/>"
+			"</root>";
+		const char* xmlAfterTwo = "<?xml version=\"1.0\" ?>"
+			"<root>"
+			"<one/>"
+			"<two/>"
+			"<subtree>"
+			"<elem>element 1</elem>text<!-- comment -->"
+			"</subtree>"
+			"</root>";
+
+		XMLDocument doc;
+		doc.Parse(xml);
+		XMLElement* subtree = doc.RootElement()->FirstChildElement("one")->FirstChildElement("subtree");
+		XMLElement* two = doc.RootElement()->FirstChildElement("two");
+		two->InsertFirstChild(subtree);
+		XMLPrinter printer1(0, true);
+		doc.Accept(&printer1);
+		XMLTest("Move node from within <one> to <two>", xmlInsideTwo, printer1.CStr());
+
+		doc.Parse(xml);
+		subtree = doc.RootElement()->FirstChildElement("one")->FirstChildElement("subtree");
+		two = doc.RootElement()->FirstChildElement("two");
+		doc.RootElement()->InsertAfterChild(two, subtree);
+		XMLPrinter printer2(0, true);
+		doc.Accept(&printer2);
+		XMLTest("Move node from within <one> after <two>", xmlAfterTwo, printer2.CStr(), false);
+
+		doc.Parse(xml);
+		XMLNode* one = doc.RootElement()->FirstChildElement("one");
+		subtree = one->FirstChildElement("subtree");
+		doc.RootElement()->InsertAfterChild(one, subtree);
+		XMLPrinter printer3(0, true);
+		doc.Accept(&printer3);
+		XMLTest("Move node from within <one> after <one>", xmlAfterOne, printer3.CStr(), false);
+
+		doc.Parse(xml);
+		subtree = doc.RootElement()->FirstChildElement("one")->FirstChildElement("subtree");
+		two = doc.RootElement()->FirstChildElement("two");
+		doc.RootElement()->InsertEndChild(subtree);
+		XMLPrinter printer4(0, true);
+		doc.Accept(&printer4);
+		XMLTest("Move node from within <one> after <two>", xmlAfterTwo, printer4.CStr(), false);
+	}
+
+	{
+		const char* xml = "<svg width = \"128\" height = \"128\">"
+			"	<text> </text>"
+			"</svg>";
+		XMLDocument doc;
+		doc.Parse(xml);
+		doc.Print();
+	}
+
+	{
+		// Test that it doesn't crash.
+		const char* xml = "<?xml version=\"1.0\"?><root><sample><field0><1</field0><field1>2</field1></sample></root>";
+		XMLDocument doc;
+		doc.Parse(xml);
+		doc.PrintError();
+	}
+
+#if 1
+		// the question being explored is what kind of print to use: 
+		// https://github.com/leethomason/tinyxml2/issues/63
+	{
+		//const char* xml = "<element attrA='123456789.123456789' attrB='1.001e9' attrC='1.0e-10' attrD='1001000000.000000' attrE='0.1234567890123456789'/>";
+		const char* xml = "<element/>";
+		XMLDocument doc;
+		doc.Parse( xml );
+		doc.FirstChildElement()->SetAttribute( "attrA-f64", 123456789.123456789 );
+		doc.FirstChildElement()->SetAttribute( "attrB-f64", 1.001e9 );
+		doc.FirstChildElement()->SetAttribute( "attrC-f64", 1.0e9 );
+		doc.FirstChildElement()->SetAttribute( "attrC-f64", 1.0e20 );
+		doc.FirstChildElement()->SetAttribute( "attrD-f64", 1.0e-10 );
+		doc.FirstChildElement()->SetAttribute( "attrD-f64", 0.123456789 );
+
+		doc.FirstChildElement()->SetAttribute( "attrA-f32", 123456789.123456789f );
+		doc.FirstChildElement()->SetAttribute( "attrB-f32", 1.001e9f );
+		doc.FirstChildElement()->SetAttribute( "attrC-f32", 1.0e9f );
+		doc.FirstChildElement()->SetAttribute( "attrC-f32", 1.0e20f );
+		doc.FirstChildElement()->SetAttribute( "attrD-f32", 1.0e-10f );
+		doc.FirstChildElement()->SetAttribute( "attrD-f32", 0.123456789f );
+
+		doc.Print();
+
+		/* The result of this test is platform, compiler, and library version dependent. :("
+		XMLPrinter printer;
+		doc.Print( &printer );
+		XMLTest( "Float and double formatting.", 
+			"<element attrA-f64=\"123456789.12345679\" attrB-f64=\"1001000000\" attrC-f64=\"1e+20\" attrD-f64=\"0.123456789\" attrA-f32=\"1.2345679e+08\" attrB-f32=\"1.001e+09\" attrC-f32=\"1e+20\" attrD-f32=\"0.12345679\"/>\n",
+			printer.CStr(), 
+			true );
+		*/
+	}
+#endif
+    
+    {
+        // Issue #184
+        // If it doesn't assert, it passes. Caused by objects
+        // getting created during parsing which are then
+        // inaccessible in the memory pools.
+        {
+            XMLDocument doc;
+            doc.Parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>");
+        }
+        {
+            XMLDocument doc;
+            doc.Parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test>");
+            doc.Clear();
+        }
+    }
 
 
 	// ----------- Performance tracking --------------
@@ -1209,14 +1443,13 @@ int main( int argc, const char ** argv )
 
 	#if defined( _MSC_VER ) &&  defined( DEBUG )
 		_CrtMemCheckpoint( &endMemState );
-		//_CrtMemDumpStatistics( &endMemState );
 
 		_CrtMemState diffMemState;
 		_CrtMemDifference( &diffMemState, &startMemState, &endMemState );
 		_CrtMemDumpStatistics( &diffMemState );
-		//printf( "new total=%d\n", gNewTotal );
 	#endif
 
 	printf ("\nPass %d, Fail %d\n", gPass, gFail);
-	return 0;
+
+	return gFail;
 }

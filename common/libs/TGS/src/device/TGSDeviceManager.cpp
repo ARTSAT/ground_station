@@ -128,7 +128,7 @@ namespace tgs {
 
 /*public */void TGSDeviceManager::removeByIndex(int index)
 {
-    std::vector<RecordRec>::const_iterator it;
+    std::vector<RecordRec>::iterator it;
     
     if (0 <= index && index < _record.size()) {
         it = _record.begin() + index;
@@ -139,7 +139,7 @@ namespace tgs {
 
 /*public */void TGSDeviceManager::removeByDevice(TGSDeviceInterface* device)
 {
-    std::vector<RecordRec>::const_iterator it;
+    std::vector<RecordRec>::iterator it;
     
     if (device != NULL) {
         for (it = _record.begin(); it != _record.end(); ++it) {

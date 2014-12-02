@@ -53,6 +53,7 @@
 #include "artsatd.h"
 
 #define JSON_VERSION                            ("2.0")
+#define TIME_FORMAT                             ("%YYYY/%MM/%DD %hh:%mm:%ss UTC")
 
 struct MethodTableRec {
     char const*                 name;
@@ -65,9 +66,9 @@ class Writer : public rapidjson::Writer<T> {
                 {
                 }
     
-                Writer&         Double          (double param)
+                bool            Double          (double param)
                 {
-                    char buffer[100];
+                    char buffer[384];
                     int ret;
                     int i;
                     
@@ -80,14 +81,14 @@ class Writer : public rapidjson::Writer<T> {
                     if (!isnan(param) && !isinf(param)) {
                         this->Prefix(rapidjson::kNumberType);
                         for (i = 0; i < ret; ++i) {
-                            this->stream_.Put(buffer[i]);
+                            this->os_->Put(buffer[i]);
                         }
                     }
                     else {
                         this->Prefix(rapidjson::kStringType);
-                        this->WriteString(buffer, strlen(buffer));
+                        this->WriteString(buffer, static_cast<rapidjson::SizeType>(strlen(buffer)));
                     }
-                    return *this;
+                    return true;
                 }
 };
 
@@ -466,7 +467,7 @@ static  MethodTableRec const                    g_method[] = {
                 std::map<std::string, Variant>::const_iterator it;
                 for (it = map.begin(); it != map.end(); ++it) {
                     toJSON(it->second, &value, allocator);
-                    result->AddMember(it->first.c_str(), allocator, value, allocator);
+                    result->AddMember(rapidjson::Value(it->first.c_str(), allocator), value, allocator);
                 }
             }
             break;
@@ -661,7 +662,7 @@ static  MethodTableRec const                    g_method[] = {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        setResult((artsatd::getInstance().getTime() - ir::IRXTimeDiff::localTimeOffset()).format("%YYYY/%MM/%DD %hh:%mm:%ss UTC"), "time", result);
+        setResult((artsatd::getInstance().getTime() - ir::IRXTimeDiff::localTimeOffset()).format(TIME_FORMAT), "time", result);
     }
     return error;
 }
@@ -797,8 +798,8 @@ static  MethodTableRec const                    g_method[] = {
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
         artsatd::getInstance().getSpacecraftAOSLOS(&aos, &los);
-        setResult((aos - ir::IRXTimeDiff::localTimeOffset()).format("%YYYY/%MM/%DD %hh:%mm:%ss UTC"), "aos", result);
-        setResult((los - ir::IRXTimeDiff::localTimeOffset()).format("%YYYY/%MM/%DD %hh:%mm:%ss UTC"), "los", result);
+        setResult((aos - ir::IRXTimeDiff::localTimeOffset()).format(TIME_FORMAT), "aos", result);
+        setResult((los - ir::IRXTimeDiff::localTimeOffset()).format(TIME_FORMAT), "los", result);
     }
     return error;
 }
@@ -824,7 +825,7 @@ static  MethodTableRec const                    g_method[] = {
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
         artsatd::getInstance().getRotatorStart(&start);
-        setResult((start - ir::IRXTimeDiff::localTimeOffset()).format("%YYYY/%MM/%DD %hh:%mm:%ss UTC"), "start", result);
+        setResult((start - ir::IRXTimeDiff::localTimeOffset()).format(TIME_FORMAT), "start", result);
     }
     return error;
 }
@@ -1057,10 +1058,24 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setName(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    std::string name;
+    tgs::TGSPhysicsDatabase database;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(param, "name", &name)) == tgs::TGSERROR_OK) {
+                // TODO: need to lock the session
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    error = database.setName(norad, name);
+                    database.close();
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
+            }
+        }
     }
     return error;
 }
@@ -1068,8 +1083,8 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getName(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
-    tgs::TGSPhysicsDatabase database;
     int norad;
+    tgs::TGSPhysicsDatabase database;
     std::string name;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
@@ -1092,10 +1107,24 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setCallsign(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    std::string callsign;
+    tgs::TGSPhysicsDatabase database;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(param, "callsign", &callsign)) == tgs::TGSERROR_OK) {
+                // TODO: need to lock the session
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    error = database.setCallsign(norad, callsign);
+                    database.close();
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
+            }
+        }
     }
     return error;
 }
@@ -1103,8 +1132,8 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getCallsign(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
-    tgs::TGSPhysicsDatabase database;
     int norad;
+    tgs::TGSPhysicsDatabase database;
     std::string callsign;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
@@ -1127,10 +1156,28 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setRadioBeacon(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase::RadioRec radio;
+    tgs::TGSPhysicsDatabase database;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(param, &radio)) == tgs::TGSERROR_OK) {
+                // TODO: need to lock the session
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    if ((error = database.getRadioBeacon(norad, &radio)) == tgs::TGSERROR_OK) {
+                        if ((error = getParam(param, &radio)) == tgs::TGSERROR_OK) {
+                            error = database.setRadioBeacon(norad, radio);
+                        }
+                    }
+                    database.close();
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
+            }
+        }
     }
     return error;
 }
@@ -1138,10 +1185,23 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getRadioBeacon(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase database;
+    tgs::TGSPhysicsDatabase::RadioRec radio;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                if ((error = database.getRadioBeacon(norad, &radio)) == tgs::TGSERROR_OK) {
+                    setResult(radio, result);
+                }
+                database.close();
+            }
+            if (error != tgs::TGSERROR_OK) {
+                error = setError(error, result);
+            }
+        }
     }
     return error;
 }
@@ -1149,10 +1209,28 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setRadioSender(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase::RadioRec radio;
+    tgs::TGSPhysicsDatabase database;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(param, &radio)) == tgs::TGSERROR_OK) {
+                // TODO: need to lock the session
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    if ((error = database.getRadioSender(norad, &radio)) == tgs::TGSERROR_OK) {
+                        if ((error = getParam(param, &radio)) == tgs::TGSERROR_OK) {
+                            error = database.setRadioSender(norad, radio);
+                        }
+                    }
+                    database.close();
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
+            }
+        }
     }
     return error;
 }
@@ -1160,10 +1238,23 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getRadioSender(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase database;
+    tgs::TGSPhysicsDatabase::RadioRec radio;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                if ((error = database.getRadioSender(norad, &radio)) == tgs::TGSERROR_OK) {
+                    setResult(radio, result);
+                }
+                database.close();
+            }
+            if (error != tgs::TGSERROR_OK) {
+                error = setError(error, result);
+            }
+        }
     }
     return error;
 }
@@ -1171,10 +1262,28 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setRadioReceiver(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase::RadioRec radio;
+    tgs::TGSPhysicsDatabase database;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(param, &radio)) == tgs::TGSERROR_OK) {
+                // TODO: need to lock the session
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    if ((error = database.getRadioReceiver(norad, &radio)) == tgs::TGSERROR_OK) {
+                        if ((error = getParam(param, &radio)) == tgs::TGSERROR_OK) {
+                            error = database.setRadioReceiver(norad, radio);
+                        }
+                    }
+                    database.close();
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
+            }
+        }
     }
     return error;
 }
@@ -1182,10 +1291,23 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getRadioReceiver(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase database;
+    tgs::TGSPhysicsDatabase::RadioRec radio;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                if ((error = database.getRadioReceiver(norad, &radio)) == tgs::TGSERROR_OK) {
+                    setResult(radio, result);
+                }
+                database.close();
+            }
+            if (error != tgs::TGSERROR_OK) {
+                error = setError(error, result);
+            }
+        }
     }
     return error;
 }
@@ -1193,10 +1315,32 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::setOrbitData(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    tgs::OrbitData orbit;
+    std::string string;
+    ir::IRXTime time;
+    tgs::TGSPhysicsDatabase database;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, &orbit)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(param, "time", &string)) == tgs::TGSERROR_OK) {
+                error = time.parse(TIME_FORMAT, string);
+            }
+            else if (error == tgs::TGSERROR_NO_RESULT) {
+                error = tgs::TGSERROR_OK;
+                time = ir::IRXTime::currentUTCTime();
+            }
+            if (error == tgs::TGSERROR_OK) {
+                // TODO: need to lock the session
+                if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                    error = database.setOrbitData(orbit, time);
+                    database.close();
+                }
+                if (error != tgs::TGSERROR_OK) {
+                    error = setError(error, result);
+                }
+            }
+        }
     }
     return error;
 }
@@ -1204,10 +1348,25 @@ static  MethodTableRec const                    g_method[] = {
 /*public */tgs::TGSError ASDServerRPC::getOrbitData(std::string const& host, Param const& param, Param* result) const
 {
     std::string session;
+    int norad;
+    tgs::TGSPhysicsDatabase database;
+    tgs::OrbitData orbit;
+    ir::IRXTime time;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
-        error = setError(tgs::TGSERROR_NO_SUPPORT, result);
+        if ((error = getParam(param, "norad", &norad)) == tgs::TGSERROR_OK) {
+            if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
+                if ((error = database.getOrbitData(norad, &orbit, &time)) == tgs::TGSERROR_OK) {
+                    setResult(orbit, result);
+                    setResult(time.format(TIME_FORMAT), "time", result);
+                }
+                database.close();
+            }
+            if (error != tgs::TGSERROR_OK) {
+                error = setError(error, result);
+            }
+        }
     }
     return error;
 }
@@ -1314,6 +1473,64 @@ static  MethodTableRec const                    g_method[] = {
     return error;
 }
 
+/*private static */tgs::TGSError ASDServerRPC::getParam(Param const& param, tgs::TGSPhysicsDatabase::RadioRec* result)
+{
+    tgs::TGSError trial;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    error = tgs::TGSERROR_NO_RESULT;
+    if ((trial = getParam(param, "mode", &result->mode)) != tgs::TGSERROR_NO_RESULT) {
+        error = trial;
+    }
+    if (error == tgs::TGSERROR_OK || error == tgs::TGSERROR_NO_RESULT) {
+        if ((trial = getParam(param, "frequency", &result->frequency)) != tgs::TGSERROR_NO_RESULT) {
+            error = trial;
+        }
+        if (error == tgs::TGSERROR_OK || error == tgs::TGSERROR_NO_RESULT) {
+            if ((trial = getParam(param, "drift", &result->drift)) != tgs::TGSERROR_NO_RESULT) {
+                error = trial;
+            }
+        }
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError ASDServerRPC::getParam(Param const& param, tgs::OrbitData* result)
+{
+    Param object;
+    std::string name;
+    std::string data1;
+    std::string data2;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = getParam(param, "tle", &object)) == tgs::TGSERROR_OK) {
+        if ((error = getParam(object, "name", &name)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(object, "one", &data1)) == tgs::TGSERROR_OK) {
+                if ((error = getParam(object, "two", &data2)) == tgs::TGSERROR_OK) {
+                    error = convertTLE(name, data1, data2, result);
+                }
+            }
+        }
+    }
+    else if (error == tgs::TGSERROR_NO_RESULT) {
+        if ((error = getParam(param, "scd", &object)) == tgs::TGSERROR_OK) {
+            if ((error = getParam(object, "name", &name)) == tgs::TGSERROR_OK) {
+                if ((error = getParam(object, "info", &data1)) == tgs::TGSERROR_OK) {
+                    if ((error = getParam(object, "param", &data2)) == tgs::TGSERROR_OK) {
+                        error = convertSCD(name, data1, data2, result);
+                    }
+                }
+            }
+        }
+        else if (error == tgs::TGSERROR_NO_RESULT) {
+            if ((error = getParam(param, "none", &object)) == tgs::TGSERROR_OK) {
+                *result = tgs::OrbitData();
+            }
+        }
+    }
+    return error;
+}
+
 template <typename T>
 /*private static */tgs::TGSError ASDServerRPC::getParam(Param const& param, std::string const& key, T* result)
 {
@@ -1351,6 +1568,38 @@ template <typename T>
         error = tgs::TGSERROR_NO_RESULT;
     }
     return error;
+}
+
+/*private static */void ASDServerRPC::setResult(tgs::TGSPhysicsDatabase::RadioRec const& param, Param* result)
+{
+    setResult(param.mode, "mode", result);
+    setResult(param.frequency, "frequency", result);
+    setResult(param.drift, "drift", result);
+    return;
+}
+
+/*private static */void ASDServerRPC::setResult(tgs::OrbitData const& param, Param* result)
+{
+    Param object;
+    
+    switch (param.getType()) {
+        case tgs::OrbitData::TYPE_TLE:
+            setResult(static_cast<tgs::TLERec const&>(param).name, "name", &object);
+            setResult(static_cast<tgs::TLERec const&>(param).one, "one", &object);
+            setResult(static_cast<tgs::TLERec const&>(param).two, "two", &object);
+            setResult(object, "tle", result);
+            break;
+        case tgs::OrbitData::TYPE_SCD:
+            setResult(static_cast<tgs::SCDRec const&>(param).name, "name", &object);
+            setResult(static_cast<tgs::SCDRec const&>(param).info, "info", &object);
+            setResult(static_cast<tgs::SCDRec const&>(param).param, "param", &object);
+            setResult(object, "scd", result);
+            break;
+        default:
+            setResult(object, "none", result);
+            break;
+    }
+    return;
 }
 
 template <typename T>

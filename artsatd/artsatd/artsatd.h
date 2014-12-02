@@ -55,7 +55,6 @@
 #include "ASDDeviceTransceiver.h"
 #include "ASDDeviceTNC.h"
 #include "ASDHTTPClientInterface.h"
-#include "ASDServerDatabase.h"
 #include "ASDServerOperation.h"
 #include "ASDServerRPC.h"
 //<<<
@@ -89,8 +88,6 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
     
     private:
         struct ConfigRec {
-            std::string                         serverDatabasePort;
-            int                                 serverDatabaseListen;
             std::string                         serverOperationPort;
             int                                 serverOperationListen;
             std::string                         serverRPCPort;
@@ -191,10 +188,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 ASDDeviceTNC                    _tnc;
                 std::vector<boost::shared_ptr<ASDHTTPClientInterface> >
                                                 _clientHTTP;
-                ASDNetworkServer                _serverDatabase;
                 ASDNetworkServer                _serverOperation;
                 ASDNetworkServer                _serverRPC;
-                ASDServerDatabase               _replierDatabase;
                 ASDServerOperation              _replierOperation;
                 ASDServerRPC                    _replierRPC;
                 //<<<

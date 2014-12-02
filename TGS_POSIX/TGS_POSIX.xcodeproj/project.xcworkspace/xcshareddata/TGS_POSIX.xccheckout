@@ -10,31 +10,31 @@
 	<string>TGS_POSIX</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>4A19F0DBA7A6F0E1024B500686D6DB8F557D5BBB</key>
-		<string>http://vps.artsat.jp/git/artsat.git</string>
+		<key>71D6311FD11BB6953ECC066C37BB69F53FFD0903</key>
+		<string>https://github.com/ARTSAT/ground_station</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>ground_station/TGS_POSIX/TGS_POSIX.xcodeproj</string>
+	<string>TGS_POSIX/TGS_POSIX.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>4A19F0DBA7A6F0E1024B500686D6DB8F557D5BBB</key>
-		<string>../../../..</string>
+		<key>71D6311FD11BB6953ECC066C37BB69F53FFD0903</key>
+		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>http://vps.artsat.jp/git/artsat.git</string>
+	<string>https://github.com/ARTSAT/ground_station</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>4A19F0DBA7A6F0E1024B500686D6DB8F557D5BBB</string>
+	<string>71D6311FD11BB6953ECC066C37BB69F53FFD0903</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>4A19F0DBA7A6F0E1024B500686D6DB8F557D5BBB</string>
+			<string>71D6311FD11BB6953ECC066C37BB69F53FFD0903</string>
 			<key>IDESourceControlWCCName</key>
-			<string>artsat</string>
+			<string>ground_station</string>
 		</dict>
 	</array>
 </dict>

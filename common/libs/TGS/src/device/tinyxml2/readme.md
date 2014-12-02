@@ -1,7 +1,8 @@
 TinyXML-2
 =========
+![TinyXML-2 Logo](http://www.grinninglizard.com/tinyxml2/TinyXML2_small.png)
 
-TinyXML is a simple, small, efficient, C++ XML parser that can be 
+TinyXML-2 is a simple, small, efficient, C++ XML parser that can be 
 easily integrated into other programs.
 
 The master is hosted on github:
@@ -15,7 +16,7 @@ Examples are in the "related pages" tab of the HTML docs.
 What it does.
 -------------
 	
-In brief, TinyXML parses an XML document, and builds from that a 
+In brief, TinyXML-2 parses an XML document, and builds from that a 
 Document Object Model (DOM) that can be read, modified, and saved.
 
 XML stands for "eXtensible Markup Language." It is a general purpose
@@ -50,16 +51,18 @@ What it doesn't do.
 
 TinyXML-2 doesn't parse or use DTDs (Document Type Definitions) or XSLs
 (eXtensible Stylesheet Language.) There are other parsers out there 
-that are much more fully
-featured. But they are also much bigger, take longer to set up in
-your project, have a higher learning curve, and often have a more
-restrictive license. If you are working with browsers or have more
-complete XML needs, TinyXML-2 is not the parser for you.
+that are much more fully featured. But they are also much bigger, 
+take longer to set up in your project, have a higher learning curve, 
+and often have a more restrictive license. If you are working with 
+browsers or have more complete XML needs, TinyXML-2 is not the parser for you.
 
 TinyXML-1 vs. TinyXML-2
 -----------------------
 
-Which should you use? TinyXML-2 uses a similar API to TinyXML-1 and the same
+TinyXML-2 is now the focus of all development, well tested, and your
+best choice unless you have a requirement to maintain TinyXML-1 code.
+
+TinyXML-2 uses a similar API to TinyXML-1 and the same
 rich test cases. But the implementation of the parser is completely re-written
 to make it more appropriate for use in a game. It uses less memory, is faster,
 and uses far fewer memory allocations.
@@ -165,7 +168,7 @@ characters. Namely:
 	&quot;	"
 	&apos;	'
 
-These are recognized when the XML document is read, and translated to there
+These are recognized when the XML document is read, and translated to their
 UTF-8 equivalents. For instance, text with the XML of:
 
 	Far &amp; Away
@@ -197,7 +200,7 @@ Or the XMLPrinter class:
 Printing to memory is supported by the XMLPrinter.
 
 	XMLPrinter printer;
-	doc->Print( &printer );
+	doc.Print( &printer );
 	// printer.CStr() has a const char* to the XML
 
 #### Print without an XMLDocument
@@ -262,8 +265,17 @@ And additionally a test file:
 * xmltest.cpp
 
 Simply compile and run. There is a visual studio 2010 project included, a simple Makefile, 
-an XCode project, and a cmake CMakeLists.txt included to help you. The top of tinyxml.h
-even has a simple g++ command line if you are are *nix and don't want to use a build system.
+an XCode project, a Code::Blocks project, and a cmake CMakeLists.txt included to help you. 
+The top of tinyxml.h even has a simple g++ command line if you are are *nix and don't want 
+to use a build system.
+
+Versioning
+----------
+
+TinyXML-2 uses semantic versioning. http://semver.org/ Releases are now tagged in github.
+
+Note that the major version will (probably) change fairly rapidly. API changes are fairly
+common.
 
 Documentation
 -------------
@@ -304,5 +316,9 @@ in shaping what is a very successful library. Extra thanks to Yves
 Berquin and Andrew Ellerton who were key contributors.
 
 TinyXML-2 grew from that effort. Lee Thomason is the original author
-of TinyXML-2 (and TinyXML-1) but hopefully TinyXML-2 will be improved
+of TinyXML-2 (and TinyXML-1) but TinyXML-2 has been and is being improved
 by many contributors.
+
+Thanks to John Mackay at http://john.mackay.rosalilastudio.com for the TinyXML-2 logo!
+
+

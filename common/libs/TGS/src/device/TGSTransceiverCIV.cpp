@@ -376,7 +376,7 @@ namespace tgs {
 
 /*private */void TGSTransceiverCIV::disconnect(Transceiver* param)
 {
-    std::vector<Transceiver*>::const_iterator it;
+    std::vector<Transceiver*>::iterator it;
     
     if (param != NULL) {
         for (it = _transceiver.begin(); it != _transceiver.end(); ++it) {

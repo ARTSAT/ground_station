@@ -77,7 +77,7 @@ tgs::TGSError ASDOrbitPassFactory::getNearestPass(ASDOrbitPass* pass, ir::IRXTim
             }
         }
         
-        double azimuth, elevation;
+        double azimuth = 0.0, elevation = 0.0;
         if (_orbit->setTargetTime(param) == tgs::TGSERROR_OK &&
             _orbit->getSpacecraftDirection(&azimuth, &elevation) == tgs::TGSERROR_OK) {
             ir::IRXTime aos = param;

@@ -372,7 +372,7 @@ class ASDNetworkServer::Responder {
     Server::request::vector_type::const_iterator hit;
     std::vector<std::string> cookie;
     std::vector<std::string>::iterator cit;
-    int index;
+    std::string::size_type index;
     
     result->clear();
     for (hit = header.begin(); hit != header.end(); ++hit) {

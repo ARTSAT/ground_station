@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <server>
-        <database>
-            <port>16781</port>
-            <listen>1</listen>
-        </database>
         <operation>
             <port>16780</port>
             <listen>4</listen>

@@ -47,6 +47,7 @@
 #ifndef __TGS_TYPE_H
 #define __TGS_TYPE_H
 
+#include <typeinfo>
 #include <string>
 
 namespace tgs {

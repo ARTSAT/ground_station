@@ -168,6 +168,7 @@ namespace tgs {
     std::string key;
     std::string name;
     std::string value;
+    std::string::size_type index;
     int i;
     TGSError error(TGSERROR_OK);
     
@@ -197,8 +198,8 @@ namespace tgs {
                             value += ", ";
                         }
                         if ((error = print(value, &value, ap)) == TGSERROR_OK) {
-                            if ((i = value.find(key)) != std::string::npos) {
-                                value.erase(i, key.size() + 2);
+                            if ((index = value.find(key)) != std::string::npos) {
+                                value.erase(index, key.size() + 2);
                             }
                             if (value.size() >= 2) {
                                 value.erase(value.size() - 2);

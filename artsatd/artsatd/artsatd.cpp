@@ -54,7 +54,7 @@
 #include "ASDHTTPClientCelestrak.h"
 #include "ASDHTTPClientGithub.h"
 
-#define VERSION_STRING                          ("5.0.0 beta1")
+#define VERSION_STRING                          ("5.0.2")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -63,8 +63,6 @@
 #define XML_DEVICE                              ("device.xml")
 #define XML_NETWORK                             ("network.xml")
 #define DATABASE_PHYSICS                        ("physics.db")
-#define DEFAULT_SERVER_DATABASE_PORT            ("16781")
-#define DEFAULT_SERVER_DATABASE_LISTEN          (1)
 #define DEFAULT_SERVER_OPERATION_PORT           ("16780")
 #define DEFAULT_SERVER_OPERATION_LISTEN         (4)
 #define DEFAULT_SERVER_RPC_PORT                 ("16782")
@@ -133,7 +131,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         rsthst = _session.host;
     }
     if (online != NULL) {
-        *online = _session.id.size();
+        *online = static_cast<int>(_session.id.size());
     }
     rlock.unlock();
     if (owner != NULL) {
@@ -1134,8 +1132,6 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     closeConfig();
-    _config.serverDatabasePort = DEFAULT_SERVER_DATABASE_PORT;
-    _config.serverDatabaseListen = DEFAULT_SERVER_DATABASE_LISTEN;
     _config.serverOperationPort = DEFAULT_SERVER_OPERATION_PORT;
     _config.serverOperationListen = DEFAULT_SERVER_OPERATION_LISTEN;
     _config.serverRPCPort = DEFAULT_SERVER_RPC_PORT;
@@ -1163,10 +1159,6 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         case tinyxml2::XML_NO_ERROR:
             if ((root = xml.FirstChildElement("config")) != NULL) {
                 if ((type = root->FirstChildElement("server")) != NULL) {
-                    if ((element = type->FirstChildElement("database")) != NULL) {
-                        xmlReadText(element, "port", &_config.serverDatabasePort);
-                        xmlReadInteger(element, "listen", &_config.serverDatabaseListen);
-                    }
                     if ((element = type->FirstChildElement("operation")) != NULL) {
                         xmlReadText(element, "port", &_config.serverOperationPort);
                         xmlReadInteger(element, "listen", &_config.serverOperationListen);
@@ -1222,8 +1214,6 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             error = tgs::TGSERROR_FAILED;
             break;
     }
-    log(LOG_NOTICE, "  CONFIG: Server Database Port    [%s]", _config.serverDatabasePort.c_str());
-    log(LOG_NOTICE, "  CONFIG: Server Database Listen  [%d]", _config.serverDatabaseListen);
     log(LOG_NOTICE, "  CONFIG: Server Operation Port   [%s]", _config.serverOperationPort.c_str());
     log(LOG_NOTICE, "  CONFIG: Server Operation Listen [%d]", _config.serverOperationListen);
     log(LOG_NOTICE, "  CONFIG: Server RPC Port         [%s]", _config.serverRPCPort.c_str());
@@ -1475,13 +1465,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     if (error == tgs::TGSERROR_OK) {
         if ((error = _replierOperation.open(PATH_SERVER, DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
             if ((error = _replierRPC.open(DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
-                _serverDatabase.setNotifier(&_replierDatabase);
-                if ((error = _serverDatabase.open(_config.serverDatabasePort, _config.serverDatabaseListen)) == tgs::TGSERROR_OK) {
-                    _serverOperation.setNotifier(&_replierOperation);
-                    if ((error = _serverOperation.open(_config.serverOperationPort, _config.serverOperationListen)) == tgs::TGSERROR_OK) {
-                        _serverRPC.setNotifier(&_replierRPC);
-                        error = _serverRPC.open(_config.serverRPCPort, _config.serverRPCListen);
-                    }
+                _serverOperation.setNotifier(&_replierOperation);
+                if ((error = _serverOperation.open(_config.serverOperationPort, _config.serverOperationListen)) == tgs::TGSERROR_OK) {
+                    _serverRPC.setNotifier(&_replierRPC);
+                    error = _serverRPC.open(_config.serverRPCPort, _config.serverRPCListen);
                 }
             }
         }
@@ -1532,7 +1519,6 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 {
     _serverRPC.close();
     _serverOperation.close();
-    _serverDatabase.close();
     _replierRPC.close();
     _replierOperation.close();
     _clientHTTP.clear();
@@ -1762,7 +1748,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
 {
     session->id.clear();
     session->owner.clear();
-    session->random.seed(ir::IRXTime::currentUTCTime().asTime_t());
+    session->random.seed(static_cast<unsigned int>(ir::IRXTime::currentUTCTime().asTime_t()));
     return;
 }
 
