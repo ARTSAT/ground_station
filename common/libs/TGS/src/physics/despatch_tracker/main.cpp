@@ -83,7 +83,7 @@ int main (int argc, char* argv[])
 	DespatchTracker tracker;	// based on :public SpacecraftTracker, :public SpacecraftCalculator
 	
 	// [1] init the departure time (necessary to get DESPATCH phase)
-	const double DepartureMjd = 56994.264074;//56994.264023;   //2014/12/3
+	const double DepartureMjd = 56994.264023;   //2014/12/3
 	tracker.setDepartureTime (DepartureMjd);
 	// ---end of [1]
 	

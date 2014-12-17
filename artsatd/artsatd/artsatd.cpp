@@ -54,7 +54,7 @@
 #include "ASDHTTPClientCelestrak.h"
 #include "ASDHTTPClientGithub.h"
 
-#define VERSION_STRING                          ("5.0.4")
+#define VERSION_STRING                          ("5.0.5")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")

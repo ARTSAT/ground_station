@@ -89,7 +89,6 @@ class SpacecraftCalculator {
 		void calcSpacecraftVelEci (Vector3d* scVelEci) const;
 		void calcSpacecraftPosEcef (Vector3d* scPosEcef) const;
 		void calcSpacecraftRelativePosEnu (Vector3d* scPosEnu) const;
-		void calcGeometry (double* lat, double* lon, Vector3d const& relativePos, double latError, double lonError) const;
 		void calcDopplerRatio (double* downlink, double* uplink,  Vector3d const& relativePos, Vector3d const& relativeVel) const;
 };
 

@@ -33,7 +33,15 @@ void SpacecraftCalculator:: getGeometryEarthCentered (double *declination, doubl
 {	
 	Vector3d scPosEci;
 	calcSpacecraftPosEci (&scPosEci);
-	calcGeometry (declination, rightAscension, scPosEci, decError, raError);
+    
+    const int X  = 0, Y = 1, Z = 2;
+	const double Pi = M_PI;
+	
+	*declination = atan2 (scPosEci[Z], sqrt (scPosEci[X] * scPosEci[X] + scPosEci[Y] * scPosEci[Y])) + decError;
+	*rightAscension = atan2 (scPosEci[Y], scPosEci[X]) + raError;
+	
+	tf:: normalizeRadian (declination, -Pi);
+	tf:: normalizeRadian (rightAscension);
 }
 
 void SpacecraftCalculator:: getDopplerRatioEarthCentered (double* downlink, double* uplink) const
@@ -101,7 +109,14 @@ void SpacecraftCalculator:: getSpacecraftDirection (double* elevation, double* a
 	Vector3d scRelativePosEnu;
 	calcSpacecraftRelativePosEnu (&scRelativePosEnu);
 	
-	calcGeometry (elevation, azimuth, scRelativePosEnu, eleError, aziError);
+    const int X  = 0, Y = 1, Z = 2;
+	const double Pi = M_PI;
+	
+	*elevation = atan2 (scRelativePosEnu[Z], sqrt (scRelativePosEnu[X] * scRelativePosEnu[X] + scRelativePosEnu[Y] * scRelativePosEnu[Y])) + eleError;
+	*azimuth = atan2 (scRelativePosEnu[X], scRelativePosEnu[Y]) + aziError;
+	
+	tf:: normalizeRadian (elevation, -Pi);
+	tf:: normalizeRadian (azimuth);
 }
 
 void SpacecraftCalculator:: getDopplerRatio (double* downlink, double* uplink) const
@@ -302,18 +317,6 @@ void SpacecraftCalculator:: calcSpacecraftRelativePosEnu (Vector3d* scPosEnu) co
 	tf:: calcDcm (&C3, 2, Pi / 2.0);
 	
 	*scPosEnu = C3 * C2 * C1 * scRelativePosEci;
-}
-
-void SpacecraftCalculator:: calcGeometry (double* lat, double* lon, Vector3d const& relativePos, double latError, double lonError) const
-{
-	const int X  = 0, Y = 1, Z = 2;
-	const double Pi = M_PI;
-	
-	*lat = atan2 (relativePos[Z], sqrt (relativePos[X] * relativePos[X] + relativePos[Y] * relativePos[Y])) + latError;
-	*lon = atan2 (relativePos[X], relativePos[Y]) + lonError;
-	
-	tf:: normalizeRadian (lat, -Pi);
-	tf:: normalizeRadian (lon);
 }
 
 void SpacecraftCalculator:: calcDopplerRatio (double* downlink, double* uplink, Vector3d const& relativePos, Vector3d const& relativeVel) const

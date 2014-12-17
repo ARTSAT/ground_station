@@ -13,7 +13,7 @@
 
 const double DespatchTracker:: SecondsMorseEnd_ = 9.0 * 3600.0;
 const double DespatchTracker:: SecondsBaudotEnd_ = 108.0 * 3600.0;
-const double DespatchTracker:: SecondsBeaconEnd_ = (20.0 * 24.0) * 3600.0;
+const double DespatchTracker:: SecondsBeaconEnd_ = (30.0 * 24.0) * 3600.0;
 
 DespatchTracker:: DespatchTracker (void) : SpacecraftTracker (), departureMjd_ (0.0)
 {
