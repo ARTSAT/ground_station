@@ -20,6 +20,7 @@ arg[5]: unixtime_end   [sec]
 #include "tf.h"
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <string>
 #include <cmath>
@@ -82,21 +83,31 @@ int main (int argc, char* argv[])
 	DespatchTracker tracker;	// based on :public SpacecraftTracker, :public SpacecraftCalculator
 	
 	// [1] init the departure time (necessary to get DESPATCH phase)
-	const double DepartureMjd = 56991.265921;
+	const double DepartureMjd = 56994.264074;//56994.264023;   //2014/12/3
 	tracker.setDepartureTime (DepartureMjd);
 	// ---end of [1]
 	
 	// [2] init spacecraft orbit and parameters, observer geo-coord
 	DespatchTracker:: SCDRec scd;// SpaceCraft Description
 	scd.orbitInfo.epochMjd = DepartureMjd;
-	scd.orbitInfo.positionEci[0] = 10731986.0;
-	scd.orbitInfo.positionEci[1] =   669676.0;
+	scd.orbitInfo.positionEci[0] = 10697006.0;
+	scd.orbitInfo.positionEci[1] =  1094554.0;
 	scd.orbitInfo.positionEci[2] = -1056032.0;
-	scd.orbitInfo.velocityEci[0] =  5665.982;
-	scd.orbitInfo.velocityEci[1] =  6718.310;
+	scd.orbitInfo.velocityEci[0] =  5395.222;
+	scd.orbitInfo.velocityEci[1] =  6937.623;
 	scd.orbitInfo.velocityEci[2] = -4193.223;
 	scd.param.ballisticCoeff = 150.0;
 	tracker.setSpacecraftInfo (scd);
+    
+    { // added by HORIGUCHI J.
+        DespatchTracker::SerializedSCDRec txt;
+        tracker.getSpacecraftInfo(&txt);
+        ofstream ofs("despatch.scd");
+        ofs << "DESPATCH" << endl;
+        ofs << "SCD00001" << txt.info << endl;
+        ofs << txt.param << endl;
+    }
+    
     /*
     DespatchTracker:: SerializedSCDRec sscd =
     {

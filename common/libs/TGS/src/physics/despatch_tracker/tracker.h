@@ -54,7 +54,8 @@ class SpacecraftTracker : public SpacecraftCalculator {
 		int setSpacecraftInfo (SCDRec const& scd);
         int setSpacecraftInfo (SerializedSCDRec const& scd);
 		void getSpacecraftInfo (SCDRec* scd) const;
-        
+        void getSpacecraftInfo (SerializedSCDRec* scd) const;
+    
 		virtual int setTargetTime (double unixtime);
 		void getTargetTime (double *unixtime) const;
 		
@@ -67,9 +68,9 @@ class SpacecraftTracker : public SpacecraftCalculator {
 		void updateSpacecraftState (void);
 		void calcIntegrationPeriod (double* period) const;
         
-        bool convert(SerializedSCDRec const& in, SCDRec* out);
-        bool convert(SCDRec const& in, SerializedSCDRec* out);
-        bool toDouble(char const* start, char end, double* value);
+        static bool convert(SerializedSCDRec const& in, SCDRec* out);
+        static bool convert(SCDRec const& in, SerializedSCDRec* out);
+        static bool toDouble(char const* start, char end, double* value);
 };
 
 

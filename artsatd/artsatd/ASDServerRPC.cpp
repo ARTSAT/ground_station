@@ -113,6 +113,8 @@ static  MethodTableRec const                    g_method[] = {
     {"observer.getObserverFrequency",       &ASDServerRPC::getObserverFrequency},
     {"observer.getSpacecraftPosition",      &ASDServerRPC::getSpacecraftPosition},
     {"observer.getSpacecraftDirection",     &ASDServerRPC::getSpacecraftDirection},
+    {"observer.getSpacecraftDistance",      &ASDServerRPC::getSpacecraftDistance},
+    {"observer.getSpacecraftSpeed",         &ASDServerRPC::getSpacecraftSpeed},
     {"observer.getSpacecraftFrequency",     &ASDServerRPC::getSpacecraftFrequency},
     {"observer.getSpacecraftDopplerShift",  &ASDServerRPC::getSpacecraftDopplerShift},
     {"observer.getSpacecraftAOSLOS",        &ASDServerRPC::getSpacecraftAOSLOS},
@@ -234,6 +236,7 @@ static  MethodTableRec const                    g_method[] = {
     }
     response->header["Content-Type"] = "application/json";
     response->header["Cache-Control"] = "no-cache";
+    response->header["Access-Control-Allow-Origin"] = "*";
     return;
 }
 
@@ -753,6 +756,33 @@ static  MethodTableRec const                    g_method[] = {
         artsatd::getInstance().getSpacecraftDirection(&azimuth, &elevation);
         setResult(azimuth, "azimuth", result);
         setResult(elevation, "elevation", result);
+    }
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftDistance(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    double distance;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    // TODO: need to modify
+    //if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        artsatd::getInstance().getSpacecraftDistance(&distance);
+        setResult(distance, "distance", result);
+    //}
+    return error;
+}
+
+/*public */tgs::TGSError ASDServerRPC::getSpacecraftSpeed(std::string const& host, Param const& param, Param* result) const
+{
+    std::string session;
+    double speed;
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if ((error = updateSession(param, &session, result)) == tgs::TGSERROR_OK) {
+        artsatd::getInstance().getSpacecraftSpeed(&speed);
+        setResult(speed, "speed", result);
     }
     return error;
 }

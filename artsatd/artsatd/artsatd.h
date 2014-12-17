@@ -157,6 +157,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
             double                              altitude;
             double                              azimuth;
             double                              elevation;
+            double                              distance;
+            double                              speed;
             double                              beacon;
             double                              sender;
             double                              receiver;
@@ -234,6 +236,8 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 void                            getObserverPosition         (double* latitude, double* longitude, double* altitude) const;
                 void                            getSpacecraftPosition       (double* latitude, double* longitude, double* altitude) const;
                 void                            getSpacecraftDirection      (double* azimuth, double* elevation) const;
+                void                            getSpacecraftDistance       (double* distance) const;
+                void                            getSpacecraftSpeed          (double* speed) const;
                 void                            getSpacecraftFrequency      (double* beacon, double* sender, double* receiver) const;
                 void                            getSpacecraftDopplerShift   (double* sender, double* receiver) const;
                 //<<<

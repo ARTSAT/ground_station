@@ -331,6 +331,7 @@ static  char const* const                       g_shrink[] = {
     artsatd& daemon(artsatd::getInstance());
     insensitive::map<std::string, std::string>::const_iterator it;
     bool exclusive;
+    ASDDeviceRotator::DataRec rotator;
     boost::shared_ptr<ASDPluginInterface> plugin;
     int value;
     int i;
@@ -374,9 +375,44 @@ static  char const* const                       g_shrink[] = {
         }
         bindError(CATEGORY_HARDWARE, error, category, message);
     }
+    else if ((it = query.find("azimuth_offset")) != query.end()) {
+        if ((error = valueizeOffset(it->second, &value)) == tgs::TGSERROR_OK) {
+            artsatd::getRotator().getData(&rotator);
+            if (rotator.azimuth >= 0) {
+                value += rotator.azimuth;
+                if ((value %= 360) < 0) {
+                    value += 360;
+                }
+                error = daemon.controlManualRotator(session, &artsatd::controlRotatorAzimuth, &value);
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_STATE;
+            }
+        }
+        bindError(CATEGORY_HARDWARE, error, category, message);
+    }
     else if ((it = query.find("elevation")) != query.end()) {
         if ((error = valueizeElevation(it->second, &value)) == tgs::TGSERROR_OK) {
             error = daemon.controlManualRotator(session, &artsatd::controlRotatorElevation, &value);
+        }
+        bindError(CATEGORY_HARDWARE, error, category, message);
+    }
+    else if ((it = query.find("elevation_offset")) != query.end()) {
+        if ((error = valueizeOffset(it->second, &value)) == tgs::TGSERROR_OK) {
+            artsatd::getRotator().getData(&rotator);
+            if (rotator.elevation >= 0) {
+                value += rotator.elevation;
+                if (value < 0) {
+                    value = 0;
+                }
+                else if (value > 90) {
+                    value = 90;
+                }
+                error = daemon.controlManualRotator(session, &artsatd::controlRotatorElevation, &value);
+            }
+            else {
+                error = tgs::TGSERROR_INVALID_STATE;
+            }
         }
         bindError(CATEGORY_HARDWARE, error, category, message);
     }
@@ -697,6 +733,24 @@ static  char const* const                       g_shrink[] = {
     if (1 <= param.size() && param.size() <= 10 && boost::all(param, boost::is_any_of(".0123456789"))) {
         try {
             *result = static_cast<int>(boost::lexical_cast<double>(param) * 1000000.0);
+        }
+        catch (...) {
+            error = tgs::TGSERROR_INVALID_PARAM;
+        }
+    }
+    else {
+        error = tgs::TGSERROR_INVALID_PARAM;
+    }
+    return error;
+}
+
+/*private static */tgs::TGSError ASDServerOperation::valueizeOffset(std::string const& param, int* result)
+{
+    tgs::TGSError error(tgs::TGSERROR_OK);
+    
+    if (1 <= param.size() && boost::all(param, boost::is_any_of("+-0123456789"))) {
+        try {
+            *result = boost::lexical_cast<int>(param);
         }
         catch (...) {
             error = tgs::TGSERROR_INVALID_PARAM;

@@ -264,6 +264,36 @@ function initializeButtons() {
             });
     });
     
+    $('#getSpacecraftDistance').on('click', function() {
+        var $this = $(this);
+        JSONRPCClient.call('observer.getSpacecraftDistance',
+            {
+                'session': getSession()
+            },
+            function(result) {
+                setSession(result['session']);
+                $('#getSpacecraftDistance-result').val(JSON.stringify(result));
+            },
+            function(error) {
+                $('#getSpacecraftDistance-result').val(JSON.stringify(error));
+            });
+    });
+    
+    $('#getSpacecraftSpeed').on('click', function() {
+        var $this = $(this);
+        JSONRPCClient.call('observer.getSpacecraftSpeed',
+            {
+                'session': getSession()
+            },
+            function(result) {
+                setSession(result['session']);
+                $('#getSpacecraftSpeed-result').val(JSON.stringify(result));
+            },
+            function(error) {
+                $('#getSpacecraftSpeed-result').val(JSON.stringify(error));
+            });
+    });
+    
     $('#getSpacecraftFrequency').on('click', function() {
         var $this = $(this);
         JSONRPCClient.call('observer.getSpacecraftFrequency',

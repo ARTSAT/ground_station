@@ -79,6 +79,7 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
         static  tgs::TGSError                   valueizeAzimuth             (std::string const& param, int* result);
         static  tgs::TGSError                   valueizeElevation           (std::string const& param, int* result);
         static  tgs::TGSError                   valueizeFrequency           (std::string const& param, int* result);
+        static  tgs::TGSError                   valueizeOffset              (std::string const& param, int* result);
         static  void                            bindError                   (std::string const& name, tgs::TGSError error, std::string* category, std::string* message);
         static  std::string                     colorizeSpan                (std::string const& color, std::string const& string);
         static  std::string                     stringizeLatitude           (double param);

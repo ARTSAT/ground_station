@@ -322,6 +322,26 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                 tgs::TGSError                   getSpacecraftDirection      (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
+                 *   observer.getSpacecraftDistance
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   distance <double>: spacecraft's distance
+                 */
+                tgs::TGSError                   getSpacecraftDistance       (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
+                 *   observer.getSpacecraftSpeed
+                 * params:
+                 *   [session <std::string>: session ID]
+                 * result:
+                 *   session <std::string>: session ID
+                 *   speed <double>: spacecraft's speed
+                 */
+                tgs::TGSError                   getSpacecraftSpeed          (std::string const& host, Param const& param, Param* result) const;
+                /*
+                 * method:
                  *   observer.getSpacecraftFrequency
                  * params:
                  *   [session <std::string>: session ID]

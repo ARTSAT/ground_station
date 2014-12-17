@@ -62,6 +62,11 @@ void SpacecraftTracker:: getSpacecraftInfo (SCDRec *scd) const
 	*scd = scd_;
 }
 
+void SpacecraftTracker:: getSpacecraftInfo (SerializedSCDRec *scd) const
+{
+    convert(scd_, scd);
+}
+
 int SpacecraftTracker:: setTargetTime (double unixtime)
 {
 	unixtime_ = unixtime;
@@ -144,7 +149,7 @@ void SpacecraftTracker:: updateSpacecraftState (void)
     
     double dt;
     const double DtNearEarth = 1.0;
-    const double DtFarFromEarth = 60.0;
+    const double DtFarFromEarth = 1.0;
 	
 	double t = 0.0;
 	
