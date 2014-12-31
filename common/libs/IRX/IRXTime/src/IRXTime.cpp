@@ -1481,14 +1481,15 @@ static  char const              irxtime_formatlong[][6] = {
 
 /*private */IRXTime::ErrorEnum IRXTime::from(time_t utc, bool local)
 {
+    tm time;
     tm const* addr;
     ErrorEnum error(ERROR_OK);
     
-    if ((addr = (local) ? (localtime(&utc)) : (gmtime(&utc))) == NULL) {
+    if ((addr = (local) ? (localtime_r(&utc, &time)) : (gmtime_r(&utc, &time))) == NULL) {
         error = ERROR_FAILED;
         std::cerr << "IRXTime conversion error at IRXTime::from()" << std::endl;
         utc = 0;
-        if ((addr = gmtime(&utc)) == NULL) {
+        if ((addr = gmtime_r(&utc, &time)) == NULL) {
             std::cerr << "IRXTime internal fault at IRXTime::from()" << std::endl;
         }
     }

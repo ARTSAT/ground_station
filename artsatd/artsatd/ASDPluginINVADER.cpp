@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2014 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -989,8 +989,8 @@ static DurationRec const g_duration[] = {
                 }
                 if (j < lengthof(g_duration)) {
                     string += (boost::format("%c%c%c%c") %
-                               static_cast<unsigned char>((note >> 0) & 0xFF) %
-                               static_cast<unsigned char>((note >> 8) & 0xFF) %
+                               static_cast<unsigned char>((note >> 0) & 0xFFU) %
+                               static_cast<unsigned char>((note >> 8) & 0xFFU) %
                                static_cast<unsigned char>(duration) %
                                static_cast<unsigned char>(qualifier)).str();
                 }
@@ -1006,8 +1006,8 @@ static DurationRec const g_duration[] = {
         }
         if (error == tgs::TGSERROR_OK) {
             string += (boost::format("%c%c%c%c") %
-                       static_cast<unsigned char>((NOTE_END >> 0) & 0xFF) %
-                       static_cast<unsigned char>((NOTE_END >> 8) & 0xFF) %
+                       static_cast<unsigned char>((NOTE_END >> 0) & 0xFFU) %
+                       static_cast<unsigned char>((NOTE_END >> 8) & 0xFFU) %
                        static_cast<unsigned char>(0) %
                        static_cast<unsigned char>(0)).str();
             if (string.size() <= 255) {

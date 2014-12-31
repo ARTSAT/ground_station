@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -77,7 +77,7 @@ namespace tgs {
     return error;
 }
 
-/*public */TGSError TGSPhysicsProcessor::registerSpacecraft(int norad)
+/*public */TGSError TGSPhysicsProcessor::registerSpacecraft(int exnorad)
 {
     TGSError error(TGSERROR_OK);
     
@@ -89,7 +89,7 @@ namespace tgs {
     return error;
 }
 
-/*public */void TGSPhysicsProcessor::unregisterSpacecraft(int norad)
+/*public */void TGSPhysicsProcessor::unregisterSpacecraft(int exnorad)
 {
     if (_database != NULL) {
     }

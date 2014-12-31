@@ -129,18 +129,18 @@ function initializeButtons() {
             });
     });
     
-    $('#getNORAD').on('click', function() {
+    $('#getEXNORAD').on('click', function() {
         var $this = $(this);
-        JSONRPCClient.call('observer.getNORAD',
+        JSONRPCClient.call('observer.getEXNORAD',
             {
                 'session': getSession()
             },
             function(result) {
                 setSession(result['session']);
-                $('#getNORAD-result').val(JSON.stringify(result));
+                $('#getEXNORAD-result').val(JSON.stringify(result));
             },
             function(error) {
-                $('#getNORAD-result').val(JSON.stringify(error));
+                $('#getEXNORAD-result').val(JSON.stringify(error));
             });
     });
     

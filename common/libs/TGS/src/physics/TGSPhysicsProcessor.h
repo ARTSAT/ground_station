@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -79,8 +79,8 @@ class TGSPhysicsProcessor {
                                             ~TGSPhysicsProcessor            (void);
                 TGSError                    setObserverPosition             (double latitude, double longitude, double altitude);
                 TGSError                    getObserverPosition             (double* latitude, double* longitude, double* altitude) const;
-                TGSError                    registerSpacecraft              (int norad);
-                void                        unregisterSpacecraft            (int norad);
+                TGSError                    registerSpacecraft              (int exnorad);
+                void                        unregisterSpacecraft            (int exnorad);
                 void                        clearSpacecraft                 (void);
                 TGSError                    open                            (TGSPhysicsDatabase const& database);
                 void                        close                           (void);

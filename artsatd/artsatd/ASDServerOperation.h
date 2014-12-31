@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -89,7 +89,7 @@ class ASDServerOperation : public ASDNetworkServer::Notifier {
         static  std::string                     stringizeAzimuth            (double param);
         static  std::string                     stringizeElevation          (int param);
         static  std::string                     stringizeElevation          (double param);
-        static  std::string                     stringizeNORAD              (int param);
+        static  std::string                     stringizeEXNORAD            (int param);
         static  std::string                     stringizeCallsign           (std::string const& param);
         static  std::string                     stringizeMode               (std::string const& param);
         static  std::string                     stringizeFrequency          (int param, bool secret);

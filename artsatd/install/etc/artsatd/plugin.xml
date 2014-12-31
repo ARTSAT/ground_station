@@ -2,6 +2,6 @@
 <plugin>
     <ASDPluginINVADER>
         <file>invader.html</file>
-        <norad>39577</norad>
+        <exnorad>39577</exnorad>
     </ASDPluginINVADER>
 </plugin>

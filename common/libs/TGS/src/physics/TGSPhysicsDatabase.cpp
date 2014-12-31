@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -50,13 +50,13 @@
 
 namespace tgs {
 
-#define TABLE_PHYSICS       ("_physics5_")
+#define TABLE_PHYSICS       ("_physics6_")
 #define ORBIT_TLE           ("TLE")
 #define ORBIT_SCD           ("SCD")
 #define TIME_FORMAT         ("%YYYY-%MM-%DD %hh:%mm:%ss")
 
 static  char const*         g_table[][2] = {
-    {"norad",               "INTEGER NOT NULL PRIMARY KEY"},
+    {"exnorad",             "INTEGER NOT NULL PRIMARY KEY"},
     {"name",                "TEXT"},
     {"callsign",            "TEXT"},
     {"beacon_mode",         "TEXT"},
@@ -76,38 +76,38 @@ static  char const*         g_table[][2] = {
     {"\"update\"",          "INTEGER NOT NULL DEFAULT 0"}
 };
 static  char const*         g_name[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"name",                "%Q"},
     {"\"update\"",          "%d"}
 };
 static  char const*         g_callsign[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"callsign",            "%Q"},
     {"\"update\"",          "%d"}
 };
 static  char const*         g_radioBeacon[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"beacon_mode",         "%Q"},
     {"beacon_frequency",    "%d"},
     {"beacon_drift",        "%d"},
     {"\"update\"",          "%d"}
 };
 static  char const*         g_radioSender[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"sender_mode",         "%Q"},
     {"sender_frequency",    "%d"},
     {"sender_drift",        "%d"},
     {"\"update\"",          "%d"}
 };
 static  char const*         g_radioReceiver[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"receiver_mode",       "%Q"},
     {"receiver_frequency",  "%d"},
     {"receiver_drift",      "%d"},
     {"\"update\"",          "%d"}
 };
 static  char const*         g_setOrbitData[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"name",                "%Q"},
     {"epoch",               "%lf"},
     {"orbit_type",          "%Q"},
@@ -116,11 +116,11 @@ static  char const*         g_setOrbitData[][2] = {
     {"\"update\"",          "%d"}
 };
 static  char const*         g_setOrbitTime[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"time",                "%Q"}
 };
 static  char const*         g_getOrbitData[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"name",                "%Q"},
     {"time",                "%Q"},
     {"orbit_type",          "%Q"},
@@ -128,7 +128,7 @@ static  char const*         g_getOrbitData[][2] = {
     {"orbit_data2",         "%Q"}
 };
 static  char const*         g_field[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"name",                "%Q"},
     {"callsign",            "%Q"},
     {"beacon_mode",         "%Q"},
@@ -146,7 +146,7 @@ static  char const*         g_field[][2] = {
     {"orbit_data2",         "%Q"}
 };
 static  char const*         g_hasUpdate[][2] = {
-    {"norad",               "%d"},
+    {"exnorad",             "%d"},
     {"\"update\"",          "%d"}
 };
 
@@ -159,54 +159,54 @@ static  char const*         g_hasUpdate[][2] = {
     close();
 }
 
-/*public */TGSError TGSPhysicsDatabase::setName(int norad, std::string const& param)
+/*public */TGSError TGSPhysicsDatabase::setName(int exnorad, std::string const& param)
 {
-    return setText(norad, g_name, param);
+    return setText(exnorad, g_name, param);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getName(int norad, std::string* result)
+/*public */TGSError TGSPhysicsDatabase::getName(int exnorad, std::string* result)
 {
-    return getText(norad, g_name, result);
+    return getText(exnorad, g_name, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::setCallsign(int norad, std::string const& param)
+/*public */TGSError TGSPhysicsDatabase::setCallsign(int exnorad, std::string const& param)
 {
-    return setText(norad, g_callsign, param);
+    return setText(exnorad, g_callsign, param);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getCallsign(int norad, std::string* result)
+/*public */TGSError TGSPhysicsDatabase::getCallsign(int exnorad, std::string* result)
 {
-    return getText(norad, g_callsign, result);
+    return getText(exnorad, g_callsign, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::setRadioBeacon(int norad, RadioRec const& param)
+/*public */TGSError TGSPhysicsDatabase::setRadioBeacon(int exnorad, RadioRec const& param)
 {
-    return setRadio(norad, g_radioBeacon, param);
+    return setRadio(exnorad, g_radioBeacon, param);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getRadioBeacon(int norad, RadioRec* result)
+/*public */TGSError TGSPhysicsDatabase::getRadioBeacon(int exnorad, RadioRec* result)
 {
-    return getRadio(norad, g_radioBeacon, result);
+    return getRadio(exnorad, g_radioBeacon, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::setRadioSender(int norad, RadioRec const& param)
+/*public */TGSError TGSPhysicsDatabase::setRadioSender(int exnorad, RadioRec const& param)
 {
-    return setRadio(norad, g_radioSender, param);
+    return setRadio(exnorad, g_radioSender, param);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getRadioSender(int norad, RadioRec* result)
+/*public */TGSError TGSPhysicsDatabase::getRadioSender(int exnorad, RadioRec* result)
 {
-    return getRadio(norad, g_radioSender, result);
+    return getRadio(exnorad, g_radioSender, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::setRadioReceiver(int norad, RadioRec const& param)
+/*public */TGSError TGSPhysicsDatabase::setRadioReceiver(int exnorad, RadioRec const& param)
 {
-    return setRadio(norad, g_radioReceiver, param);
+    return setRadio(exnorad, g_radioReceiver, param);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getRadioReceiver(int norad, RadioRec* result)
+/*public */TGSError TGSPhysicsDatabase::getRadioReceiver(int exnorad, RadioRec* result)
 {
-    return getRadio(norad, g_radioReceiver, result);
+    return getRadio(exnorad, g_radioReceiver, result);
 }
 
 /*public */TGSError TGSPhysicsDatabase::setOrbitData(OrbitData const& param, ir::IRXTime const& time)
@@ -216,7 +216,7 @@ static  char const*         g_hasUpdate[][2] = {
     std::string data1;
     std::string data2;
     std::string type;
-    int norad;
+    int exnorad;
     double epoch;
     std::string condition;
     TGSError error(TGSERROR_OK);
@@ -250,11 +250,11 @@ static  char const*         g_hasUpdate[][2] = {
         }
         if (error == TGSERROR_OK) {
             if ((error = orbit->setOrbitData(param)) == TGSERROR_OK) {
-                if ((error = orbit->getID(&norad)) == TGSERROR_OK) {
+                if ((error = orbit->getID(&exnorad)) == TGSERROR_OK) {
                     if ((error = orbit->getEpochTime(&epoch)) == TGSERROR_OK) {
                         if ((error = print("AND epoch<%lf", &condition, epoch)) == TGSERROR_OK) {
-                            if ((error = update(TABLE_PHYSICS, g_setOrbitData, lengthof(g_setOrbitData), 0, condition, norad, name.c_str(), epoch, type.c_str(), data1.c_str(), data2.c_str(), 1)) == TGSERROR_OK) {
-                                error = update(TABLE_PHYSICS, g_setOrbitTime, lengthof(g_setOrbitTime), 0, std::string(""), norad, time.format(TIME_FORMAT).c_str());
+                            if ((error = update(TABLE_PHYSICS, g_setOrbitData, lengthof(g_setOrbitData), 0, condition, exnorad, name.c_str(), epoch, type.c_str(), data1.c_str(), data2.c_str(), 1)) == TGSERROR_OK) {
+                                error = update(TABLE_PHYSICS, g_setOrbitTime, lengthof(g_setOrbitTime), 0, std::string(""), exnorad, time.format(TIME_FORMAT).c_str());
                             }
                         }
                     }
@@ -268,7 +268,7 @@ static  char const*         g_hasUpdate[][2] = {
     return error;
 }
 
-/*public */TGSError TGSPhysicsDatabase::getOrbitData(int norad, OrbitData* result, ir::IRXTime* time)
+/*public */TGSError TGSPhysicsDatabase::getOrbitData(int exnorad, OrbitData* result, ir::IRXTime* time)
 {
     std::string string;
     std::string name;
@@ -281,7 +281,7 @@ static  char const*         g_hasUpdate[][2] = {
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
             if ((error = buildQuery("", &g_getOrbitData[1], lengthof(g_getOrbitData) - 1, &string)) == TGSERROR_OK) {
-                if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], std::string(""), norad)) == TGSERROR_OK) {
+                if ((error = select(TABLE_PHYSICS, string, &g_getOrbitData[0], std::string(""), exnorad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
                         if ((error = readText(0, true, &name)) == TGSERROR_OK) {
                             if ((error = readText(1, false, &string)) == TGSERROR_OK) {
@@ -327,7 +327,7 @@ static  char const*         g_hasUpdate[][2] = {
     return countRow(TABLE_PHYSICS, NULL, "", result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getField(int norad, FieldRec* result)
+/*public */TGSError TGSPhysicsDatabase::getField(int exnorad, FieldRec* result)
 {
     std::string string;
     FieldRec field;
@@ -336,7 +336,7 @@ static  char const*         g_hasUpdate[][2] = {
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
             if ((error = buildQuery("", &g_field[0], lengthof(g_field), &string)) == TGSERROR_OK) {
-                if ((error = select(TABLE_PHYSICS, string, &g_field[0], std::string(""), norad)) == TGSERROR_OK) {
+                if ((error = select(TABLE_PHYSICS, string, &g_field[0], std::string(""), exnorad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
                         if ((error = readField(0, &field)) == TGSERROR_OK) {
                             *result = field;
@@ -402,29 +402,29 @@ static  char const*         g_hasUpdate[][2] = {
     return getField("%" + callsign + "%", 2, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getNORADByName(std::string const& name, std::vector<int>* result)
+/*public */TGSError TGSPhysicsDatabase::getEXNORADByName(std::string const& name, std::vector<int>* result)
 {
-    return getNORAD("%" + name + "%", 1, result);
+    return getEXNORAD("%" + name + "%", 1, result);
 }
 
-/*public */TGSError TGSPhysicsDatabase::getNORADByCallsign(std::string const& callsign, std::vector<int>* result)
+/*public */TGSError TGSPhysicsDatabase::getEXNORADByCallsign(std::string const& callsign, std::vector<int>* result)
 {
-    return getNORAD("%" + callsign + "%", 2, result);
+    return getEXNORAD("%" + callsign + "%", 2, result);
 }
 
-/*public */bool TGSPhysicsDatabase::hasUpdate(int norad)
+/*public */bool TGSPhysicsDatabase::hasUpdate(int exnorad)
 {
     int value;
     bool result(false);
     
-    if (select(TABLE_PHYSICS, g_hasUpdate[1][0], &g_hasUpdate[0], std::string(""), norad) == TGSERROR_OK) {
+    if (select(TABLE_PHYSICS, g_hasUpdate[1][0], &g_hasUpdate[0], std::string(""), exnorad) == TGSERROR_OK) {
         if (step() == TGSERROR_WAIT_RESULT) {
             if (readInteger(0, false, &value) == TGSERROR_OK) {
                 result = !!value;
             }
             while (step() == TGSERROR_WAIT_RESULT);
             if (result) {
-                update(TABLE_PHYSICS, g_hasUpdate, lengthof(g_hasUpdate), 0, std::string(""), norad, 0);
+                update(TABLE_PHYSICS, g_hasUpdate, lengthof(g_hasUpdate), 0, std::string(""), exnorad, 0);
             }
         }
     }
@@ -450,18 +450,18 @@ static  char const*         g_hasUpdate[][2] = {
     return;
 }
 
-/*private */TGSError TGSPhysicsDatabase::setText(int norad, char const* format[3][2], std::string const& param)
+/*private */TGSError TGSPhysicsDatabase::setText(int exnorad, char const* format[3][2], std::string const& param)
 {
-    return update(TABLE_PHYSICS, format, 3, 0, std::string(""), norad, param.c_str(), 1);
+    return update(TABLE_PHYSICS, format, 3, 0, std::string(""), exnorad, param.c_str(), 1);
 }
 
-/*private */TGSError TGSPhysicsDatabase::getText(int norad, char const* format[2][2], std::string* result)
+/*private */TGSError TGSPhysicsDatabase::getText(int exnorad, char const* format[2][2], std::string* result)
 {
     std::string text;
     TGSError error(TGSERROR_OK);
     
     if (result != NULL) {
-        if ((error = select(TABLE_PHYSICS, format[1][0], &format[0], std::string(""), norad)) == TGSERROR_OK) {
+        if ((error = select(TABLE_PHYSICS, format[1][0], &format[0], std::string(""), exnorad)) == TGSERROR_OK) {
             if ((error = step()) == TGSERROR_WAIT_RESULT) {
                 if ((error = readText(0, true, &text)) == TGSERROR_OK) {
                     *result = text;
@@ -479,12 +479,12 @@ static  char const*         g_hasUpdate[][2] = {
     return error;
 }
 
-/*private */TGSError TGSPhysicsDatabase::setRadio(int norad, char const* format[5][2], RadioRec const& param)
+/*private */TGSError TGSPhysicsDatabase::setRadio(int exnorad, char const* format[5][2], RadioRec const& param)
 {
-    return update(TABLE_PHYSICS, format, 5, 0, std::string(""), norad, param.mode.c_str(), param.frequency, param.drift, 1);
+    return update(TABLE_PHYSICS, format, 5, 0, std::string(""), exnorad, param.mode.c_str(), param.frequency, param.drift, 1);
 }
 
-/*private */TGSError TGSPhysicsDatabase::getRadio(int norad, char const* format[4][2], RadioRec* result)
+/*private */TGSError TGSPhysicsDatabase::getRadio(int exnorad, char const* format[4][2], RadioRec* result)
 {
     std::string string;
     RadioRec radio;
@@ -493,7 +493,7 @@ static  char const*         g_hasUpdate[][2] = {
     if (result != NULL) {
         if ((error = checkFlow()) == TGSERROR_OK) {
             if ((error = buildQuery("", &format[1], 3, &string)) == TGSERROR_OK) {
-                if ((error = select(TABLE_PHYSICS, string, &format[0], std::string(""), norad)) == TGSERROR_OK) {
+                if ((error = select(TABLE_PHYSICS, string, &format[0], std::string(""), exnorad)) == TGSERROR_OK) {
                     if ((error = step()) == TGSERROR_WAIT_RESULT) {
                         if ((error = readText(0, true, &radio.mode)) == TGSERROR_OK) {
                             radio.frequency = -1;
@@ -555,11 +555,11 @@ static  char const*         g_hasUpdate[][2] = {
     return error;
 }
 
-/*private */TGSError TGSPhysicsDatabase::getNORAD(std::string const& key, int index, std::vector<int>* result)
+/*private */TGSError TGSPhysicsDatabase::getEXNORAD(std::string const& key, int index, std::vector<int>* result)
 {
     std::string condition;
     std::vector<int> vector;
-    int norad;
+    int exnorad;
     TGSError error(TGSERROR_OK);
     
     if (result != NULL) {
@@ -567,8 +567,8 @@ static  char const*         g_hasUpdate[][2] = {
             if ((error = buildOrder("", &g_field[0], true, -1, -1, &condition)) == TGSERROR_OK) {
                 if ((error = select(TABLE_PHYSICS, g_field[0][0], &g_field[index], condition, key.c_str())) == TGSERROR_OK) {
                     while ((error = step()) == TGSERROR_WAIT_RESULT) {
-                        if ((error = readInteger(0, false, &norad)) == TGSERROR_OK) {
-                            vector.push_back(norad);
+                        if ((error = readInteger(0, false, &exnorad)) == TGSERROR_OK) {
+                            vector.push_back(exnorad);
                         }
                         else {
                             while (step() == TGSERROR_WAIT_RESULT);
@@ -596,7 +596,7 @@ static  char const*         g_hasUpdate[][2] = {
     std::string data2;
     TGSError error(TGSERROR_OK);
     
-    if ((error = readInteger(column, false, &field.norad)) == TGSERROR_OK) {
+    if ((error = readInteger(column, false, &field.exnorad)) == TGSERROR_OK) {
         if ((error = readText(++column, true, &field.name)) == TGSERROR_OK) {
             if ((error = readText(++column, true, &field.callsign)) == TGSERROR_OK) {
                 if ((error = readText(++column, true, &field.beacon.mode)) == TGSERROR_OK) {

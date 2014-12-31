@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -66,7 +66,7 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
             int                             drift;      // INT_MIN < N <= INT_MAX, INT_MIN is invalid
         };
         struct FieldRec {
-            int                             norad;      // 0 <= N, -1 is invalid
+            int                             exnorad;    // 0 <= N, -1 is invalid
             std::string                     name;
             std::string                     callsign;
             RadioRec                        beacon;
@@ -79,35 +79,35 @@ class TGSPhysicsDatabase : public TGSDatabaseInterface {
     public:
         explicit                            TGSPhysicsDatabase              (void);
         virtual                             ~TGSPhysicsDatabase             (void);
-                TGSError                    setName                         (int norad, std::string const& param);
-                TGSError                    getName                         (int norad, std::string* result);
-                TGSError                    setCallsign                     (int norad, std::string const& param);
-                TGSError                    getCallsign                     (int norad, std::string* result);
-                TGSError                    setRadioBeacon                  (int norad, RadioRec const& param);
-                TGSError                    getRadioBeacon                  (int norad, RadioRec* result);
-                TGSError                    setRadioSender                  (int norad, RadioRec const& param);
-                TGSError                    getRadioSender                  (int norad, RadioRec* result);
-                TGSError                    setRadioReceiver                (int norad, RadioRec const& param);
-                TGSError                    getRadioReceiver                (int norad, RadioRec* result);
+                TGSError                    setName                         (int exnorad, std::string const& param);
+                TGSError                    getName                         (int exnorad, std::string* result);
+                TGSError                    setCallsign                     (int exnorad, std::string const& param);
+                TGSError                    getCallsign                     (int exnorad, std::string* result);
+                TGSError                    setRadioBeacon                  (int exnorad, RadioRec const& param);
+                TGSError                    getRadioBeacon                  (int exnorad, RadioRec* result);
+                TGSError                    setRadioSender                  (int exnorad, RadioRec const& param);
+                TGSError                    getRadioSender                  (int exnorad, RadioRec* result);
+                TGSError                    setRadioReceiver                (int exnorad, RadioRec const& param);
+                TGSError                    getRadioReceiver                (int exnorad, RadioRec* result);
                 TGSError                    setOrbitData                    (OrbitData const& param, ir::IRXTime const& time);
-                TGSError                    getOrbitData                    (int norad, OrbitData* result, ir::IRXTime* time = NULL);
+                TGSError                    getOrbitData                    (int exnorad, OrbitData* result, ir::IRXTime* time = NULL);
                 TGSError                    getCount                        (int* result);
-                TGSError                    getField                        (int norad, FieldRec* result);
+                TGSError                    getField                        (int exnorad, FieldRec* result);
                 TGSError                    getField                        (int limit, int offset, std::vector<FieldRec>* result);
                 TGSError                    getFieldByName                  (std::string const& name, std::vector<FieldRec>* result);
                 TGSError                    getFieldByCallsign              (std::string const& callsign, std::vector<FieldRec>* result);
-                TGSError                    getNORADByName                  (std::string const& name, std::vector<int>* result);
-                TGSError                    getNORADByCallsign              (std::string const& callsign, std::vector<int>* result);
-                bool                        hasUpdate                       (int norad);
+                TGSError                    getEXNORADByName                (std::string const& name, std::vector<int>* result);
+                TGSError                    getEXNORADByCallsign            (std::string const& callsign, std::vector<int>* result);
+                bool                        hasUpdate                       (int exnorad);
         virtual TGSError                    open                            (std::string const& file, int timeout = 10000);
         virtual void                        close                           (void);
     private:
-                TGSError                    setText                         (int norad, char const* format[3][2], std::string const& param);
-                TGSError                    getText                         (int norad, char const* format[2][2], std::string* result);
-                TGSError                    setRadio                        (int norad, char const* format[5][2], RadioRec const& param);
-                TGSError                    getRadio                        (int norad, char const* format[4][2], RadioRec* result);
+                TGSError                    setText                         (int exnorad, char const* format[3][2], std::string const& param);
+                TGSError                    getText                         (int exnorad, char const* format[2][2], std::string* result);
+                TGSError                    setRadio                        (int exnorad, char const* format[5][2], RadioRec const& param);
+                TGSError                    getRadio                        (int exnorad, char const* format[4][2], RadioRec* result);
                 TGSError                    getField                        (std::string const& key, int index, std::vector<FieldRec>* result);
-                TGSError                    getNORAD                        (std::string const& key, int index, std::vector<int>* result);
+                TGSError                    getEXNORAD                      (std::string const& key, int index, std::vector<int>* result);
                 TGSError                    readField                       (int column, FieldRec* result) const;
                 TGSError                    readInteger                     (int column, bool implicit, int* result) const;
                 TGSError                    readText                        (int column, bool implicit, std::string* result) const;

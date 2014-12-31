@@ -595,6 +595,37 @@
 		C35BC4451A2E0CF8005D06C4 /* writer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = writer.h; sourceTree = "<group>"; };
 		C35BC49E1A2E0D4B005D06C4 /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxml2.cpp; sourceTree = "<group>"; };
 		C35BC49F1A2E0D4B005D06C4 /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyxml2.h; sourceTree = "<group>"; };
+		C381BFFA1A4C52880090D5B0 /* 404.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = 404.html; sourceTree = "<group>"; };
+		C381BFFC1A4C52880090D5B0 /* bootstrap-theme.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "bootstrap-theme.css"; sourceTree = "<group>"; };
+		C381BFFD1A4C52880090D5B0 /* bootstrap-theme.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "bootstrap-theme.min.css"; sourceTree = "<group>"; };
+		C381BFFE1A4C52880090D5B0 /* bootstrap.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = bootstrap.css; sourceTree = "<group>"; };
+		C381BFFF1A4C52880090D5B0 /* bootstrap.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = bootstrap.min.css; sourceTree = "<group>"; };
+		C381C0001A4C52880090D5B0 /* font-awesome.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "font-awesome.css"; sourceTree = "<group>"; };
+		C381C0011A4C52880090D5B0 /* font-awesome.min.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = "font-awesome.min.css"; sourceTree = "<group>"; };
+		C381C0021A4C52880090D5B0 /* prism.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prism.css; sourceTree = "<group>"; };
+		C381C0031A4C52880090D5B0 /* style.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = style.css; sourceTree = "<group>"; };
+		C381C0051A4C52880090D5B0 /* fontawesome-webfont.eot */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontawesome-webfont.eot"; sourceTree = "<group>"; };
+		C381C0061A4C52880090D5B0 /* fontawesome-webfont.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "fontawesome-webfont.svg"; sourceTree = "<group>"; };
+		C381C0071A4C52880090D5B0 /* fontawesome-webfont.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontawesome-webfont.ttf"; sourceTree = "<group>"; };
+		C381C0081A4C52880090D5B0 /* fontawesome-webfont.woff */ = {isa = PBXFileReference; lastKnownFileType = file; path = "fontawesome-webfont.woff"; sourceTree = "<group>"; };
+		C381C0091A4C52880090D5B0 /* FontAwesome.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FontAwesome.otf; sourceTree = "<group>"; };
+		C381C00A1A4C52880090D5B0 /* glyphicons-halflings-regular.eot */ = {isa = PBXFileReference; lastKnownFileType = file; path = "glyphicons-halflings-regular.eot"; sourceTree = "<group>"; };
+		C381C00B1A4C52880090D5B0 /* glyphicons-halflings-regular.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "glyphicons-halflings-regular.svg"; sourceTree = "<group>"; };
+		C381C00C1A4C52880090D5B0 /* glyphicons-halflings-regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "glyphicons-halflings-regular.ttf"; sourceTree = "<group>"; };
+		C381C00D1A4C52880090D5B0 /* glyphicons-halflings-regular.woff */ = {isa = PBXFileReference; lastKnownFileType = file; path = "glyphicons-halflings-regular.woff"; sourceTree = "<group>"; };
+		C381C00F1A4C52880090D5B0 /* favicon.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = favicon.ico; sourceTree = "<group>"; };
+		C381C0101A4C52880090D5B0 /* openFrameworks.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = openFrameworks.png; sourceTree = "<group>"; };
+		C381C0111A4C52880090D5B0 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		C381C0131A4C52880090D5B0 /* bootstrap.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = bootstrap.js; sourceTree = "<group>"; };
+		C381C0141A4C52880090D5B0 /* bootstrap.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = bootstrap.min.js; sourceTree = "<group>"; };
+		C381C0151A4C52880090D5B0 /* jquery.json.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.json.js; sourceTree = "<group>"; };
+		C381C0161A4C52880090D5B0 /* jquery.jsonrpcclient.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.jsonrpcclient.js; sourceTree = "<group>"; };
+		C381C0171A4C52880090D5B0 /* jquery.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.min.js; sourceTree = "<group>"; };
+		C381C0181A4C52880090D5B0 /* jquery.min.map */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = jquery.min.map; sourceTree = "<group>"; };
+		C381C0191A4C52880090D5B0 /* main.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = main.js; sourceTree = "<group>"; };
+		C381C01A1A4C52880090D5B0 /* ofxHTTP.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = ofxHTTP.js; sourceTree = "<group>"; };
+		C381C01B1A4C52880090D5B0 /* ofxUtils.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = ofxUtils.js; sourceTree = "<group>"; };
+		C381C01C1A4C52880090D5B0 /* prism.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prism.js; sourceTree = "<group>"; };
 		C38F2F3C1A1E395800208B7A /* despatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = despatch.cpp; sourceTree = "<group>"; };
 		C38F2F3D1A1E395800208B7A /* despatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = despatch.h; sourceTree = "<group>"; };
 		C38F2F3E1A1E395800208B7A /* geocoord.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geocoord.cpp; sourceTree = "<group>"; };
@@ -634,6 +665,7 @@
 				C306EB1B1A126F2D00D9A10F /* artsatd */,
 				C306EB541A12700000D9A10F /* libs */,
 				C306EB551A12700B00D9A10F /* install */,
+				C381BFF91A4C52880090D5B0 /* test */,
 				C306EB1A1A126F2D00D9A10F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -1746,6 +1778,76 @@
 				C35BC49F1A2E0D4B005D06C4 /* tinyxml2.h */,
 			);
 			path = tinyxml2;
+			sourceTree = "<group>";
+		};
+		C381BFF91A4C52880090D5B0 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				C381BFFA1A4C52880090D5B0 /* 404.html */,
+				C381BFFB1A4C52880090D5B0 /* css */,
+				C381C0041A4C52880090D5B0 /* fonts */,
+				C381C00E1A4C52880090D5B0 /* img */,
+				C381C0111A4C52880090D5B0 /* index.html */,
+				C381C0121A4C52880090D5B0 /* js */,
+			);
+			path = test;
+			sourceTree = "<group>";
+		};
+		C381BFFB1A4C52880090D5B0 /* css */ = {
+			isa = PBXGroup;
+			children = (
+				C381BFFC1A4C52880090D5B0 /* bootstrap-theme.css */,
+				C381BFFD1A4C52880090D5B0 /* bootstrap-theme.min.css */,
+				C381BFFE1A4C52880090D5B0 /* bootstrap.css */,
+				C381BFFF1A4C52880090D5B0 /* bootstrap.min.css */,
+				C381C0001A4C52880090D5B0 /* font-awesome.css */,
+				C381C0011A4C52880090D5B0 /* font-awesome.min.css */,
+				C381C0021A4C52880090D5B0 /* prism.css */,
+				C381C0031A4C52880090D5B0 /* style.css */,
+			);
+			path = css;
+			sourceTree = "<group>";
+		};
+		C381C0041A4C52880090D5B0 /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				C381C0051A4C52880090D5B0 /* fontawesome-webfont.eot */,
+				C381C0061A4C52880090D5B0 /* fontawesome-webfont.svg */,
+				C381C0071A4C52880090D5B0 /* fontawesome-webfont.ttf */,
+				C381C0081A4C52880090D5B0 /* fontawesome-webfont.woff */,
+				C381C0091A4C52880090D5B0 /* FontAwesome.otf */,
+				C381C00A1A4C52880090D5B0 /* glyphicons-halflings-regular.eot */,
+				C381C00B1A4C52880090D5B0 /* glyphicons-halflings-regular.svg */,
+				C381C00C1A4C52880090D5B0 /* glyphicons-halflings-regular.ttf */,
+				C381C00D1A4C52880090D5B0 /* glyphicons-halflings-regular.woff */,
+			);
+			path = fonts;
+			sourceTree = "<group>";
+		};
+		C381C00E1A4C52880090D5B0 /* img */ = {
+			isa = PBXGroup;
+			children = (
+				C381C00F1A4C52880090D5B0 /* favicon.ico */,
+				C381C0101A4C52880090D5B0 /* openFrameworks.png */,
+			);
+			path = img;
+			sourceTree = "<group>";
+		};
+		C381C0121A4C52880090D5B0 /* js */ = {
+			isa = PBXGroup;
+			children = (
+				C381C0131A4C52880090D5B0 /* bootstrap.js */,
+				C381C0141A4C52880090D5B0 /* bootstrap.min.js */,
+				C381C0151A4C52880090D5B0 /* jquery.json.js */,
+				C381C0161A4C52880090D5B0 /* jquery.jsonrpcclient.js */,
+				C381C0171A4C52880090D5B0 /* jquery.min.js */,
+				C381C0181A4C52880090D5B0 /* jquery.min.map */,
+				C381C0191A4C52880090D5B0 /* main.js */,
+				C381C01A1A4C52880090D5B0 /* ofxHTTP.js */,
+				C381C01B1A4C52880090D5B0 /* ofxUtils.js */,
+				C381C01C1A4C52880090D5B0 /* prism.js */,
+			);
+			path = js;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

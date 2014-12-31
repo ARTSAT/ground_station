@@ -1,7 +1,7 @@
 /*
 **      IridiumFrameworks
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -54,7 +54,7 @@
 #include "ASDHTTPClientCelestrak.h"
 #include "ASDHTTPClientGithub.h"
 
-#define VERSION_STRING                          ("5.0.5")
+#define VERSION_STRING                          ("5.1.0")
 #define PATH_WORKSPACE                          ("/etc")
 #define PATH_SERVER                             ("server")
 #define PATH_PLUGIN                             ("plugin")
@@ -224,7 +224,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return _control.manualTNC;
 }
 
-/*public */tgs::TGSError artsatd::setNORAD(std::string const& session, std::string const& query)
+/*public */tgs::TGSError artsatd::setEXNORAD(std::string const& session, std::string const& query)
 {
     tgs::TGSPhysicsDatabase database;
     std::vector<tgs::TGSPhysicsDatabase::FieldRec> field;
@@ -232,10 +232,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     if (query.empty()) {
-        error = setNORAD(session, -1);
+        error = setEXNORAD(session, -1);
     }
     else if (boost::all(query, boost::is_digit())) {
-        error = setNORAD(session, boost::lexical_cast<int>(query));
+        error = setEXNORAD(session, boost::lexical_cast<int>(query));
     }
     else if ((error = database.open(DATABASE_PHYSICS)) == tgs::TGSERROR_OK) {
         if ((error = database.getFieldByName(query, &field)) == tgs::TGSERROR_OK) {
@@ -245,7 +245,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                         break;
                     }
                 }
-                error = setNORAD(session, (it != field.end()) ? (it->norad) : (field.front().norad));
+                error = setEXNORAD(session, (it != field.end()) ? (it->exnorad) : (field.front().exnorad));
             }
             else {
                 error = tgs::TGSERROR_NO_RESULT;
@@ -255,7 +255,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return error;
 }
 
-/*public */tgs::TGSError artsatd::setNORAD(std::string const& session, int norad)
+/*public */tgs::TGSError artsatd::setEXNORAD(std::string const& session, int exnorad)
 {
     tgs::TGSError error(tgs::TGSERROR_OK);
     
@@ -263,7 +263,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         boost::shared_lock<boost::shared_mutex> rlock(_mutex_session);
         if (_session.owner == session) {
             boost::unique_lock<boost::shared_mutex> wlock(_mutex_control);
-            _control.norad = (norad >= 0) ? (norad) : (-1);
+            _control.exnorad = (exnorad >= 0) ? (exnorad) : (-1);
         }
         else {
             error = tgs::TGSERROR_INVALID_SESSION;
@@ -275,10 +275,10 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return error;
 }
 
-/*public */int artsatd::getNORAD(void) const
+/*public */int artsatd::getEXNORAD(void) const
 {
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_control);
-    return _control.norad;
+    return _control.exnorad;
 }
 
 /*public */tgs::TGSError artsatd::setMode(std::string const& session, std::string const& mode)
@@ -346,13 +346,13 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return _current.time;
 }
 
-/*public */boost::shared_ptr<ASDPluginInterface> artsatd::getPlugin(int norad) const
+/*public */boost::shared_ptr<ASDPluginInterface> artsatd::getPlugin(int exnorad) const
 {
     std::map<int, boost::shared_ptr<ASDPluginInterface> >::const_iterator it;
     boost::shared_ptr<ASDPluginInterface> result;
     
-    if (norad >= 0) {
-        if ((it = _plugin.find(norad)) != _plugin.end()) {
+    if (exnorad >= 0) {
+        if ((it = _plugin.find(exnorad)) != _plugin.end()) {
             result = it->second;
         }
     }
@@ -489,7 +489,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return _monitor.error;
 }
 
-/*public */tgs::TGSError artsatd::requestSession(std::string* session, bool* update)
+/*public */tgs::TGSError artsatd::requestSession(std::string const& host, std::string* session, bool* update)
 {
     ir::IRXTime time;
     std::map<std::string, ir::IRXTime>::const_iterator it;
@@ -506,7 +506,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         if ((it = _session.id.find(*session)) != _session.id.end()) {
             string = it->first;
         }
-        else if (_session.id.size() < _config.sessionMaximum) {
+        else if (host == "127.0.0.1" || _session.id.size() < _config.sessionMaximum) {
             do {
                 string = (boost::format("%08x%08x") % time.asTime_t() % _session.random()).str();
             } while (_session.id.find(string) != _session.id.end());
@@ -747,7 +747,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         log(LOG_NOTICE, LOG_SEPARATOR);
         log(LOG_NOTICE, (std::string("artsatd ") + VERSION_STRING).c_str());
         log(LOG_NOTICE, " ");
-        log(LOG_NOTICE, "Copyright (C) 2013 - 2014 HORIGUCHI Junshi.");
+        log(LOG_NOTICE, "Copyright (C) 2013 - 2015 HORIGUCHI Junshi.");
         log(LOG_NOTICE, "                           http://iridium.jp/");
         log(LOG_NOTICE, "                           zap00365@nifty.com");
         log(LOG_NOTICE, "Copyright (C) 2014 - 2014 Ron Hashimoto.");
@@ -880,16 +880,16 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         _state.manualTNC = control.manualTNC;
     }
     expire = false;
-    if (control.norad != _state.field.norad) {
+    if (control.exnorad != _state.field.exnorad) {
         expire = true;
-        _state.field.norad = control.norad;
+        _state.field.exnorad = control.exnorad;
     }
-    if (_state.field.norad >= 0) {
-        if (_database.hasUpdate(_state.field.norad)) {
+    if (_state.field.exnorad >= 0) {
+        if (_database.hasUpdate(_state.field.exnorad)) {
             expire = true;
         }
         if (expire) {
-            if ((monitor.error = _database.getField(_state.field.norad, &_state.field)) == tgs::TGSERROR_OK) {
+            if ((monitor.error = _database.getField(_state.field.exnorad, &_state.field)) == tgs::TGSERROR_OK) {
                 if (_state.field.beacon.drift == INT_MIN) {
                     _state.field.beacon.drift = 0;
                 }
@@ -917,7 +917,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 }
             }
             if (monitor.error != tgs::TGSERROR_OK) {
-                _state.field.norad = -1;
+                _state.field.exnorad = -1;
             }
         }
     }
@@ -942,7 +942,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 switchTransceiver(MODETRANSCEIVER_COMMUNICATION);
             }
             if (!_state.manualTNC) {
-                if (_state.field.norad < 0) {
+                if (_state.field.exnorad < 0) {
                     switchTNC(MODETNC_CONVERSE, _config.observerCallsign);
                 }
                 else if (!_state.field.callsign.empty()) {
@@ -957,7 +957,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
             // nop
             break;
     }
-    if (_state.field.norad >= 0) {
+    if (_state.field.exnorad >= 0) {
         azimuth = NAN;
         elevation = NAN;
         beacon = NAN;
@@ -1066,7 +1066,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
         else {
             monitor.error = tgs::TGSERROR_INVALID_STATE;
         }
-        operateLog(current.time, _state.field.norad, _state.mode, azimuth, elevation, beacon, sender, receiver, monitor.error);
+        operateLog(current.time, _state.field.exnorad, _state.mode, azimuth, elevation, beacon, sender, receiver, monitor.error);
     }
     setCurrent(current);
     setMonitor(monitor);
@@ -1091,13 +1091,13 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     log(LOG_NOTICE, "TNC: packet receive [%s]", packet.c_str());
     handle = false;
     boost::shared_lock<boost::shared_mutex> rlock(_mutex_current);
-    if (_current.norad >= 0) {
-        if ((it = _plugin.find(_current.norad)) != _plugin.end()) {
+    if (_current.exnorad >= 0) {
+        if ((it = _plugin.find(_current.exnorad)) != _plugin.end()) {
             handle = it->second->receive(packet);
         }
     }
     for (it = _plugin.begin(); it != _plugin.end() && !handle; ++it) {
-        if (_current.norad < 0 || it->first != _current.norad) {
+        if (_current.exnorad < 0 || it->first != _current.exnorad) {
             handle = it->second->receive(packet);
         }
     }
@@ -1316,7 +1316,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     std::string name;
     boost::shared_ptr<ASDPluginInterface> plugin;
     std::string file;
-    int norad;
+    int exnorad;
     tgs::TGSError error(tgs::TGSERROR_OK);
     
     closePlugin();
@@ -1333,11 +1333,11 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                     }
                     if (!name.empty()) {
                         if (plugin != NULL) {
-                            if ((error = xmlReadInteger(type, "norad", &norad)) == tgs::TGSERROR_OK) {
+                            if ((error = xmlReadInteger(type, "exnorad", &exnorad)) == tgs::TGSERROR_OK) {
                                 xmlReadText(type, "file", &file);
                                 log(LOG_NOTICE, "  PLUGIN: Type                    [%s]", name.c_str());
                                 log(LOG_NOTICE, "  PLUGIN: File                    [%s]", file.c_str());
-                                log(LOG_NOTICE, "  PLUGIN: NORAD                   [%d]", norad);
+                                log(LOG_NOTICE, "  PLUGIN: EXNORAD                 [%d]", exnorad);
                                 if (!file.empty()) {
                                     name  = PATH_SERVER;
                                     name += "/";
@@ -1346,7 +1346,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                                     file = name + file;
                                 }
                                 if ((error = plugin->open(file)) == tgs::TGSERROR_OK) {
-                                    _plugin[norad] = plugin;
+                                    _plugin[exnorad] = plugin;
                                 }
                             }
                         }
@@ -1707,7 +1707,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     return error;
 }
 
-/*private */void artsatd::operateLog(ir::IRXTime const& time, int norad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info)
+/*private */void artsatd::operateLog(ir::IRXTime const& time, int exnorad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info)
 {
     std::string string;
     
@@ -1738,7 +1738,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
                 string = "NOOP";
                 break;
         }
-        log(LOG_INFO, "NORAD: %05d, Mode: %-7s [A %7.3lf, E %+7.3lf, B %10.6lf, S %10.6lf, R %10.6lf], Error: %s", norad, string.c_str(), azimuth, elevation, beacon / 1000000.0, sender / 1000000.0, receiver / 1000000.0, info.print().c_str());
+        log(LOG_INFO, "EXNORAD: %05d, Mode: %-7s [A %7.3lf, E %+7.3lf, B %10.6lf, S %10.6lf, R %10.6lf], Error: %s", exnorad, string.c_str(), azimuth, elevation, beacon / 1000000.0, sender / 1000000.0, receiver / 1000000.0, info.print().c_str());
         _state.timeLog = time;
     }
     return;
@@ -1779,14 +1779,14 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     control->manualRotator = false;
     control->manualTransceiver = false;
     control->manualTNC = false;
-    control->norad = -1;
+    control->exnorad = -1;
     control->mode = MODE_LIMIT;
     return;
 }
 
 /*private static */void artsatd::resetCurrent(ControlRec const& control, CurrentRec* current)
 {
-    current->norad = control.norad;
+    current->exnorad = control.exnorad;
     current->time = ir::IRXTime::currentTime();
     return;
 }
@@ -1796,7 +1796,7 @@ IRXDAEMON_STATIC(&artsatd::getInstance())
     state->manualRotator = control.manualRotator;
     state->manualTransceiver = control.manualTransceiver;
     state->manualTNC = control.manualTNC;
-    state->field.norad = control.norad;
+    state->field.exnorad = control.exnorad;
     state->mode = control.mode;
     state->modeTransceiver = MODETRANSCEIVER_LIMIT;
     state->modeTNC = MODETNC_LIMIT;

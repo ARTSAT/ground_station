@@ -1,7 +1,7 @@
 /*
 **      IridiumFrameworks
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -123,11 +123,11 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
             bool                                manualRotator;
             bool                                manualTransceiver;
             bool                                manualTNC;
-            int                                 norad;
+            int                                 exnorad;
             ModeEnum                            mode;
         };
         struct CurrentRec {
-            int                                 norad;
+            int                                 exnorad;
             ir::IRXTime                         time;
         };
         struct StateRec {
@@ -224,14 +224,14 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 bool                            getManualTransceiver        (void) const;
                 tgs::TGSError                   setManualTNC                (std::string const& session, bool manual);
                 bool                            getManualTNC                (void) const;
-                tgs::TGSError                   setNORAD                    (std::string const& session, std::string const& query);
-                tgs::TGSError                   setNORAD                    (std::string const& session, int norad);
-                int                             getNORAD                    (void) const;
+                tgs::TGSError                   setEXNORAD                  (std::string const& session, std::string const& query);
+                tgs::TGSError                   setEXNORAD                  (std::string const& session, int exnorad);
+                int                             getEXNORAD                  (void) const;
                 tgs::TGSError                   setMode                     (std::string const& session, std::string const& mode);
                 std::string                     getMode                     (void) const;
                 ir::IRXTime                     getTime                     (void) const;
                 boost::shared_ptr<ASDPluginInterface>
-                                                getPlugin                   (int norad) const;
+                                                getPlugin                   (int exnorad) const;
                 void                            getObserverCallsign         (std::string* callsign) const;
                 void                            getObserverPosition         (double* latitude, double* longitude, double* altitude) const;
                 void                            getSpacecraftPosition       (double* latitude, double* longitude, double* altitude) const;
@@ -246,7 +246,7 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 void                            getRotatorStart             (ir::IRXTime* start) const;
                 //>>>
                 tgs::TGSError                   getError                    (void) const;
-                tgs::TGSError                   requestSession              (std::string* session, bool* update);
+                tgs::TGSError                   requestSession              (std::string const& host, std::string* session, bool* update);
                 tgs::TGSError                   controlSession              (std::string const& session, bool owner, std::string const& host);
                 tgs::TGSError                   excludeSession              (std::string const& session, bool exclusive);
                 tgs::TGSError                   controlManualRotator        (std::string const& session, tgs::TGSError (*function)(ASDDeviceRotator& rotator, void const* info), void const* info);
@@ -293,7 +293,7 @@ class artsatd : public ir::IRXDaemon, private tgs::TGSTNCInterface::Notifier {
                 void                            operateRotator              (ir::IRXTime const& time, double azimuth, double elevation);
                 void                            operateTransceiver          (ir::IRXTime const& time, double sender, double receiver);
                 tgs::TGSError                   operateTNC                  (ir::IRXTime const& time, std::string const& command);
-                void                            operateLog                  (ir::IRXTime const& time, int norad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info);
+                void                            operateLog                  (ir::IRXTime const& time, int exnorad, ModeEnum mode, double azimuth, double elevation, double beacon, double sender, double receiver, tgs::TGSError info);
                 void                            resetRotator                (void);
                 void                            resetTransceiver            (void);
                 void                            resetTNC                    (void);

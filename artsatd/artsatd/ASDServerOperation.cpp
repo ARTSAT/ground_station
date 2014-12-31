@@ -1,7 +1,7 @@
 /*
 **      ARTSAT Project
 **
-**      Original Copyright (C) 2013 - 2014 HORIGUCHI Junshi.
+**      Original Copyright (C) 2013 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -151,7 +151,7 @@ static  char const* const                       g_shrink[] = {
     if ((it = request.cookie.find(COOKIE_SESSION_ID)) != request.cookie.end()) {
         session = it->second;
     }
-    if (daemon.requestSession(&session, &update) == tgs::TGSERROR_OK) {
+    if (daemon.requestSession(request.host, &session, &update) == tgs::TGSERROR_OK) {
         if (!update) {
             if ((it = request.cookie.find(COOKIE_ERROR_CATEGORY)) != request.cookie.end()) {
                 category = it->second;
@@ -453,13 +453,13 @@ static  char const* const                       g_shrink[] = {
     else if ((it = query.find("packet")) != query.end()) {
         bindError(CATEGORY_HARDWARE, daemon.controlManualTNC(session, &artsatd::controlTNCPacket, &it->second), category, message);
     }
-    else if ((it = query.find("norad")) != query.end()) {
-        bindError(CATEGORY_DATABASE, daemon.setNORAD(session, it->second), category, message);
+    else if ((it = query.find("exnorad")) != query.end()) {
+        bindError(CATEGORY_DATABASE, daemon.setEXNORAD(session, it->second), category, message);
     }
     else if ((it = query.find("mode")) != query.end()) {
         bindError(CATEGORY_CONTROL, daemon.setMode(session, it->second), category, message);
     }
-    if ((plugin = daemon.getPlugin(daemon.getNORAD())) != NULL) {
+    if ((plugin = daemon.getPlugin(daemon.getEXNORAD())) != NULL) {
         plugin->execute(session, query, category, message);
     }
     return;
@@ -486,7 +486,7 @@ static  char const* const                       g_shrink[] = {
     artsatd& daemon(artsatd::getInstance());
     int owner;
     bool exclusive;
-    int norad;
+    int exnorad;
     tgs::TGSPhysicsDatabase database;
     tgs::TGSPhysicsDatabase::FieldRec field;
     boost::shared_ptr<ASDPluginInterface> plugin;
@@ -560,8 +560,8 @@ static  char const* const                       g_shrink[] = {
     boost::replace_first(*response, "<!HR />", (artsatd::getRotator().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
     boost::replace_first(*response, "<!HT />", (artsatd::getTransceiver().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
     boost::replace_first(*response, "<!HM />", (artsatd::getTNC().isValid()) ? (DEVICE_OK) : (DEVICE_NG));
-    norad = daemon.getNORAD();
-    boost::replace_first(*response, "<!ND />", stringizeNORAD(norad));
+    exnorad = daemon.getEXNORAD();
+    boost::replace_first(*response, "<!ND />", stringizeEXNORAD(exnorad));
     if (category == CATEGORY_DATABASE && !message.empty()) {
         boost::replace_first(*response, "<!ED />", message);
     }
@@ -572,7 +572,7 @@ static  char const* const                       g_shrink[] = {
     if (!shrink[1]) {
         boost::replace_first(*response, "<!DB />", SHRINK_HIDE);
         *response = boost::xpressive::regex_replace(*response, s_DBT, "");
-        field.norad = -1;
+        field.exnorad = -1;
         field.beacon.frequency = -1;
         field.beacon.drift = INT_MIN;
         field.sender.frequency = -1;
@@ -580,11 +580,11 @@ static  char const* const                       g_shrink[] = {
         field.receiver.frequency = -1;
         field.receiver.drift = INT_MIN;
         if ((error = database.open(_database)) == tgs::TGSERROR_OK) {
-            if (database.getField(norad, &field) == tgs::TGSERROR_OK) {
+            if (database.getField(exnorad, &field) == tgs::TGSERROR_OK) {
                 boost::replace_first(*response, "<!NM />", colorizeSpan("green", field.name));
             }
             else {
-                boost::replace_first(*response, "<!NM />", "Unknown NORAD");
+                boost::replace_first(*response, "<!NM />", "Unknown EXNORAD");
             }
             database.close();
         }
@@ -602,7 +602,7 @@ static  char const* const                       g_shrink[] = {
         boost::replace_first(*response, "<!RF />", colorizeSpan((string == "FM_TEST") ? ("green") : (""), stringizeFrequency(field.receiver.frequency, false)));
         boost::replace_first(*response, "<!RD />", stringizeDrift(field.receiver.drift));
         boost::replace_first(*response, "<!OT />", stringizeOrbitType(field.orbit));
-        boost::replace_first(*response, "<!OU />", (field.norad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
+        boost::replace_first(*response, "<!OU />", (field.exnorad >= 0) ? (stringizeTime(field.time + ir::IRXTimeDiff::localTimeOffset())) : (DEFAULT_TIME));
         boost::replace_first(*response, "<!OD />", stringizeOrbitData(field.orbit));
     }
     else {
@@ -628,7 +628,7 @@ static  char const* const                       g_shrink[] = {
         boost::replace_first(*response, "<!CN />", SHRINK_HIDE);
         *response = boost::xpressive::regex_replace(*response, s_CNT, "");
         string.clear();
-        if ((plugin = daemon.getPlugin(norad)) != NULL) {
+        if ((plugin = daemon.getPlugin(exnorad)) != NULL) {
             plugin->process(session, category, message, &string);
         }
         boost::replace_first(*response, "<!CD />", string);
@@ -849,7 +849,7 @@ static  char const* const                       g_shrink[] = {
     return result + "&deg;";
 }
 
-/*private static */std::string ASDServerOperation::stringizeNORAD(int param)
+/*private static */std::string ASDServerOperation::stringizeEXNORAD(int param)
 {
     std::string result;
     

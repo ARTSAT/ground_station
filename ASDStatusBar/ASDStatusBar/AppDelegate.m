@@ -117,10 +117,10 @@ NSTimer *_timer;
                                 NSFontAttributeName: [NSFont systemFontOfSize:12.0f]
                                 };
     
-    [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"  Norad " attributes:smallAttr]];
-    int norad = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getNORAD", @"params": @{@"session": self.session
-                                                                                                                }}] objectForKey:@"result"] objectForKey:@"norad"] intValue];
-    [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%d  ", norad] attributes:stdAttr]];
+    [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@"  exNorad " attributes:smallAttr]];
+    int exnorad = [[[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getEXNORAD", @"params": @{@"session": self.session
+                                                                                                                }}] objectForKey:@"result"] objectForKey:@"exnorad"] intValue];
+    [mutableAttributedString appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%d  ", exnorad] attributes:stdAttr]];
     
     {
         NSString* mode = [[[self request:@{@"jsonrpc": @"2.0", @"id": @0, @"method": @"observer.getMode", @"params": @{@"session": self.session}}] objectForKey:@"result"] objectForKey:@"mode"];

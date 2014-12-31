@@ -4,7 +4,7 @@
 **      Original Copyright (C) 2014 - 2014 Ron Hashimoto.
 **                                          http://h2so5.net/
 **                                          mail@h2so5.net
-**      Portions Copyright (C) 2014 - 2014 HORIGUCHI Junshi.
+**      Portions Copyright (C) 2014 - 2015 HORIGUCHI Junshi.
 **                                          http://iridium.jp/
 **                                          zap00365@nifty.com
 **      Portions Copyright (C) <year> <author>
@@ -197,26 +197,26 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                 tgs::TGSError                   getManualTNC                (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.setNORAD
+                 *   observer.setEXNORAD
                  * params:
                  *   [session <std::string>: session ID]
-                 *   [norad <int>: NORAD number] *1
-                 *   [query <std::string>: NORAD number or spacecraft's name] *1
+                 *   [exnorad <int>: EXNORAD number] *1
+                 *   [query <std::string>: EXNORAD number or spacecraft's name] *1
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   setNORAD                    (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   setEXNORAD                  (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   observer.getNORAD
+                 *   observer.getEXNORAD
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
-                 *   norad <int>: current NORAD number
+                 *   exnorad <int>: current EXNORAD number
                  *                -1 not set yet
                  */
-                tgs::TGSError                   getNORAD                    (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getEXNORAD                  (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
                  *   observer.setMode
@@ -544,7 +544,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setName
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  *   name <std::string>: spacecraft's name
                  * result:
                  *   session <std::string>: session ID
@@ -555,7 +555,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getName
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  * result:
                  *   session <std::string>: session ID
                  *   name <std::string>: spacecraft's name
@@ -566,7 +566,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setCallsign
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  *   callsign <std::string>: spacecraft's callsign
                  * result:
                  *   session <std::string>: session ID
@@ -577,7 +577,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getCallsign
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  * result:
                  *   session <std::string>: session ID
                  *   callsign <std::string>: spacecraft's callsign
@@ -588,7 +588,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setRadioBeacon
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  *   [mode <std::string>: beacon mode]
                  *   [frequency <int>: beacon frequency]
                  *   [drift <int>: beacon frequency drift]
@@ -601,7 +601,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getRadioBeacon
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  * result:
                  *   session <std::string>: session ID
                  *   mode <std::string>: beacon mode
@@ -614,7 +614,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setRadioSender
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  *   [mode <std::string>: sender mode]
                  *   [frequency <int>: sender frequency]
                  *   [drift <int>: sender frequency drift]
@@ -627,7 +627,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getRadioSender
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  * result:
                  *   session <std::string>: session ID
                  *   mode <std::string>: sender mode
@@ -640,7 +640,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.setRadioReceiver
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  *   [mode <std::string>: receiver mode]
                  *   [frequency <int>: receiver frequency]
                  *   [drift <int>: receiver frequency drift]
@@ -653,7 +653,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getRadioReceiver
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  * result:
                  *   session <std::string>: session ID
                  *   mode <std::string>: receiver mode
@@ -686,7 +686,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                  *   database.getOrbitData
                  * params:
                  *   [session <std::string>: session ID]
-                 *   norad <int>: NORAD number
+                 *   exnorad <int>: EXNORAD number
                  * result:
                  *   session <std::string>: session ID
                  *   [none <object>:
@@ -743,22 +743,22 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
                 tgs::TGSError                   getFieldByCallsign          (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   database.getNORADByName
+                 *   database.getEXNORADByName
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   getNORADByName              (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getEXNORADByName            (std::string const& host, Param const& param, Param* result) const;
                 /*
                  * method:
-                 *   database.getNORADByCallsign
+                 *   database.getEXNORADByCallsign
                  * params:
                  *   [session <std::string>: session ID]
                  * result:
                  *   session <std::string>: session ID
                  */
-                tgs::TGSError                   getNORADByCallsign          (std::string const& host, Param const& param, Param* result) const;
+                tgs::TGSError                   getEXNORADByCallsign        (std::string const& host, Param const& param, Param* result) const;
     private:
         virtual tgs::TGSError                   onRequest                   (RequestRec const& request, ResponseRec* response);
                 void                            replyJSON                   (RequestRec const& request, ResponseRec* response) const;
@@ -766,7 +766,7 @@ class ASDServerRPC : public ASDNetworkServer::Notifier {
         static  void                            returnJSON                  (JSONCodeEnum code, rapidjson::Value& result, rapidjson::Value& id, rapidjson::Value* response, rapidjson::Document::AllocatorType& allocator);
         static  void                            toVariant                   (rapidjson::Value const& param, Variant* result);
         static  void                            toJSON                      (Variant const& param, rapidjson::Value* result, rapidjson::Document::AllocatorType& allocator);
-        static  tgs::TGSError                   updateSession               (Param const& param, std::string* session, Param* result);
+        static  tgs::TGSError                   updateSession               (std::string const& host, Param const& param, std::string* session, Param* result);
         static  tgs::TGSError                   getParam                    (Param const& param, tgs::TGSPhysicsDatabase::RadioRec* result);
         static  tgs::TGSError                   getParam                    (Param const& param, tgs::OrbitData* result);
         template <typename T>

@@ -38,7 +38,9 @@ cJulian::cJulian(time_t time)
    struct tm stm;
    
    //gmtime_s(&stm, &time);
-    stm = *gmtime(&time);
+    
+    // modified to support reentrancy by 2015 HORIGUCHI Junshi
+    stm = *gmtime_r(&time, &stm);
 
    int    year = stm.tm_year + 1900;
    double day  = stm.tm_yday + 1 +
@@ -197,10 +199,12 @@ long get_gmt_offset(void)
 {
     time_t now = time(NULL);
     
-    struct tm *gm = gmtime(&now);
+    // modified to support reentrancy by 2015 HORIGUCHI Junshi
+    struct tm time;
+    struct tm *gm = gmtime_r(&now, &time);
     time_t gmt = mktime(gm);
     
-    struct tm *loc = localtime(&now);
+    struct tm *loc = localtime_r(&now, &time);
     time_t local = mktime(loc);
     
     return difftime(local, gmt);
